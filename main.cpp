@@ -1,10 +1,10 @@
-#include "include/define.h"
-#include "include/Shell.h"
-#include "include/VFS.h"
-#include "include/Ext2.h"
-#include "include/DiskDriver.h"
-#include "include/BufferCache.h"
-#include "include/Kernel.h"
+#include "define.h"
+#include "Shell.h"
+#include "VFS.h"
+#include "Ext2.h"
+#include "DiskDriver.h"
+#include "BufferCache.h"
+#include "Kernel.h"
 
 int main()
 {
