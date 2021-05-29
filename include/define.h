@@ -9,7 +9,16 @@
 #include <stdint.h>   //需要用到比特类型
 #include <fcntl.h>    //open系统调用
 #include <unistd.h>   //lseek函数
-#include <sys/mman.h> //mmap函数
+
+#define WINDOWS
+
+#if defined(WINDOWS) 
+#include <sys/mman.h>
+#else
+#include <sys/mman.h>
+#endif
+
+
 #include <sys/stat.h> //文件设置权限
 #include <stdlib.h>   //随机数
 #include <time.h>     //随机数种子要用

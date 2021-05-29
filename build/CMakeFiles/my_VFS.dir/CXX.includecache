@@ -144,6 +144,16 @@ File.h
 define.h
 ../include/define.h
 
+../include/Shell.h
+define.h
+../include/define.h
+Logcat.h
+../include/Logcat.h
+Path.h
+../include/Path.h
+VFS.h
+../include/VFS.h
+
 ../include/SuperBlock.h
 define.h
 ../include/define.h
@@ -155,6 +165,10 @@ define.h
 ../include/define.h
 Bitmap.h
 ../include/Bitmap.h
+
+../include/TimeHelper.h
+define.h
+../include/define.h
 
 ../include/User.h
 define.h
@@ -197,6 +211,8 @@ unistd.h
 -
 sys/mman.h
 -
+sys/mman.h
+-
 sys/stat.h
 -
 stdlib.h
@@ -205,6 +221,22 @@ time.h
 -
 string
 -
+
+/home/truth/Desktop/hai/Unix-FileSystem/main.cpp
+define.h
+/home/truth/Desktop/hai/Unix-FileSystem/define.h
+Shell.h
+/home/truth/Desktop/hai/Unix-FileSystem/Shell.h
+VFS.h
+/home/truth/Desktop/hai/Unix-FileSystem/VFS.h
+Ext2.h
+/home/truth/Desktop/hai/Unix-FileSystem/Ext2.h
+DiskDriver.h
+/home/truth/Desktop/hai/Unix-FileSystem/DiskDriver.h
+BufferCache.h
+/home/truth/Desktop/hai/Unix-FileSystem/BufferCache.h
+Kernel.h
+/home/truth/Desktop/hai/Unix-FileSystem/Kernel.h
 
 /home/truth/Desktop/hai/Unix-FileSystem/src/BufferCache.cpp
 BufferCache.h
@@ -215,6 +247,38 @@ Logcat.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/Logcat.h
 Buf.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/Buf.h
+
+/home/truth/Desktop/hai/Unix-FileSystem/src/FileSystem.cpp
+Ext2.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Ext2.h
+Kernel.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.h
+TimeHelper.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/TimeHelper.h
+DiskInode.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/DiskInode.h
+Path.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Path.h
+InodePool.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/InodePool.h
+Path.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Path.h
+SuperBlock.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/SuperBlock.h
+
+/home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.cpp
+Kernel.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.h
+User.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/User.h
+Path.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Path.h
+
+/home/truth/Desktop/hai/Unix-FileSystem/src/Shell.cpp
+Shell.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Shell.h
+Kernel.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.h
 
 /home/truth/Desktop/hai/Unix-FileSystem/src/VFS.cpp
 VFS.h
@@ -247,4 +311,10 @@ DirectoryEntry.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/DirectoryEntry.h
 DirectoryCache.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/DirectoryCache.h
+
+/mingw/include/sys/mman.h
+_mingw.h
+-
+sys/types.h
+-
 

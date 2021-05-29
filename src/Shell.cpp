@@ -487,7 +487,7 @@ void Shell::store()
             //int blkCount = 0;
             int readsize = fread(&tempBuf, 1, DISK_BLOCK_SIZE, fd_src);
             file_size += readsize;
-            bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, readsize);
+            bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, readsize);
         }
         Inode *p_desInode = Kernel::instance()->getInodeCache().getInodeByID(desInodeId);
         p_desInode->i_size = file_size; //TODO这一块不太好，封装性差了点
@@ -533,7 +533,7 @@ void Shell::withdraw()
         while (!bounded_VFS->eof(fd_src))
         {
             //int blkCount = 0;
-            int writesize = bounded_VFS->read(fd_src, (u_int8_t *)&tempBuf, DISK_BLOCK_SIZE);
+            int writesize = bounded_VFS->read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
             //? 为什么最后一个是 \00
             if(writesize < DISK_BLOCK_SIZE)
                 writesize -= 1;
@@ -735,7 +735,7 @@ void Shell::read(){
                 while (!bounded_VFS->eof(fd_src))
                 {
                     //int blkCount = 0;
-                    int writesize = bounded_VFS->read(fd_src, (u_int8_t *)&tempBuf, DISK_BLOCK_SIZE);
+                    int writesize = bounded_VFS->read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
                     
                     //? 为什么最后一个是 \00
                     if(writesize < DISK_BLOCK_SIZE)
@@ -760,8 +760,8 @@ void Shell::read(){
                         break;
                     }
 
-                    int real_read_num = bounded_VFS->read(fd_src, (u_int8_t *)&tempBuf, readable_size);
-                    tempBuf.content[real_read_num] = (u_int8_t)'\0';
+                    int real_read_num = bounded_VFS->read(fd_src, (uint8_t *)&tempBuf, readable_size);
+                    tempBuf.content[real_read_num] = (uint8_t)'\0';
 
                     fwrite(&tempBuf, 1, readable_size, fd_des);
                     cur_read_num += readable_size;
@@ -792,9 +792,9 @@ void Shell::read(){
                     break;
                 }
 
-                int real_read_num = bounded_VFS->read(fd_src, (u_int8_t *)&tempBuf, readable_size);
+                int real_read_num = bounded_VFS->read(fd_src, (uint8_t *)&tempBuf, readable_size);
 
-                tempBuf.content[real_read_num] = (u_int8_t)'\0';
+                tempBuf.content[real_read_num] = (uint8_t)'\0';
 
                 res_read += std::string((char *)&tempBuf);
                 cur_read_num += readable_size;
@@ -867,13 +867,13 @@ void Shell::write()
             int i;
             for(i = 0 ; i + DISK_BLOCK_SIZE < input.length(); i += DISK_BLOCK_SIZE){
                 memcpy(&tempBuf, input.data() + i, DISK_BLOCK_SIZE);
-                bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, DISK_BLOCK_SIZE);
+                bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
                 file_size += DISK_BLOCK_SIZE;
             }
             int last_readsize = input.length() - i;
             memcpy(&tempBuf, input.data() + i, last_readsize);
 
-            bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, last_readsize);
+            bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, last_readsize);
             file_size += last_readsize;
         }
         else if(cur_arg_num == 5 && strcmp(getParam(2), "-d") == 0){
@@ -903,11 +903,11 @@ void Shell::write()
                 if(file_size >= file_size_limit){
                     int cur_readsize = file_size_limit - (file_size - readsize);
                     file_size = file_size_limit;
-                    bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, cur_readsize);
+                    bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, cur_readsize);
                     break;
                 }
                 else{
-                    bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, readsize);
+                    bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, readsize);
                 }
             }
         }

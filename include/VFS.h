@@ -34,8 +34,8 @@ public:
   void ls(InodeId dirInodeID);
   int open(Path path, int mode);
   int close(int fd);
-  int read(int fd, u_int8_t *content, int length);  //用户层面，文件必须先打开才可读
-  int write(int fd, u_int8_t *content, int length); //用户层面，文件必须先打开才可写
+  int read(int fd, uint8_t *content, int length);  //用户层面，文件必须先打开才可读
+  int write(int fd, uint8_t *content, int length); //用户层面，文件必须先打开才可写
   bool eof(FileFd fd);
   void registerExt2(Ext2 *ext2); //注册文件系统，载入SuperBlock
   void unregisterExt2();         //注销加载的文件系统，要刷回脏inode和superblock

@@ -281,8 +281,8 @@ public:
   void ls(InodeId dirInodeID);
   int open(Path path, int mode);
   int close(int fd);
-  int read(int fd, u_int8_t *content, int length);  //用户层面，文件必须先打开才可读
-  int write(int fd, u_int8_t *content, int length); //用户层面，文件必须先打开才可写
+  int read(int fd, uint8_t *content, int length);  //用户层面，文件必须先打开才可读
+  int write(int fd, uint8_t *content, int length); //用户层面，文件必须先打开才可写
   bool eof(FileFd fd);
   void registerExt2(Ext2 *ext2); //注册文件系统，载入SuperBlock
   void unregisterExt2();         //注销加载的文件系统，要刷回脏inode和superblock
@@ -501,7 +501,7 @@ b_flags 中的 B_BUSY 标志被设置，它一定位于相应的设备缓存队�
 - 将content缓冲区的内容写入内部文件fd中length字节。
 
 ```CPP
-int VFS::write(int fd, u_int8_t *content, int length)
+int VFS::write(int fd, uint8_t *content, int length)
 {
     //分析：length可能大于、小于、等于盘块的整数倍
     int writeByteCount = 0;
@@ -535,7 +535,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
             pBuf = Kernel::instance()->getBufferCache().Bread(phyBlkno);
         }
 
-        u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
+        uint8_t *p_buf_byte = (uint8_t *)pBuf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - writeByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
@@ -567,7 +567,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
 返回读出的字节数，如果fd剩下的字节小于length，则只把剩下的读出
 
 ```CPP
-int VFS::read(int fd, u_int8_t *content, int length)
+int VFS::read(int fd, uint8_t *content, int length)
 {
     //分析：length可能大于、小于、等于盘块的整数倍
     int readByteCount = 0;
@@ -589,7 +589,7 @@ int VFS::read(int fd, u_int8_t *content, int length)
         BlkNum phyBlkno = p_inode->Bmap(logicBlkno);            //物理盘块号
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
         pBuf = Kernel::instance()->getBufferCache().Bread(phyBlkno);
-        u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
+        uint8_t *p_buf_byte = (uint8_t *)pBuf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - readByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小

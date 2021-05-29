@@ -1066,7 +1066,7 @@ int VFS::close(FileFd fd)
  * 从文件fd中读出length字节放到content缓冲区中。
  * 返回读出的字节数，如果fd剩下的字节小于length，则只把剩下的读出
  */
-int VFS::read(int fd, u_int8_t *content, int length)
+int VFS::read(int fd, uint8_t *content, int length)
 {
     //分析：length可能大于、小于、等于盘块的整数倍
     int readByteCount = 0;
@@ -1088,7 +1088,7 @@ int VFS::read(int fd, u_int8_t *content, int length)
         BlkNum phyBlkno = p_inode->Bmap(logicBlkno);            //物理盘块号
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
         pBuf = Kernel::instance()->getBufferCache().Bread(phyBlkno);
-        u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
+        uint8_t *p_buf_byte = (uint8_t *)pBuf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - readByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
@@ -1112,7 +1112,7 @@ int VFS::read(int fd, u_int8_t *content, int length)
 
     return readByteCount;
 }
-int VFS::write(int fd, u_int8_t *content, int length)
+int VFS::write(int fd, uint8_t *content, int length)
 {
     //分析：length可能大于、小于、等于盘块的整数倍
     int writeByteCount = 0;
@@ -1152,7 +1152,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
 
         
 
-        u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
+        uint8_t *p_buf_byte = (uint8_t *)pBuf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - writeByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
