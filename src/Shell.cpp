@@ -86,7 +86,7 @@ int Shell::readUserInput()
         //TODO
 
         //Step1:获取用户输入放到缓冲区
-        if(auto_test ++ < 16){
+        if(auto_test ++ < 0){
             strcpy(tty_buffer, test[auto_test]);
             //printf("%s\n", tty_buffer);
         }

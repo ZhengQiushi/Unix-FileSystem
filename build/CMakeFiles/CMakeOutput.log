@@ -29,18 +29,18 @@ The CXX compiler identification is GNU, found in "/home/truth/Desktop/hai/Unix-F
 Detecting C compiler ABI info compiled with the following output:
 Change Dir: /home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make cmTC_bb28a/fast && /usr/bin/make  -f CMakeFiles/cmTC_bb28a.dir/build.make CMakeFiles/cmTC_bb28a.dir/build
+Run Build Command(s):/usr/bin/make cmTC_9c9f6/fast && /usr/bin/make  -f CMakeFiles/cmTC_9c9f6.dir/build.make CMakeFiles/cmTC_9c9f6.dir/build
 make[1]: Entering directory '/home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj
-/usr/bin/x86_64-w64-mingw32-gcc   -v -o CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj -c /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c
+Building C object CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj
+/usr/bin/x86_64-w64-mingw32-gcc   -v -o CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj -c /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c
 Using built-in specs.
 COLLECT_GCC=/usr/bin/x86_64-w64-mingw32-gcc
 Target: x86_64-w64-mingw32
 Configured with: ../../src/configure --build=x86_64-linux-gnu --prefix=/usr --includedir='/usr/include' --mandir='/usr/share/man' --infodir='/usr/share/info' --sysconfdir=/etc --localstatedir=/var --disable-silent-rules --libdir='/usr/lib/x86_64-linux-gnu' --libexecdir='/usr/lib/x86_64-linux-gnu' --disable-maintainer-mode --disable-dependency-tracking --prefix=/usr --enable-shared --enable-static --disable-multilib --with-system-zlib --libexecdir=/usr/lib --without-included-gettext --libdir=/usr/lib --enable-libstdcxx-time=yes --with-tune=generic --with-headers=/usr/x86_64-w64-mingw32/include --enable-version-specific-runtime-libs --enable-fully-dynamic-string --enable-libgomp --enable-languages=c,c++,fortran,objc,obj-c++,ada --enable-lto --with-plugin-ld --enable-threads=win32 --program-suffix=-win32 --program-prefix=x86_64-w64-mingw32- --target=x86_64-w64-mingw32 --with-as=/usr/bin/x86_64-w64-mingw32-as --with-ld=/usr/bin/x86_64-w64-mingw32-ld --enable-libatomic --enable-libstdcxx-filesystem-ts=yes
 Thread model: win32
 gcc version 7.3-win32 20180312 (GCC) 
-COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/cc1 -quiet -v -U_REENTRANT /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj -version -o /tmp/ccanMCxj.s
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/cc1 -quiet -v -U_REENTRANT /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj -version -o /tmp/ccTwHDuo.s
 GNU C11 (GCC) version 7.3-win32 20180312 (x86_64-w64-mingw32)
 	compiled by GNU C version 7.3.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
 
@@ -57,17 +57,17 @@ GNU C11 (GCC) version 7.3-win32 20180312 (x86_64-w64-mingw32)
 
 GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
 Compiler executable checksum: 6979ab5de8608fba07531e0f52c4b246
-COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64'
- /usr/bin/x86_64-w64-mingw32-as -v -o CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj /tmp/ccanMCxj.s
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64'
+ /usr/bin/x86_64-w64-mingw32-as -v -o CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj /tmp/ccTwHDuo.s
 GNU assembler version 2.30 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.30
 COMPILER_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/bin/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64'
-Linking C executable cmTC_bb28a.exe
-/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bb28a.dir/link.txt --verbose=1
-/usr/local/bin/cmake -E rm -f CMakeFiles/cmTC_bb28a.dir/objects.a
-/usr/bin/x86_64-w64-mingw32-ar cr CMakeFiles/cmTC_bb28a.dir/objects.a @CMakeFiles/cmTC_bb28a.dir/objects1.rsp
-/usr/bin/x86_64-w64-mingw32-gcc  -v -Wl,--whole-archive CMakeFiles/cmTC_bb28a.dir/objects.a -Wl,--no-whole-archive -o cmTC_bb28a.exe -Wl,--out-implib,libcmTC_bb28a.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64'
+Linking C executable cmTC_9c9f6.exe
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9c9f6.dir/link.txt --verbose=1
+/usr/local/bin/cmake -E rm -f CMakeFiles/cmTC_9c9f6.dir/objects.a
+/usr/bin/x86_64-w64-mingw32-ar cr CMakeFiles/cmTC_9c9f6.dir/objects.a @CMakeFiles/cmTC_9c9f6.dir/objects1.rsp
+/usr/bin/x86_64-w64-mingw32-gcc  -v -Wl,--whole-archive CMakeFiles/cmTC_9c9f6.dir/objects.a -Wl,--no-whole-archive -o cmTC_9c9f6.exe -Wl,--out-implib,libcmTC_9c9f6.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
 Using built-in specs.
 COLLECT_GCC=/usr/bin/x86_64-w64-mingw32-gcc
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/lto-wrapper
@@ -77,9 +77,9 @@ Thread model: win32
 gcc version 7.3-win32 20180312 (GCC) 
 COMPILER_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/bin/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bb28a.exe' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2 -m i386pep -Bdynamic -o cmTC_bb28a.exe /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32 -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib --whole-archive CMakeFiles/cmTC_bb28a.dir/objects.a --no-whole-archive --out-implib libcmTC_bb28a.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtend.o
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bb28a.exe' '-mtune=generic' '-march=x86-64'
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_9c9f6.exe' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2 -m i386pep -Bdynamic -o cmTC_9c9f6.exe /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32 -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib --whole-archive CMakeFiles/cmTC_9c9f6.dir/objects.a --no-whole-archive --out-implib libcmTC_9c9f6.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtend.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_9c9f6.exe' '-mtune=generic' '-march=x86-64'
 make[1]: Leaving directory '/home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp'
 
 
@@ -101,18 +101,18 @@ Parsed C implicit link information from above output:
   link line regex: [^( *|.*[/\])(x86_64-w64-mingw32-ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command(s):/usr/bin/make cmTC_bb28a/fast && /usr/bin/make  -f CMakeFiles/cmTC_bb28a.dir/build.make CMakeFiles/cmTC_bb28a.dir/build]
+  ignore line: [Run Build Command(s):/usr/bin/make cmTC_9c9f6/fast && /usr/bin/make  -f CMakeFiles/cmTC_9c9f6.dir/build.make CMakeFiles/cmTC_9c9f6.dir/build]
   ignore line: [make[1]: Entering directory '/home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building C object CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj]
-  ignore line: [/usr/bin/x86_64-w64-mingw32-gcc   -v -o CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj -c /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c]
+  ignore line: [Building C object CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj]
+  ignore line: [/usr/bin/x86_64-w64-mingw32-gcc   -v -o CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj -c /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/x86_64-w64-mingw32-gcc]
   ignore line: [Target: x86_64-w64-mingw32]
   ignore line: [Configured with: ../../src/configure --build=x86_64-linux-gnu --prefix=/usr --includedir='/usr/include' --mandir='/usr/share/man' --infodir='/usr/share/info' --sysconfdir=/etc --localstatedir=/var --disable-silent-rules --libdir='/usr/lib/x86_64-linux-gnu' --libexecdir='/usr/lib/x86_64-linux-gnu' --disable-maintainer-mode --disable-dependency-tracking --prefix=/usr --enable-shared --enable-static --disable-multilib --with-system-zlib --libexecdir=/usr/lib --without-included-gettext --libdir=/usr/lib --enable-libstdcxx-time=yes --with-tune=generic --with-headers=/usr/x86_64-w64-mingw32/include --enable-version-specific-runtime-libs --enable-fully-dynamic-string --enable-libgomp --enable-languages=c,c++,fortran,objc,obj-c++,ada --enable-lto --with-plugin-ld --enable-threads=win32 --program-suffix=-win32 --program-prefix=x86_64-w64-mingw32- --target=x86_64-w64-mingw32 --with-as=/usr/bin/x86_64-w64-mingw32-as --with-ld=/usr/bin/x86_64-w64-mingw32-ld --enable-libatomic --enable-libstdcxx-filesystem-ts=yes]
   ignore line: [Thread model: win32]
   ignore line: [gcc version 7.3-win32 20180312 (GCC) ]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64']
-  ignore line: [ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/cc1 -quiet -v -U_REENTRANT /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj -version -o /tmp/ccanMCxj.s]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64']
+  ignore line: [ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/cc1 -quiet -v -U_REENTRANT /usr/local/share/cmake-3.18/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj -version -o /tmp/ccTwHDuo.s]
   ignore line: [GNU C11 (GCC) version 7.3-win32 20180312 (x86_64-w64-mingw32)]
   ignore line: [	compiled by GNU C version 7.3.0  GMP version 6.1.2  MPFR version 4.0.1  MPC version 1.1.0  isl version isl-0.19-GMP]
   ignore line: []
@@ -129,17 +129,17 @@ Parsed C implicit link information from above output:
   ignore line: []
   ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
   ignore line: [Compiler executable checksum: 6979ab5de8608fba07531e0f52c4b246]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64']
-  ignore line: [ /usr/bin/x86_64-w64-mingw32-as -v -o CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj /tmp/ccanMCxj.s]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64']
+  ignore line: [ /usr/bin/x86_64-w64-mingw32-as -v -o CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj /tmp/ccTwHDuo.s]
   ignore line: [GNU assembler version 2.30 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.30]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/bin/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_bb28a.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64']
-  ignore line: [Linking C executable cmTC_bb28a.exe]
-  ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bb28a.dir/link.txt --verbose=1]
-  ignore line: [/usr/local/bin/cmake -E rm -f CMakeFiles/cmTC_bb28a.dir/objects.a]
-  ignore line: [/usr/bin/x86_64-w64-mingw32-ar cr CMakeFiles/cmTC_bb28a.dir/objects.a @CMakeFiles/cmTC_bb28a.dir/objects1.rsp]
-  ignore line: [/usr/bin/x86_64-w64-mingw32-gcc  -v -Wl --whole-archive CMakeFiles/cmTC_bb28a.dir/objects.a -Wl --no-whole-archive -o cmTC_bb28a.exe -Wl --out-implib libcmTC_bb28a.dll.a -Wl --major-image-version 0 --minor-image-version 0 ]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_9c9f6.dir/CMakeCCompilerABI.c.obj' '-c' '-mtune=generic' '-march=x86-64']
+  ignore line: [Linking C executable cmTC_9c9f6.exe]
+  ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9c9f6.dir/link.txt --verbose=1]
+  ignore line: [/usr/local/bin/cmake -E rm -f CMakeFiles/cmTC_9c9f6.dir/objects.a]
+  ignore line: [/usr/bin/x86_64-w64-mingw32-ar cr CMakeFiles/cmTC_9c9f6.dir/objects.a @CMakeFiles/cmTC_9c9f6.dir/objects1.rsp]
+  ignore line: [/usr/bin/x86_64-w64-mingw32-gcc  -v -Wl --whole-archive CMakeFiles/cmTC_9c9f6.dir/objects.a -Wl --no-whole-archive -o cmTC_9c9f6.exe -Wl --out-implib libcmTC_9c9f6.dll.a -Wl --major-image-version 0 --minor-image-version 0 ]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/x86_64-w64-mingw32-gcc]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/lto-wrapper]
@@ -149,23 +149,23 @@ Parsed C implicit link information from above output:
   ignore line: [gcc version 7.3-win32 20180312 (GCC) ]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/bin/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bb28a.exe' '-mtune=generic' '-march=x86-64']
-  link line: [ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2 -m i386pep -Bdynamic -o cmTC_bb28a.exe /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32 -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib --whole-archive CMakeFiles/cmTC_bb28a.dir/objects.a --no-whole-archive --out-implib libcmTC_bb28a.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtend.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_9c9f6.exe' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2 -m i386pep -Bdynamic -o cmTC_9c9f6.exe /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32 -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib --whole-archive CMakeFiles/cmTC_9c9f6.dir/objects.a --no-whole-archive --out-implib libcmTC_9c9f6.dll.a --major-image-version 0 --minor-image-version 0 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc -lgcc_eh -lmoldname -lmingwex -lmsvcrt /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtend.o]
     arg [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2] ==> ignore
     arg [-m] ==> ignore
     arg [i386pep] ==> ignore
     arg [-Bdynamic] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_bb28a.exe] ==> ignore
+    arg [cmTC_9c9f6.exe] ==> ignore
     arg [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o] ==> ignore
     arg [-L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32] ==> dir [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32]
     arg [-L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib] ==> dir [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib]
     arg [--whole-archive] ==> ignore
-    arg [CMakeFiles/cmTC_bb28a.dir/objects.a] ==> ignore
+    arg [CMakeFiles/cmTC_9c9f6.dir/objects.a] ==> ignore
     arg [--no-whole-archive] ==> ignore
     arg [--out-implib] ==> ignore
-    arg [libcmTC_bb28a.dll.a] ==> ignore
+    arg [libcmTC_9c9f6.dll.a] ==> ignore
     arg [--major-image-version] ==> ignore
     arg [0] ==> ignore
     arg [--minor-image-version] ==> ignore
@@ -201,18 +201,18 @@ Parsed C implicit link information from above output:
 Detecting CXX compiler ABI info compiled with the following output:
 Change Dir: /home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make cmTC_f9032/fast && /usr/bin/make  -f CMakeFiles/cmTC_f9032.dir/build.make CMakeFiles/cmTC_f9032.dir/build
+Run Build Command(s):/usr/bin/make cmTC_867b9/fast && /usr/bin/make  -f CMakeFiles/cmTC_867b9.dir/build.make CMakeFiles/cmTC_867b9.dir/build
 make[1]: Entering directory '/home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj
-/usr/bin/x86_64-w64-mingw32-g++   -v -o CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj -c /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp
+Building CXX object CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj
+/usr/bin/x86_64-w64-mingw32-g++   -v -o CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj -c /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp
 Using built-in specs.
 COLLECT_GCC=/usr/bin/x86_64-w64-mingw32-g++
 Target: x86_64-w64-mingw32
 Configured with: ../../src/configure --build=x86_64-linux-gnu --prefix=/usr --includedir='/usr/include' --mandir='/usr/share/man' --infodir='/usr/share/info' --sysconfdir=/etc --localstatedir=/var --disable-silent-rules --libdir='/usr/lib/x86_64-linux-gnu' --libexecdir='/usr/lib/x86_64-linux-gnu' --disable-maintainer-mode --disable-dependency-tracking --prefix=/usr --enable-shared --enable-static --disable-multilib --with-system-zlib --libexecdir=/usr/lib --without-included-gettext --libdir=/usr/lib --enable-libstdcxx-time=yes --with-tune=generic --with-headers=/usr/x86_64-w64-mingw32/include --enable-version-specific-runtime-libs --enable-fully-dynamic-string --enable-libgomp --enable-languages=c,c++,fortran,objc,obj-c++,ada --enable-lto --with-plugin-ld --enable-threads=win32 --program-suffix=-win32 --program-prefix=x86_64-w64-mingw32- --target=x86_64-w64-mingw32 --with-as=/usr/bin/x86_64-w64-mingw32-as --with-ld=/usr/bin/x86_64-w64-mingw32-ld --enable-libatomic --enable-libstdcxx-filesystem-ts=yes
 Thread model: win32
 gcc version 7.3-win32 20180312 (GCC) 
-COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/cc1plus -quiet -v -U_REENTRANT /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj -version -o /tmp/ccZGrBBv.s
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/cc1plus -quiet -v -U_REENTRANT /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj -version -o /tmp/ccz2UPXD.s
 GNU C++14 (GCC) version 7.3-win32 20180312 (x86_64-w64-mingw32)
 	compiled by GNU C version 7.3.0, GMP version 6.1.2, MPFR version 4.0.1, MPC version 1.1.0, isl version isl-0.19-GMP
 
@@ -232,17 +232,17 @@ GNU C++14 (GCC) version 7.3-win32 20180312 (x86_64-w64-mingw32)
 
 GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
 Compiler executable checksum: 4b3eba7a5aeeee1b3a6a34905936aaba
-COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/bin/x86_64-w64-mingw32-as -v -o CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj /tmp/ccZGrBBv.s
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/bin/x86_64-w64-mingw32-as -v -o CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj /tmp/ccz2UPXD.s
 GNU assembler version 2.30 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.30
 COMPILER_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/bin/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
-Linking CXX executable cmTC_f9032.exe
-/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f9032.dir/link.txt --verbose=1
-/usr/local/bin/cmake -E rm -f CMakeFiles/cmTC_f9032.dir/objects.a
-/usr/bin/x86_64-w64-mingw32-ar cr CMakeFiles/cmTC_f9032.dir/objects.a @CMakeFiles/cmTC_f9032.dir/objects1.rsp
-/usr/bin/x86_64-w64-mingw32-g++  -v -Wl,--whole-archive CMakeFiles/cmTC_f9032.dir/objects.a -Wl,--no-whole-archive -o cmTC_f9032.exe -Wl,--out-implib,libcmTC_f9032.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+Linking CXX executable cmTC_867b9.exe
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_867b9.dir/link.txt --verbose=1
+/usr/local/bin/cmake -E rm -f CMakeFiles/cmTC_867b9.dir/objects.a
+/usr/bin/x86_64-w64-mingw32-ar cr CMakeFiles/cmTC_867b9.dir/objects.a @CMakeFiles/cmTC_867b9.dir/objects1.rsp
+/usr/bin/x86_64-w64-mingw32-g++  -v -Wl,--whole-archive CMakeFiles/cmTC_867b9.dir/objects.a -Wl,--no-whole-archive -o cmTC_867b9.exe -Wl,--out-implib,libcmTC_867b9.dll.a -Wl,--major-image-version,0,--minor-image-version,0 
 Using built-in specs.
 COLLECT_GCC=/usr/bin/x86_64-w64-mingw32-g++
 COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/lto-wrapper
@@ -252,9 +252,9 @@ Thread model: win32
 gcc version 7.3-win32 20180312 (GCC) 
 COMPILER_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/bin/
 LIBRARY_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_f9032.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
- /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2 -m i386pep -Bdynamic -o cmTC_f9032.exe /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32 -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib --whole-archive CMakeFiles/cmTC_f9032.dir/objects.a --no-whole-archive --out-implib libcmTC_f9032.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtend.o
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_f9032.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_867b9.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2 -m i386pep -Bdynamic -o cmTC_867b9.exe /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32 -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib --whole-archive CMakeFiles/cmTC_867b9.dir/objects.a --no-whole-archive --out-implib libcmTC_867b9.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtend.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_867b9.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
 make[1]: Leaving directory '/home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp'
 
 
@@ -282,18 +282,18 @@ Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(x86_64-w64-mingw32-ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command(s):/usr/bin/make cmTC_f9032/fast && /usr/bin/make  -f CMakeFiles/cmTC_f9032.dir/build.make CMakeFiles/cmTC_f9032.dir/build]
+  ignore line: [Run Build Command(s):/usr/bin/make cmTC_867b9/fast && /usr/bin/make  -f CMakeFiles/cmTC_867b9.dir/build.make CMakeFiles/cmTC_867b9.dir/build]
   ignore line: [make[1]: Entering directory '/home/truth/Desktop/hai/Unix-FileSystem/build/CMakeFiles/CMakeTmp']
-  ignore line: [Building CXX object CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj]
-  ignore line: [/usr/bin/x86_64-w64-mingw32-g++   -v -o CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj -c /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Building CXX object CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj]
+  ignore line: [/usr/bin/x86_64-w64-mingw32-g++   -v -o CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj -c /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/x86_64-w64-mingw32-g++]
   ignore line: [Target: x86_64-w64-mingw32]
   ignore line: [Configured with: ../../src/configure --build=x86_64-linux-gnu --prefix=/usr --includedir='/usr/include' --mandir='/usr/share/man' --infodir='/usr/share/info' --sysconfdir=/etc --localstatedir=/var --disable-silent-rules --libdir='/usr/lib/x86_64-linux-gnu' --libexecdir='/usr/lib/x86_64-linux-gnu' --disable-maintainer-mode --disable-dependency-tracking --prefix=/usr --enable-shared --enable-static --disable-multilib --with-system-zlib --libexecdir=/usr/lib --without-included-gettext --libdir=/usr/lib --enable-libstdcxx-time=yes --with-tune=generic --with-headers=/usr/x86_64-w64-mingw32/include --enable-version-specific-runtime-libs --enable-fully-dynamic-string --enable-libgomp --enable-languages=c,c++,fortran,objc,obj-c++,ada --enable-lto --with-plugin-ld --enable-threads=win32 --program-suffix=-win32 --program-prefix=x86_64-w64-mingw32- --target=x86_64-w64-mingw32 --with-as=/usr/bin/x86_64-w64-mingw32-as --with-ld=/usr/bin/x86_64-w64-mingw32-ld --enable-libatomic --enable-libstdcxx-filesystem-ts=yes]
   ignore line: [Thread model: win32]
   ignore line: [gcc version 7.3-win32 20180312 (GCC) ]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-  ignore line: [ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/cc1plus -quiet -v -U_REENTRANT /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj -version -o /tmp/ccZGrBBv.s]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  ignore line: [ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/cc1plus -quiet -v -U_REENTRANT /usr/local/share/cmake-3.18/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -mtune=generic -march=x86-64 -auxbase-strip CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj -version -o /tmp/ccz2UPXD.s]
   ignore line: [GNU C++14 (GCC) version 7.3-win32 20180312 (x86_64-w64-mingw32)]
   ignore line: [	compiled by GNU C version 7.3.0  GMP version 6.1.2  MPFR version 4.0.1  MPC version 1.1.0  isl version isl-0.19-GMP]
   ignore line: []
@@ -313,17 +313,17 @@ Parsed CXX implicit link information from above output:
   ignore line: []
   ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
   ignore line: [Compiler executable checksum: 4b3eba7a5aeeee1b3a6a34905936aaba]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-  ignore line: [ /usr/bin/x86_64-w64-mingw32-as -v -o CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj /tmp/ccZGrBBv.s]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  ignore line: [ /usr/bin/x86_64-w64-mingw32-as -v -o CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj /tmp/ccz2UPXD.s]
   ignore line: [GNU assembler version 2.30 (x86_64-w64-mingw32) using BFD version (GNU Binutils) 2.30]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/bin/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_f9032.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-  ignore line: [Linking CXX executable cmTC_f9032.exe]
-  ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f9032.dir/link.txt --verbose=1]
-  ignore line: [/usr/local/bin/cmake -E rm -f CMakeFiles/cmTC_f9032.dir/objects.a]
-  ignore line: [/usr/bin/x86_64-w64-mingw32-ar cr CMakeFiles/cmTC_f9032.dir/objects.a @CMakeFiles/cmTC_f9032.dir/objects1.rsp]
-  ignore line: [/usr/bin/x86_64-w64-mingw32-g++  -v -Wl --whole-archive CMakeFiles/cmTC_f9032.dir/objects.a -Wl --no-whole-archive -o cmTC_f9032.exe -Wl --out-implib libcmTC_f9032.dll.a -Wl --major-image-version 0 --minor-image-version 0 ]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_867b9.dir/CMakeCXXCompilerABI.cpp.obj' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  ignore line: [Linking CXX executable cmTC_867b9.exe]
+  ignore line: [/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_867b9.dir/link.txt --verbose=1]
+  ignore line: [/usr/local/bin/cmake -E rm -f CMakeFiles/cmTC_867b9.dir/objects.a]
+  ignore line: [/usr/bin/x86_64-w64-mingw32-ar cr CMakeFiles/cmTC_867b9.dir/objects.a @CMakeFiles/cmTC_867b9.dir/objects1.rsp]
+  ignore line: [/usr/bin/x86_64-w64-mingw32-g++  -v -Wl --whole-archive CMakeFiles/cmTC_867b9.dir/objects.a -Wl --no-whole-archive -o cmTC_867b9.exe -Wl --out-implib libcmTC_867b9.dll.a -Wl --major-image-version 0 --minor-image-version 0 ]
   ignore line: [Using built-in specs.]
   ignore line: [COLLECT_GCC=/usr/bin/x86_64-w64-mingw32-g++]
   ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/lto-wrapper]
@@ -333,23 +333,23 @@ Parsed CXX implicit link information from above output:
   ignore line: [gcc version 7.3-win32 20180312 (GCC) ]
   ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/bin/]
   ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/:/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_f9032.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
-  link line: [ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2 -m i386pep -Bdynamic -o cmTC_f9032.exe /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32 -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib --whole-archive CMakeFiles/cmTC_f9032.dir/objects.a --no-whole-archive --out-implib libcmTC_f9032.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtend.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_867b9.exe' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2 -m i386pep -Bdynamic -o cmTC_867b9.exe /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32 -L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib --whole-archive CMakeFiles/cmTC_867b9.dir/objects.a --no-whole-archive --out-implib libcmTC_867b9.dll.a --major-image-version 0 --minor-image-version 0 -lstdc++ -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 -lgcc_s -lgcc -lmoldname -lmingwex -lmsvcrt /usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtend.o]
     arg [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/collect2] ==> ignore
     arg [-m] ==> ignore
     arg [i386pep] ==> ignore
     arg [-Bdynamic] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_f9032.exe] ==> ignore
+    arg [cmTC_867b9.exe] ==> ignore
     arg [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib/crt2.o] ==> ignore
     arg [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/crtbegin.o] ==> ignore
     arg [-L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32] ==> dir [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32]
     arg [-L/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib] ==> dir [/usr/lib/gcc/x86_64-w64-mingw32/7.3-win32/../../../../x86_64-w64-mingw32/lib]
     arg [--whole-archive] ==> ignore
-    arg [CMakeFiles/cmTC_f9032.dir/objects.a] ==> ignore
+    arg [CMakeFiles/cmTC_867b9.dir/objects.a] ==> ignore
     arg [--no-whole-archive] ==> ignore
     arg [--out-implib] ==> ignore
-    arg [libcmTC_f9032.dll.a] ==> ignore
+    arg [libcmTC_867b9.dll.a] ==> ignore
     arg [--major-image-version] ==> ignore
     arg [0] ==> ignore
     arg [--minor-image-version] ==> ignore

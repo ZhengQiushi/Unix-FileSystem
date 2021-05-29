@@ -248,6 +248,14 @@ Logcat.h
 Buf.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/Buf.h
 
+/home/truth/Desktop/hai/Unix-FileSystem/src/DiskDriver.cpp
+DiskDriver.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/DiskDriver.h
+Logcat.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Logcat.h
+DiskBlock.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/DiskBlock.h
+
 /home/truth/Desktop/hai/Unix-FileSystem/src/FileSystem.cpp
 Ext2.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/Ext2.h
@@ -279,6 +287,18 @@ Shell.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/Shell.h
 Kernel.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.h
+
+/home/truth/Desktop/hai/Unix-FileSystem/src/Tools.cpp
+Logcat.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Logcat.h
+Bitmap.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Bitmap.h
+cmath
+-
+TimeHelper.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/TimeHelper.h
+ctime
+-
 
 /home/truth/Desktop/hai/Unix-FileSystem/src/VFS.cpp
 VFS.h
