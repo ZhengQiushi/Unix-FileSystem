@@ -26,7 +26,6 @@ CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o
  ../include/SuperBlockCache.h
  ../include/User.h
  ../include/VFS.h
- ../include/VirtualProcess.h
  ../include/define.h
  /home/truth/Desktop/hai/Unix-FileSystem/src/BufferCache.cpp
 CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.o
@@ -60,7 +59,6 @@ CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o
  ../include/TimeHelper.h
  ../include/User.h
  ../include/VFS.h
- ../include/VirtualProcess.h
  ../include/define.h
  /home/truth/Desktop/hai/Unix-FileSystem/src/FileSystem.cpp
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o
@@ -85,7 +83,6 @@ CMakeFiles/my_VFS.dir/src/Kernel.cpp.o
  ../include/SuperBlockCache.h
  ../include/User.h
  ../include/VFS.h
- ../include/VirtualProcess.h
  ../include/define.h
  /home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.cpp
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o
@@ -112,7 +109,6 @@ CMakeFiles/my_VFS.dir/src/Shell.cpp.o
  ../include/SuperBlockCache.h
  ../include/User.h
  ../include/VFS.h
- ../include/VirtualProcess.h
  ../include/define.h
  /home/truth/Desktop/hai/Unix-FileSystem/src/Shell.cpp
 CMakeFiles/my_VFS.dir/src/Tools.cpp.o
@@ -144,6 +140,5 @@ CMakeFiles/my_VFS.dir/src/VFS.cpp.o
  ../include/SuperBlockCache.h
  ../include/User.h
  ../include/VFS.h
- ../include/VirtualProcess.h
  ../include/define.h
  /home/truth/Desktop/hai/Unix-FileSystem/src/VFS.cpp

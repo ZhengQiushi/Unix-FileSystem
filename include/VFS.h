@@ -14,7 +14,10 @@ private:
   InodeCache *inodeCache;           //VFS中内存Inode缓存
   DirectoryCache *directoryCache;   //与vfs绑定的目录项缓存
 
+
 public:
+
+
   ~VFS();
   VFS();
 
@@ -40,6 +43,7 @@ public:
   void bindInodeCache(InodeCache *inodeCache);
   void bindDirectoryInodeCache(DirectoryCache *directoryCache);
   bool isMounted();
+  InodeCache* getInodeCache();
   //Path convertPathToAbsolute(Path &path);
 };
 

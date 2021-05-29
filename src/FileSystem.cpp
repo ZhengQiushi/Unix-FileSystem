@@ -1,6 +1,6 @@
 #include "Ext2.h"
 #include "Kernel.h"
-#include "VirtualProcess.h"
+
 #include "TimeHelper.h"
 #include "DiskInode.h"
 #include "Path.h"
@@ -278,7 +278,7 @@ void Ext2::format()
     //②构造DiskInode,修改InodePool,将InodePool写入磁盘img
     InodePool tempInodePool;
     int tempAddr[10] = {4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    DiskInode tempDiskInode = DiskInode(Inode::IFDIR, 1, VirtualProcess::Instance()->Getuid(), VirtualProcess::Instance()->Getgid(), 6 * sizeof(DirectoryEntry), tempAddr, TimeHelper::getCurTime(), TimeHelper::getCurTime());
+    DiskInode tempDiskInode = DiskInode(Inode::IFDIR, 1, 1, 1, 6 * sizeof(DirectoryEntry), tempAddr, TimeHelper::getCurTime(), TimeHelper::getCurTime());
     tempInodePool.iupdate(1, tempDiskInode);
     //1#inode，是根目录
     tempDiskInode.d_addr[0] = 5;
@@ -428,7 +428,7 @@ int Ext2::unregisterFs()
 
 void Ext2::loadSuperBlock(SuperBlock &superBlock)
 {
-    //User &u = VirtualProcess::Instance()->getUser();
+    //User &u = Kernel::Instance()->getUser();
     Buf *pBuf;
     pBuf = p_bufferCache->Bread(0);
     memcpy(&superBlock, pBuf->b_addr, DISK_BLOCK_SIZE);
@@ -505,7 +505,7 @@ InodeId Ext2::locateDir(Path &path)
     }
     else //如果是相对路径，从当前inode号开始搜索
     {
-        dirInode = VirtualProcess::Instance()->getUser().curDirInodeId;
+        dirInode = Kernel::instance()->getUser().curDirInodeId;
     }
 
     for (int i = 0; i < path.level - 1; i++)
@@ -529,6 +529,8 @@ InodeId Ext2::getInodeIdInDir(InodeId dirInodeId, FileName fileName)
     //Step1:先根据目录inode号dirInodeId获得目录inode对象
     Inode *p_dirInode = Kernel::instance()->getInodeCache().getInodeByID(dirInodeId);
     //TODO 错误处理
+
+    
     //Step2：读取该inode指示的数据块
     int blkno = p_dirInode->Bmap(0); //Bmap查物理块号
     Buf *pBuf;

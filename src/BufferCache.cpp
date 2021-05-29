@@ -1,6 +1,6 @@
 #include "BufferCache.h"
 #include "Kernel.h"
-#include "VirtualProcess.h"
+
 #include "Logcat.h"
 #include "Buf.h"
 // 缓存控制块目前只有结构，没有任何方法。
@@ -146,7 +146,7 @@ Buf *BufferCache::GetBlk(int blkno)
 {
     Buf *bp;
     //Devtab *dp;
-    User &u = VirtualProcess::Instance()->getUser();
+    User &u = Kernel::instance()->getUser();
 
     /* 
 	 * 如果设备队列中已经存在相应缓存，则返回该缓存；

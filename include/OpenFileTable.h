@@ -21,7 +21,7 @@ public:
     // * @comment 根据用户系统调用提供的文件描述符参数fd，
     // * 找到对应的打开文件控制块File结构
     // */
-    // File* GetF(int fd);
+    File* GetF(int fd);
     /* 
 	 * @comment 在系统打开文件表中分配一个空闲的File结构
 	 */

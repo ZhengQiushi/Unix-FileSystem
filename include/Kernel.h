@@ -9,6 +9,7 @@
 #include "SuperBlockCache.h"
 #include "File.h"
 #include "OpenFileTable.h"
+#include "User.h"
 
 class Kernel
 {
@@ -22,6 +23,7 @@ private:
   DiskDriver diskDriver;
   Ext2 ext2;
   VFS vfs;
+  User my_user;
 
 public:
   OpenFileTable m_OpenFileTable;
@@ -32,6 +34,8 @@ public:
   BufferCache &getBufferCache();
   SuperBlockCache &getSuperBlockCache();
   InodeCache &getInodeCache();
+  User &getUser();
+
 };
 
 #endif

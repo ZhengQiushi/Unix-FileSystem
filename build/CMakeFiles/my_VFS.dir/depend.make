@@ -25,7 +25,6 @@ CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/SuperBlock.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/SuperBlockCache.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/User.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/VFS.h
-CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/VirtualProcess.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../src/BufferCache.cpp
 
@@ -59,7 +58,6 @@ CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/SuperBlockCache.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/TimeHelper.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/User.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/VFS.h
-CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/VirtualProcess.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../src/FileSystem.cpp
 
@@ -84,7 +82,6 @@ CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/SuperBlock.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/SuperBlockCache.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/User.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/VFS.h
-CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/VirtualProcess.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../src/Kernel.cpp
 
@@ -111,7 +108,6 @@ CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/SuperBlock.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/SuperBlockCache.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/User.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/VFS.h
-CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/VirtualProcess.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../src/Shell.cpp
 
@@ -143,7 +139,6 @@ CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/SuperBlock.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/SuperBlockCache.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/User.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/VFS.h
-CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/VirtualProcess.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../src/VFS.cpp
 

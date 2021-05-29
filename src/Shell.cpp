@@ -1,5 +1,5 @@
 #include "Shell.h"
-#include "VirtualProcess.h"
+
 #include "Kernel.h"
 
 void Shell::help()
@@ -10,7 +10,72 @@ void Shell::help()
 
 int Shell::readUserInput()
 {
+    mount();
     Logcat::log("建议先输入help指令，查看使用说明");
+
+    static int auto_test = 0;
+    
+    char test[50][100] = { " ",
+                         "touch a",
+                         "touch b", 
+                         "ls",
+                         "fopen a -wr", 
+                         "fopen b -wr",
+                         "fwrite 0 12345678901234567890123456789012345678901234567890",
+                         "fclose 0", 
+                         "fopen a -wr",
+
+                        /** 测试读取到终端  **/
+                        //  "touch a",
+                        //  "fopen a -wr",
+                        //  "fwrite 0 12345678901234567890123456789012345678901234567890",
+                        //  "fclose 0",
+                        //  "fopen a -wr",
+                        //  "fread 0 11", // 测试读出效果
+                        //  "fread 0 3",
+                        //  "fread 0 -f",
+
+                        /** 测试读取到短文件  **/
+                        //  "touch a",
+                        //  //"fopen a -wr",
+                        //  "fwrite 0 12345678901234567890123456789012345678901234567890",
+                        //  "fclose 0",
+                        //  "fopen a -wr",
+                        //  "fread 0 -o a1.txt 11",    // read fd -o path size/-f 输出到外面
+                        //  "fread 0 -o a2.txt 3",
+                        //  "fread 0 -o a3.txt -f",
+
+                        // 读取到长文件
+                        //  "fwrite 1 -d README.md -f",
+                        //  "fclose 1",
+                        //  "fopen b -wr",
+                        //  "fread 1 8000",
+                        //  "fread 1 -o b2.txt 8000",
+                         
+                        //  "fread 1 8000",
+                        //  "fread 1 -o b3.txt -f",
+
+                         // "fread 1 -o b1.txt -f"
+
+
+                        /** 测试seek  **/
+                        //  "touch a",
+                        //  //"fopen a -wr",
+                        //  "fwrite 0 12345678901234567890123456789012345678901234567890",
+                        //  "fclose 0",
+                        //  "fopen a -wr",
+                          "fread 0 4",    // read fd -o path size/-f 输出到外面
+                          "fseek 0 -4",
+                          "fwrite 0 12312321",
+                          "fseek 0 -123",
+                          "fread 0 -f",
+                        //  "fread 0 -o a3.txt -f",
+
+
+                         };
+
+    // strcat(tty_buffer, test);
+    
     while (true)
     {
         //Step0:
@@ -21,8 +86,14 @@ int Shell::readUserInput()
         //TODO
 
         //Step1:获取用户输入放到缓冲区
-
-        std::cin.getline(tty_buffer, MAX_CMD_LEN, '\n');
+        if(auto_test ++ < 16){
+            strcpy(tty_buffer, test[auto_test]);
+            printf("%s\n", tty_buffer);
+        }
+        else{
+            std::cin.getline(tty_buffer, MAX_CMD_LEN, '\n');
+        }
+        
 
         //Step2:先将tab转换为space
         for (char *checker = strrchr(tty_buffer, '\t'); checker != NULL; checker = strrchr(checker, '\t'))
@@ -112,6 +183,25 @@ void Shell::parseCmd()
     case WITHDRAW:
         withdraw(); //OKKK
         break;
+    case FOPEN: 
+        open();
+        break;
+    case FCREAT: 
+        creat();
+        break;
+    case FREAD:
+        read();
+        break;
+    case FWRITE:
+        write();
+        break;
+    case FCLOSE:
+        close();
+        break;
+    case FSEEK:
+        lseek();
+        break;
+    
     default:
         Logcat::log("CMD NOT SUPPORTED!\n");
         break;
@@ -143,6 +233,20 @@ INSTRUCT Shell::getInstType()
         }
     }
     return ERROR_INST;
+}
+
+int Shell::FileMode(std::string mode) {
+    int md = 0;
+    if (mode.find("-r") != std::string::npos) {
+        md |= File::FREAD;
+    }
+    if (mode.find("-w") != std::string::npos) {
+        md |= File::FWRITE;
+    }
+    if (mode.find("-rw") != std::string::npos) {
+        md |= (File::FREAD | File::FWRITE);
+    }
+    return md;
 }
 
 /**
@@ -341,7 +445,7 @@ void Shell::ls()
     if (!strcmp(getParam(1), ""))
     {
         //不带参数的ls，以curDir为默认参数
-        bounded_VFS->ls(VirtualProcess::Instance()->getUser().curDirInodeId);
+        bounded_VFS->ls(Kernel::instance()->getUser().curDirInodeId);
     }
     else
     {
@@ -430,6 +534,9 @@ void Shell::withdraw()
         {
             //int blkCount = 0;
             int writesize = bounded_VFS->read(fd_src, (u_int8_t *)&tempBuf, DISK_BLOCK_SIZE);
+            //? 为什么最后一个是 \00
+            if(writesize < DISK_BLOCK_SIZE)
+                writesize -= 1;
             fwrite(&tempBuf, 1, writesize, fd_des);
         }
         //Step4：关闭文件
@@ -463,48 +570,375 @@ void Shell::setVFS(VFS *vfs)
 
 //隐式调用
 
-// void Shell::creat()
-// {
-//     Logcat::devlog(TAG, "creat EXEC");
-// }
+void Shell::creat()
+{
+    Logcat::devlog(TAG, "creat EXEC");
+}
 
 /**
  * 临时的，不应该是一个用户接口
  */
-// void Shell::open()
-// {
-//     Path path(getParam(1));
-//     bounded_VFS->open(path, File::FREAD);
-//     Logcat::log(TAG, "open EXEC");
-// }
+void Shell::open()
+{
+    /*
+     * brief@ fopen filename rights...
+     */
+
+    if (getParamAmount() == 3)
+    {
+        int md = FileMode(getParam(2));
+        if (md == 0) {
+            Logcat::log(TAG, "this mode is undefined !");
+            return;
+        }
+
+        //Step1：打开内部文件
+        Path srcPath(getParam(1));
+        FileFd fd_des = bounded_VFS->open(srcPath, md);
+
+        if (fd_des < 0)
+        {
+            Logcat::log("文件打开失败！");
+            return;
+        }
+        printf("成功打开文件，fd = %d\n", fd_des);
+    }
+    else
+    {
+        Logcat::log("ERROR!store命令参数个数错误");
+    }
+
+}
 /**
  * 临时的，不应该是一个用户接口
  */
-// void Shell::close()
-// {
-//     Logcat::log(TAG, "close EXEC");
-// }
+void Shell::close()
+{
+    /*
+     * brief@ fclose filename rights...
+     */
+    if (getParamAmount() == 2)
+    {
+        User& u = Kernel::instance()->getUser();
+        //Step1
+        FileFd fd_src = std::stoi(getParam(1));
+        /* 获取打开文件控制块File结构 */
+        File* pFile = u.u_ofiles.GetF(fd_src);
+        if (NULL == pFile) {
+            Logcat::log("不存在这个fd");
+            return;
+        }
+        printf("成功关闭fd = %d\n", fd_src);
+        bounded_VFS->close(fd_src);
+    }
+    else
+    {
+        Logcat::log("ERROR!fclose命令参数个数错误");
+    }
+}
 
 /**
  * 临时的，不应该是一个用户接口
  */
-// void Shell::read()
-// {
-//     Logcat::log(TAG, "read EXEC");
-// }
+void Shell::read(){
+    /*
+     * brief@ read fd size/-f
+     *        read fd -o path size/-f 输出到外面
+     */
+    if (getParamAmount() == 3 || getParamAmount() == 5)
+    {
+        InodeId desInodeId;
+        User& u = Kernel::instance()->getUser();
+
+        if(!isdigit(std::string(getParam(1)).front())){
+            Logcat::log("[ERROR]fd为非法输入");
+            return;
+        }
+        FileFd fd_src = std::stoi(getParam(1));
+        File* pFile = u.u_ofiles.GetF(fd_src);
+
+        if (NULL == pFile) {
+            Logcat::log("[ERROR]不存在这个fd");
+            return;
+        }
+
+        Inode *p_inode = bounded_VFS->getInodeCache()->getInodeByID(pFile->f_inode_id); //TODO错误处理?
+
+        int& file_size = p_inode->i_size;
+        int& file_offset = pFile->f_offset;
+        int cur_read_num = 0;
+        DiskBlock tempBuf;
+        int read_limit = INT32_MAX;
+
+        if(getParamAmount() == 5){
+            
+
+            if(strcmp(getParam(2), "-o") != 0){
+                //
+                Logcat::log("[ERROR]第二个参数应该为-o");
+                return;
+            }
+            //Step1：创建文件（如果有同名的返回失败）
+            FILE *fd_des = fopen(getParam(3), "wb");
+            if (fd_des == NULL){
+                Logcat::log("[ERROR]目的文件创建失败！");
+                return;
+            }
+
+            if(strcmp(getParam(4), "-f") == 0){
+                //Step3：写入文件
+                DiskBlock tempBuf;
+                while (!bounded_VFS->eof(fd_src))
+                {
+                    //int blkCount = 0;
+                    int writesize = bounded_VFS->read(fd_src, (u_int8_t *)&tempBuf, DISK_BLOCK_SIZE);
+                    
+                    //? 为什么最后一个是 \00
+                    if(writesize < DISK_BLOCK_SIZE)
+                        writesize -= 1;
+                    cur_read_num += writesize;
+                    fwrite(&tempBuf, 1, writesize, fd_des);
+                }
+            }
+            else{
+                if(!isdigit(std::string(getParam(4)).front())){
+                    Logcat::log("[ERROR]size为非法输入");
+                    return;
+                }
+                read_limit = std::stoi(getParam(4));
+
+                while (!bounded_VFS->eof(fd_src)){
+
+                    int readable_size = std::min(std::min(file_size - file_offset, read_limit - cur_read_num), DISK_BLOCK_SIZE);//
+                    // 读不到了
+                    //printf("readable_size %d %d\n",readable_size, file_offset );
+                    if(readable_size <= 0){
+                        break;
+                    }
+
+                    int real_read_num = bounded_VFS->read(fd_src, (u_int8_t *)&tempBuf, readable_size);
+                    tempBuf.content[real_read_num] = (u_int8_t)'\0';
+
+                    fwrite(&tempBuf, 1, readable_size, fd_des);
+                    cur_read_num += readable_size;
+                }
+                
+ 
+            }
+            printf("[INFO] 成功读出%d bytes,内容存在 '%s' 中\n", cur_read_num, getParam(3));
+            fclose(fd_des);
+
+        }
+        
+        else if(getParamAmount() == 3){
+            if(strcmp(getParam(2), "-f") != 0){
+                if(!isdigit(std::string(getParam(2)).front())){
+                    Logcat::log("[ERROR]size为非法输入");
+                    return;
+                }
+                read_limit = std::stoi(getParam(2));
+            }
+
+            std::string res_read = "";
+            while (!bounded_VFS->eof(fd_src)){
+                
+                int readable_size = std::min(std::min(file_size - file_offset, read_limit - cur_read_num), DISK_BLOCK_SIZE);//
+                // 读不到了
+                if(readable_size <= 0){
+                    break;
+                }
+
+                int real_read_num = bounded_VFS->read(fd_src, (u_int8_t *)&tempBuf, readable_size);
+
+                tempBuf.content[real_read_num] = (u_int8_t)'\0';
+
+                res_read += std::string((char *)&tempBuf);
+                cur_read_num += readable_size;
+            }
+            char s[1];
+            printf("[INFO] 成功读出%d bytes,内容为: %s\n", cur_read_num, res_read.data()); // s);//
+        }
+        //WITHDRAW的步骤
+        else{
+            Logcat::log("ERROR!store命令参数个数错误");
+        }
+    }
+    else
+    {
+        Logcat::log("ERROR!store命令参数个数错误");
+    }
+
+    Logcat::log(TAG, "read EXEC");
+}
 
 /**
  * 临时的，不应该是一个用户接口
  */
-// void Shell::write()
-// {
-//     Logcat::log(TAG, "write EXEC");
-// }
+void Shell::write()
+{
+    /*
+     * brief@ fwrite fd string....
+     *        fwrite fd -d pathname size/-f  外部文件写入！
+     * 
+     */
+
+    int cur_arg_num = getParamAmount();
+
+    if (cur_arg_num == 3 || cur_arg_num == 5)
+    {
+        if(!isdigit(std::string(getParam(1)).front())){
+            Logcat::log("[ERROR]fd为非法输入");
+            return;
+        }
+        User& u = Kernel::instance()->getUser();
+        //Step1
+
+        FileFd fd_des = std::stoi(getParam(1));
+        /* 获取打开文件控制块File结构 */
+        File* pFile = u.u_ofiles.GetF(fd_des);
+
+        Inode *p_inode = bounded_VFS->getInodeCache()->getInodeByID(pFile->f_inode_id); //TODO错误处理?
+
+        int ori_file_size = p_inode->i_size;
+        int file_offset = pFile->f_offset;
+
+        if (NULL == pFile) {
+            Logcat::log("[ERROR]不存在这个fd");
+            return;
+        }
+
+        if(pFile->f_flag < File::FWRITE){
+            Logcat::log("[ERROR]没有写的权利");
+            return;
+        }
+        //
+        InodeId desInodeId = pFile->f_inode_id;
+
+        DiskBlock tempBuf;
+        int file_size = 0;
+
+        if(cur_arg_num == 3){
+            // 从参数中写入
+            std::string input =  getParam(2);
+            int i;
+            for(i = 0 ; i + DISK_BLOCK_SIZE < input.length(); i += DISK_BLOCK_SIZE){
+                memcpy(&tempBuf, input.data() + i, DISK_BLOCK_SIZE);
+                bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, DISK_BLOCK_SIZE);
+                file_size += DISK_BLOCK_SIZE;
+            }
+            int last_readsize = input.length() - i;
+            memcpy(&tempBuf, input.data() + i, last_readsize);
+
+            bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, last_readsize);
+            file_size += last_readsize;
+        }
+        else if(cur_arg_num == 5 && strcmp(getParam(2), "-d") == 0){
+
+            FILE *fd_src = fopen(getParam(3), "rb");
+            if (fd_src == NULL){
+                Logcat::log("[ERROR]不存在的外部文件");
+                return;
+            }
+            // 从文件中写入
+            // 默认是全部写入
+            int file_size_limit = INT32_MAX;
+
+            //printf("hhhh %s/n", getParam(3));
+
+            if(strcmp(getParam(4),"-f") != 0){
+                //给定长度
+                file_size_limit = std::stoi(getParam(4));
+            }
+
+            while (!feof(fd_src)){
+                //每次可以读入的量
+                int readsize = fread(&tempBuf, 1, DISK_BLOCK_SIZE, fd_src);
+                tempBuf.content[readsize] = '\0';
+                file_size += readsize;
+
+                if(file_size >= file_size_limit){
+                    int cur_readsize = file_size_limit - (file_size - readsize);
+                    file_size = file_size_limit;
+                    bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, cur_readsize);
+                    break;
+                }
+                else{
+                    bounded_VFS->write(fd_des, (u_int8_t *)&tempBuf, readsize);
+                }
+            }
+        }
+        
+        else{
+            Logcat::log("[ERROR]不符合输入规则");
+            return;
+        }
+        Inode *p_desInode = Kernel::instance()->getInodeCache().getInodeByID(desInodeId);
+        p_desInode->i_size = std::max(file_offset + file_size, ori_file_size); //TODO这一块不太好，封装性差了点
+
+        printf("[INFO]成功写入 fd = %d %d bytes\n", fd_des, file_size);
+        //printf("%d %d\n", file_offset + file_size, ori_file_size);
+
+    }
+    else
+    {
+        Logcat::log("[ERROR]参数个数错误");
+    }
+}
 
 /**
  * 临时的，不应该是一个用户接口
  */
-// void Shell::lseek()
-// {
-//     Logcat::log(TAG, "lseek EXEC");
-// }
+void Shell::lseek()
+{
+    /*
+     * brief@ fseek fd offset
+     */
+
+    if(getParamAmount() == 3){
+
+
+        if(!isdigit(std::string(getParam(1)).front())){
+            Logcat::log("[ERROR]fd为非法输入");
+            return;
+        }
+        char front = std::string(getParam(2)).front();
+
+        if(!isdigit(front) && front != '-' ){
+            Logcat::log("[ERROR]offset为非法输入");
+            return;
+        }
+
+        User& u = Kernel::instance()->getUser();
+
+        FileFd fd_src = std::stoi(getParam(1));
+        int offset = std::stoi(getParam(2));
+
+        File* pFile = u.u_ofiles.GetF(fd_src);
+
+        if (NULL == pFile) {
+            Logcat::log("[ERROR]不存在这个fd");
+            return;
+        }
+        Inode *p_inode = bounded_VFS->getInodeCache()->getInodeByID(pFile->f_inode_id); //TODO错误处理?
+
+
+        int& file_size = p_inode->i_size;
+        int file_offset = pFile->f_offset;
+
+        if(0 <=file_offset + offset && file_offset + offset <= file_size){
+            pFile->f_offset = file_offset + offset;
+        }
+        else if(file_offset + offset < 0){
+            pFile->f_offset = 0;
+        }
+        else{
+            pFile->f_offset = file_size;
+        }
+        int real_offset = pFile->f_offset - file_offset; // (+往后，-往前)
+
+        printf("[INFO]成功seek %d bytes, 当前位置： %d \n", real_offset, pFile->f_offset);
+
+
+    }
+    
+}

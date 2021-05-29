@@ -13,7 +13,7 @@ public:
 	 * @comment:User类是从Unix v6++中copy过来的，只保留与文件相关的数据结构
 	 * 
 	 */
-	//User();
+	User();
 	/* 文件系统相关成员 */
 	Inode *u_cdir; /* 指向当前目录的Inode指针 */
 	Inode *u_pdir; /* 指向父目录的Inode指针 */
@@ -36,6 +36,9 @@ public:
 
 	/* 文件I/O操作 */
 	IOParameter u_IOParam; /* 记录当前读、写文件的偏移量，用户目标区域和剩余字节数参数 */
+
+
 };
+
 
 #endif

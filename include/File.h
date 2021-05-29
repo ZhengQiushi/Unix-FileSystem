@@ -29,7 +29,7 @@ public:
 	/* Member */
 	unsigned int f_flag; /* 对打开文件的读、写操作要求 */
 	int f_count;		 /* 当前引用该文件控制块的进程数量 */
-	//Inode*	f_inode;			/* 指向打开文件的内存Inode指针 */
+	Inode*	f_inode;			/* 指向打开文件的内存Inode指针 */
 	InodeId f_inode_id;
 	int f_offset; /* 文件读写位置指针 */
 };

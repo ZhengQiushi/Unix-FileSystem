@@ -30,6 +30,7 @@ public:
   char *getParam(int i);
   int getParamAmount();
   void setVFS(VFS *vfs);
+  int FileMode(std::string mode);
 
   //shell调用的功能
   //显式调用
@@ -51,12 +52,12 @@ public:
   void withdraw();
   void clear();
   //隐式调用
-  //void creat();
-  //void open();
-  //void close();
-  //void read();
-  //void write();
-  //void lseek();
+  void creat();
+  void open();
+  void close();
+  void read();
+  void write();
+  void lseek();
   //下面这几个func不应该是文件系统的东西，因为它们粗暴的连接了外部真实文件系统。
   //void writeExternalFileIntoIMG(const char *outsideFilePath);
   //void readIMGFileToExtern(const char *internalFilePath); //根据文件的类型

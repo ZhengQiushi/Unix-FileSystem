@@ -127,6 +127,8 @@ File.h
 ../include/File.h
 OpenFileTable.h
 ../include/OpenFileTable.h
+User.h
+../include/User.h
 
 ../include/Logcat.h
 define.h
@@ -188,12 +190,6 @@ InodeCache.h
 DirectoryCache.h
 ../include/DirectoryCache.h
 
-../include/VirtualProcess.h
-define.h
-../include/define.h
-User.h
-../include/User.h
-
 ../include/define.h
 iostream
 -
@@ -217,12 +213,12 @@ stdlib.h
 -
 time.h
 -
+string
+-
 
 /home/truth/Desktop/hai/Unix-FileSystem/src/Shell.cpp
 Shell.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/Shell.h
-VirtualProcess.h
-/home/truth/Desktop/hai/Unix-FileSystem/src/VirtualProcess.h
 Kernel.h
 /home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.h
 

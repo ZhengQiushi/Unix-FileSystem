@@ -13,6 +13,7 @@
 #include <sys/stat.h> //文件设置权限
 #include <stdlib.h>   //随机数
 #include <time.h>     //随机数种子要用
+#include <string>
 
 //const和define的区别》
 #define DISK_BLOCK_SIZE 4096                         //每个磁盘块的大小（字节）
@@ -68,9 +69,15 @@ enum INSTRUCT
     VERSION,
     STORE,
     WITHDRAW,
-    RMDIR
+    RMDIR,
+    FOPEN,
+    FCREAT,
+    FREAD,
+    FWRITE,
+    FCLOSE,
+    FSEEK
 };
-const int INST_NUM = 16;
+const int INST_NUM = 22;
 //NOTE 注意，如果改了上面的枚举类型，那么下面的这个数字也需要相应修改
 
 static const char *instructStr[]{
@@ -89,7 +96,14 @@ static const char *instructStr[]{
     "version",
     "store",
     "withdraw",
-    "rmdir"};
+    "rmdir",
+    "fopen",
+    "fcreat",
+    "fread",
+    "fwrite",
+    "fclose",
+    "fseek"
+    };
 enum FileType
 {
     NORMAL_FILE,

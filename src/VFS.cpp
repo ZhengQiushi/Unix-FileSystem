@@ -1,20 +1,20 @@
 #include "VFS.h"
 #include "Logcat.h"
 #include "Kernel.h"
-#include "VirtualProcess.h"
+
 #include "SuperBlockCache.h"
 #include "SuperBlock.h"
 #include "Kernel.h"
 #include "OpenFileTable.h"
 #include "Kernel.h"
-#include "VirtualProcess.h"
+
 #include "InodeCache.h"
 #include "Kernel.h"
 #include "Inode.h"
 #include "Kernel.h"
 
 #include "File.h"
-#include "VirtualProcess.h"
+
 #include "DirectoryEntry.h"
 #include "DirectoryCache.h"
 
@@ -77,7 +77,7 @@ OpenFiles::~OpenFiles()
 int OpenFiles::AllocFreeSlot()
 {
 	int i;
-	const User &u = VirtualProcess::Instance()->getUser();
+	const User &u = Kernel::instance()->getUser();
 
 	for (i = 0; i < OpenFiles::NOFILES; i++)
 	{
@@ -95,7 +95,7 @@ int OpenFiles::AllocFreeSlot()
 File *OpenFiles::GetF(int fd)
 {
 	File *pFile;
-	const User &u = VirtualProcess::Instance()->getUser();
+	const User &u = Kernel::instance()->getUser();
 
 	/* 如果打开文件描述符的值超出了范围 */
 	if (fd < 0 || fd >= OpenFiles::NOFILES)
@@ -607,6 +607,9 @@ VFS::VFS()
 VFS::~VFS()
 {
 }
+InodeCache* VFS::getInodeCache(){
+    return inodeCache;
+}
 
 void VFS::mount()
 {
@@ -717,11 +720,11 @@ InodeId VFS::createFile(const char *fileName)
     p_inode->i_size = 0;
     p_inode->i_mode = 0;
     p_inode->i_nlink = 1;
-    p_inode->i_uid = VirtualProcess::Instance()->Getuid();
-    p_inode->i_gid = VirtualProcess::Instance()->Getgid();
+    p_inode->i_uid = 1;//Kernel::instance()->Getuid();
+    p_inode->i_gid = 1;//Kernel::instance()->Getgid();
     p_inode->i_number = newFileInode;
     //Step2:在当前目录文件中写入新的目录项
-    Inode *p_dirInode = inodeCache->getInodeByID(VirtualProcess::Instance()->getUser().curDirInodeId);
+    Inode *p_dirInode = inodeCache->getInodeByID(Kernel::instance()->getUser().curDirInodeId);
     int blkno = p_dirInode->Bmap(0); //Bmap查物理块号
     Buf *pBuf;
     pBuf = Kernel::instance()->getBufferCache().Bread(blkno);
@@ -914,7 +917,7 @@ int VFS::mkDir(const char *dirName)
     *p_directoryEntry = tempDirectoryEntry;
     p_directoryEntry++;
     strcpy(tempDirectoryEntry.m_name, "..");
-    tempDirectoryEntry.m_ino = VirtualProcess::Instance()->getUser().curDirInodeId;
+    tempDirectoryEntry.m_ino = Kernel::instance()->getUser().curDirInodeId;
     *p_directoryEntry = tempDirectoryEntry;
     Kernel::instance()->getBufferCache().Bdwrite(pBuf);
     return OK;
@@ -933,7 +936,7 @@ int VFS::cd(const char *dirName)
     }
     else
     {
-        VirtualProcess::Instance()->getUser().curDirInodeId = targetInodeId;
+        Kernel::instance()->getUser().curDirInodeId = targetInodeId;
     }
 
     //df
@@ -1002,6 +1005,11 @@ FileFd VFS::open(Path path, int mode)
     FileFd fd;
     //Step1. 查找该文件的inode号
     InodeId openFileInodeId = p_ext2->locateInode(path);
+
+    // 返回-1 说明打开失败
+    if(openFileInodeId < 0){
+        return -1;
+    }
     //Step2. 检查打开合法性(省略了文件本身读写的限定)
     Inode *p_inodeOpenFile = inodeCache->getInodeByID(openFileInodeId);
     if (p_inodeOpenFile->i_mode & Inode::IFMT != 0)
@@ -1017,7 +1025,7 @@ FileFd VFS::open(Path path, int mode)
         return ERROR_OUTOF_OPENFILE;
     }
     //Step4. 建立钩连关系,u_ofile[]中的一项指向FILE
-    User &u = VirtualProcess::Instance()->getUser();
+    User &u = Kernel::instance()->getUser();
     /* 在进程打开文件描述符表中获取一个空闲项 */
     fd = u.u_ofiles.AllocFreeSlot();
     if (fd < 0) /* 如果寻找空闲项失败 */
@@ -1025,14 +1033,18 @@ FileFd VFS::open(Path path, int mode)
         return ERROR_OUTOF_FILEFD;
     }
     u.u_ofiles.SetF(fd, pFile);
+
     pFile->f_flag = mode & (File::FREAD | File::FWRITE);
+    
     pFile->f_inode_id = openFileInodeId; //NOTE 这里有没有问题？如果inode被替换出内存了呢？
     return fd;
 }
+
+
 int VFS::close(FileFd fd)
 {
 
-    User &u = VirtualProcess::Instance()->getUser();
+    User &u = Kernel::instance()->getUser();
 
     /* 获取打开文件控制块File结构 */
     File *pFile = u.u_ofiles.GetF(fd);
@@ -1056,7 +1068,7 @@ int VFS::read(int fd, u_int8_t *content, int length)
     //分析：length可能大于、小于、等于盘块的整数倍
     int readByteCount = 0;
 
-    User &u = VirtualProcess::Instance()->getUser();
+    User &u = Kernel::instance()->getUser();
     File *p_file = u.u_ofiles.GetF(fd);
     Inode *p_inode = inodeCache->getInodeByID(p_file->f_inode_id);
     p_inode->i_flag |= Inode::IUPD;
@@ -1102,8 +1114,10 @@ int VFS::write(int fd, u_int8_t *content, int length)
     //分析：length可能大于、小于、等于盘块的整数倍
     int writeByteCount = 0;
 
-    User &u = VirtualProcess::Instance()->getUser();
+    User &u = Kernel::instance()->getUser();
+
     File *p_file = u.u_ofiles.GetF(fd);
+
     Inode *p_inode = inodeCache->getInodeByID(p_file->f_inode_id);
     p_inode->i_flag |= Inode::IUPD;
 
@@ -1116,6 +1130,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
             printf("暂时停下");
         }
         BlkNum phyBlkno = p_inode->Bmap(logicBlkno);            //物理盘块号
+
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
         //NOTE:可能要先读后写！！！
         //当写不满一个盘块的时候，就要先读后写
@@ -1131,11 +1146,14 @@ int VFS::write(int fd, u_int8_t *content, int length)
             pBuf = Kernel::instance()->getBufferCache().Bread(phyBlkno);
         }
 
+        // printf("\n writeByteCount: %d\n", writeByteCount);
+        // printf("\n length: %d\n", length);
+
         u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - writeByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
-
+            //printf("%s \n", content);
             memcpy(p_buf_byte, content, length - writeByteCount);
             p_file->f_offset += length - writeByteCount;
             writeByteCount = length;
@@ -1146,7 +1164,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
             memcpy(p_buf_byte, content, DISK_BLOCK_SIZE - offsetInBlock + 1);
             p_file->f_offset += DISK_BLOCK_SIZE - offsetInBlock + 1;
             writeByteCount += DISK_BLOCK_SIZE - offsetInBlock + 1;
-
+            //length = 0; /// 单纯为了不死循环...
             //修改offset
         }
         Kernel::instance()->getBufferCache().Bdwrite(pBuf);
@@ -1160,7 +1178,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
  */
 bool VFS::eof(FileFd fd)
 {
-    User &u = VirtualProcess::Instance()->getUser();
+    User &u = Kernel::instance()->getUser();
     File *p_file = u.u_ofiles.GetF(fd);
     Inode *p_inode = inodeCache->getInodeByID(p_file->f_inode_id); //TODO错误处理?
     if (p_file->f_offset == p_inode->i_size + 1)
