@@ -98,7 +98,6 @@ void BufferCache::Bwrite(Buf *bp)
     {
         diskDriver->writeBlk(bp->b_blkno, *bp->b_addr);
         bp->b_flags |= Buf::B_DONE;
-        std::cout << bp->b_blkno << std::endl;
     }
 
     return;
@@ -176,6 +175,8 @@ Buf *BufferCache::GetBlk(int blkno)
     {
         this->Bwrite(bp);
     }
+
+
     /* 注意: 这里清除了所有其他位，只设了B_BUSY */
     bp->b_flags = Buf::B_BUSY; //若有延迟写bit，也一并消除了
     bp->b_blkno = blkno;
@@ -189,6 +190,7 @@ Buf *BufferCache::GetBlk(int blkno)
         this->bFreeList.b_forw = bp;
         bp->b_dev = devno;
     }
+    
 
     return bp;
 }

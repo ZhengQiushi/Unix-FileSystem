@@ -88,7 +88,7 @@ int Shell::readUserInput()
         //Step1:获取用户输入放到缓冲区
         if(auto_test ++ < 16){
             strcpy(tty_buffer, test[auto_test]);
-            printf("%s\n", tty_buffer);
+            //printf("%s\n", tty_buffer);
         }
         else{
             std::cin.getline(tty_buffer, MAX_CMD_LEN, '\n');
@@ -572,7 +572,38 @@ void Shell::setVFS(VFS *vfs)
 
 void Shell::creat()
 {
-    Logcat::devlog(TAG, "creat EXEC");
+    /*
+     * brief@ fcreat filename -w/r
+     */
+    if (getParamAmount() != 3)
+    {
+        Logcat::log("[ERROR]参数个数错误！");
+        return;
+    }
+    else
+    {
+        int md = FileMode(getParam(2));
+        if (md == 0) {
+            Logcat::log(TAG, "this mode is undefined !");
+            return;
+        }
+
+        if (0 > bounded_VFS->createFile(getParam(1)))
+        {
+            Logcat::log("[ERROR]存在同名文件，创建失败！");
+            return;
+        }
+        //Step1：打开内部文件
+        Path srcPath(getParam(1));
+        FileFd fd_des = bounded_VFS->open(srcPath, md);
+
+        if (fd_des < 0)
+        {
+            Logcat::log("[ERROR]文件打开失败！");
+            return;
+        }
+        printf("[INFO]成功创建并打开文件，fd = %d\n", fd_des);
+    }
 }
 
 /**
@@ -594,6 +625,19 @@ void Shell::open()
 
         //Step1：打开内部文件
         Path srcPath(getParam(1));
+
+        InodeId targetInodeId = bounded_VFS->getFilesystem()->locateInode(srcPath);
+        if (targetInodeId <= 0)
+        {
+            Logcat::log("[ERROR]无法打开不存在的文件");
+            return;
+        }
+        else if ((bounded_VFS->getInodeCache()->getInodeByID(targetInodeId)->i_mode & Inode::IFMT) == Inode::IFDIR)
+        {
+            Logcat::log("[ERROR]无法打开一个目录");
+            return;
+        }
+
         FileFd fd_des = bounded_VFS->open(srcPath, md);
 
         if (fd_des < 0)

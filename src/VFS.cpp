@@ -610,7 +610,9 @@ VFS::~VFS()
 InodeCache* VFS::getInodeCache(){
     return inodeCache;
 }
-
+Ext2* VFS::getFilesystem(){
+    return p_ext2;
+};  
 void VFS::mount()
 {
     /**
@@ -716,6 +718,7 @@ InodeId VFS::createFile(const char *fileName)
         return newFileInode;
     }
     Inode *p_inode = inodeCache->getInodeByID(newFileInode); //并将这个inode写入inodeCache
+
     p_inode->i_flag = Inode::IUPD | Inode::IACC;
     p_inode->i_size = 0;
     p_inode->i_mode = 0;
@@ -1124,6 +1127,8 @@ int VFS::write(int fd, u_int8_t *content, int length)
     Buf *pBuf;
     while (writeByteCount < length) //NOTE 这里是<还是<=再考虑一下
     {
+        
+
         BlkNum logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
         if (logicBlkno == 1030)
         {
@@ -1136,7 +1141,6 @@ int VFS::write(int fd, u_int8_t *content, int length)
         //当写不满一个盘块的时候，就要先读后写
         if (offsetInBlock == 0 && length - writeByteCount >= DISK_BLOCK_SIZE)
         {
-
             //这种情况不需要先读后写
             pBuf = Kernel::instance()->getBufferCache().GetBlk(phyBlkno);
         }
@@ -1146,14 +1150,12 @@ int VFS::write(int fd, u_int8_t *content, int length)
             pBuf = Kernel::instance()->getBufferCache().Bread(phyBlkno);
         }
 
-        // printf("\n writeByteCount: %d\n", writeByteCount);
-        // printf("\n length: %d\n", length);
+        
 
         u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - writeByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
-            //printf("%s \n", content);
             memcpy(p_buf_byte, content, length - writeByteCount);
             p_file->f_offset += length - writeByteCount;
             writeByteCount = length;

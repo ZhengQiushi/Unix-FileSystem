@@ -44,6 +44,7 @@ public:
   void bindDirectoryInodeCache(DirectoryCache *directoryCache);
   bool isMounted();
   InodeCache* getInodeCache();
+  Ext2 *getFilesystem();                
   //Path convertPathToAbsolute(Path &path);
 };
 
