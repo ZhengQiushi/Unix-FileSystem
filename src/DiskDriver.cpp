@@ -1,6 +1,6 @@
 #include "DiskDriver.h"
-#include "Logcat.h"
-#include "DiskBlock.h"
+#include "Tools.h"
+#include "DiskDriver.h"
 
 DiskDriver::DiskDriver()
 {
@@ -28,28 +28,25 @@ int DiskDriver::mount()
    DiskFd = open(DISK_IMG_FILEPATH, O_RDWR | O_CREAT, DEF_MODE);
    if (DiskFd == -1)
    {
-      Logcat::log(TAG, "Mount Disk Failed!");
-      exit(-1);
+      Logcat::log("[ERROR]镜像加载失败");
       retVal = -1;
+      exit(-1);
    }
-   else
-   {
-      Logcat::log(TAG, "Load Image File Success!");
-      //这里只是打开了镜像文件，后面还有一些要做的工作
-   }
+
 
    /**
     * 新创建的文件，需要做扩容操作，扩大到指定虚拟磁盘大小
     */
    if (lseek(DiskFd, 0, SEEK_END) < DISK_SIZE)
    {
+      Logcat::log("[INFO]您刚刚创建了一块新的镜像！");
       //说明是新创建的文件，需要改变文件的大小
       lseek(DiskFd, 0, SEEK_SET);
       ftruncate(DiskFd, DISK_SIZE);
       retVal = 1;
    }
-   else
-   {
+   else{
+      Logcat::log("[INFO]镜像加载成功");
       retVal = 0;
    }
 
@@ -61,13 +58,13 @@ int DiskDriver::mount()
    DiskMemAddr = (DiskBlock *)mmap(nullptr, DISK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, DiskFd, 0);
    if (DiskMemAddr == MAP_FAILED)
    {
-      Logcat::log(TAG, "Mmap失败！");
+      Logcat::log("[ERROR]镜像映射失败");
       exit(-1);
       retVal = -1;
    }
    else
    {
-      Logcat::log(TAG, "Mmap成功！");
+      Logcat::log("[INFO]镜像映射成功");
       isMounted = true;
    }
 
@@ -101,7 +98,6 @@ DiskBlock *DiskDriver::getBlk(int blockNum)
 }
 void DiskDriver::readBlk(int blockNum, DiskBlock *dst)
 {
-   //TODO read到哪里呢？
    memcpy(dst, DiskMemAddr + blockNum, DISK_BLOCK_SIZE);
 }
 void DiskDriver::writeBlk(int blockNum, const DiskBlock &blk)

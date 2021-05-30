@@ -1,7 +1,6 @@
 #include "Kernel.h"
-#include "User.h"
 
-#include "Path.h"
+#include "Tools.h"
 
 Kernel Kernel::kernelInstance;
 

@@ -1,7 +1,7 @@
-#include "Logcat.h"
-#include "Bitmap.h"
+#include "Tools.h"
+#include "Tools.h"
 #include <cmath>
-#include "TimeHelper.h"
+#include "Tools.h"
 #include <ctime>
 
 int TimeHelper::getCurTime()

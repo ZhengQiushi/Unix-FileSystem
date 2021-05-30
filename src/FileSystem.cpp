@@ -1,12 +1,12 @@
-#include "Ext2.h"
+#include "FileSystem.h"
 #include "Kernel.h"
 
-#include "TimeHelper.h"
-#include "DiskInode.h"
-#include "Path.h"
-#include "InodePool.h"
-#include "Path.h"
-#include "SuperBlock.h"
+#include "Tools.h"
+#include "DiskDriver.h"
+#include "Tools.h"
+
+#include "Tools.h"
+
 
 SuperBlock::SuperBlock() : disk_block_bitmap(DISK_SIZE / DISK_BLOCK_SIZE)
 {
@@ -379,11 +379,8 @@ void Ext2::format()
 int Ext2::registerFs()
 {
     /**
- * mount的前一步在vfs.cpp中完成
- * 
- * 
- * 
- */
+     * mount的前一步在vfs.cpp中完成
+     */
     int mountRes = this->p_bufferCache->mount(); //②DiskDriver打开虚拟磁盘img，mmap，进入就绪状态
     if (mountRes == -1)
     {

@@ -1,22 +1,6 @@
 #include "VFS.h"
-#include "Logcat.h"
+#include "Tools.h"
 #include "Kernel.h"
-
-#include "SuperBlockCache.h"
-#include "SuperBlock.h"
-#include "Kernel.h"
-#include "OpenFileTable.h"
-#include "Kernel.h"
-
-#include "InodeCache.h"
-#include "Kernel.h"
-#include "Inode.h"
-#include "Kernel.h"
-
-#include "File.h"
-
-#include "DirectoryEntry.h"
-#include "DirectoryCache.h"
 
 
 DirectoryCache::DirectoryCache() : directoryEntryCacheBitmap(DIRECTORY_ENTRY_CACHE_SIZE)
@@ -613,6 +597,7 @@ InodeCache* VFS::getInodeCache(){
 Ext2* VFS::getFilesystem(){
     return p_ext2;
 };  
+
 void VFS::mount()
 {
     /**
@@ -630,6 +615,8 @@ void VFS::mount()
     } //完成②③
     // 成功的话将Mounted设置为true
 }
+
+
 void VFS::unmount()
 {
     if (!Mounted)

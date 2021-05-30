@@ -1,8 +1,8 @@
 #ifndef SHELL_H
 #define SHELL_H
 #include "define.h"
-#include "Logcat.h"
-#include "Path.h"
+#include "Tools.h"
+#include "Tools.h"
 #include "VFS.h"
 
 #define TTY_BUFFER_SIZE 4096

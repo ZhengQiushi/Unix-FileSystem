@@ -142,14 +142,14 @@ my_VFS/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/build
 .PHONY : my_VFS/fast
 
-main.obj: main.cpp.obj
+main.o: main.cpp.o
 
-.PHONY : main.obj
+.PHONY : main.o
 
 # target to build an object file
-main.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/main.cpp.obj
-.PHONY : main.cpp.obj
+main.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/main.cpp.o
+.PHONY : main.cpp.o
 
 main.i: main.cpp.i
 
@@ -169,14 +169,14 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/main.cpp.s
 .PHONY : main.cpp.s
 
-src/BufferCache.obj: src/BufferCache.cpp.obj
+src/BufferCache.o: src/BufferCache.cpp.o
 
-.PHONY : src/BufferCache.obj
+.PHONY : src/BufferCache.o
 
 # target to build an object file
-src/BufferCache.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/BufferCache.cpp.obj
-.PHONY : src/BufferCache.cpp.obj
+src/BufferCache.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o
+.PHONY : src/BufferCache.cpp.o
 
 src/BufferCache.i: src/BufferCache.cpp.i
 
@@ -196,14 +196,14 @@ src/BufferCache.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/BufferCache.cpp.s
 .PHONY : src/BufferCache.cpp.s
 
-src/DiskDriver.obj: src/DiskDriver.cpp.obj
+src/DiskDriver.o: src/DiskDriver.cpp.o
 
-.PHONY : src/DiskDriver.obj
+.PHONY : src/DiskDriver.o
 
 # target to build an object file
-src/DiskDriver.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.obj
-.PHONY : src/DiskDriver.cpp.obj
+src/DiskDriver.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.o
+.PHONY : src/DiskDriver.cpp.o
 
 src/DiskDriver.i: src/DiskDriver.cpp.i
 
@@ -223,14 +223,14 @@ src/DiskDriver.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.s
 .PHONY : src/DiskDriver.cpp.s
 
-src/FileSystem.obj: src/FileSystem.cpp.obj
+src/FileSystem.o: src/FileSystem.cpp.o
 
-.PHONY : src/FileSystem.obj
+.PHONY : src/FileSystem.o
 
 # target to build an object file
-src/FileSystem.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/FileSystem.cpp.obj
-.PHONY : src/FileSystem.cpp.obj
+src/FileSystem.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o
+.PHONY : src/FileSystem.cpp.o
 
 src/FileSystem.i: src/FileSystem.cpp.i
 
@@ -250,14 +250,14 @@ src/FileSystem.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/FileSystem.cpp.s
 .PHONY : src/FileSystem.cpp.s
 
-src/Kernel.obj: src/Kernel.cpp.obj
+src/Kernel.o: src/Kernel.cpp.o
 
-.PHONY : src/Kernel.obj
+.PHONY : src/Kernel.o
 
 # target to build an object file
-src/Kernel.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Kernel.cpp.obj
-.PHONY : src/Kernel.cpp.obj
+src/Kernel.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Kernel.cpp.o
+.PHONY : src/Kernel.cpp.o
 
 src/Kernel.i: src/Kernel.cpp.i
 
@@ -277,14 +277,14 @@ src/Kernel.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Kernel.cpp.s
 .PHONY : src/Kernel.cpp.s
 
-src/Shell.obj: src/Shell.cpp.obj
+src/Shell.o: src/Shell.cpp.o
 
-.PHONY : src/Shell.obj
+.PHONY : src/Shell.o
 
 # target to build an object file
-src/Shell.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Shell.cpp.obj
-.PHONY : src/Shell.cpp.obj
+src/Shell.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Shell.cpp.o
+.PHONY : src/Shell.cpp.o
 
 src/Shell.i: src/Shell.cpp.i
 
@@ -304,14 +304,14 @@ src/Shell.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Shell.cpp.s
 .PHONY : src/Shell.cpp.s
 
-src/Tools.obj: src/Tools.cpp.obj
+src/Tools.o: src/Tools.cpp.o
 
-.PHONY : src/Tools.obj
+.PHONY : src/Tools.o
 
 # target to build an object file
-src/Tools.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Tools.cpp.obj
-.PHONY : src/Tools.cpp.obj
+src/Tools.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Tools.cpp.o
+.PHONY : src/Tools.cpp.o
 
 src/Tools.i: src/Tools.cpp.i
 
@@ -331,14 +331,14 @@ src/Tools.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/Tools.cpp.s
 .PHONY : src/Tools.cpp.s
 
-src/VFS.obj: src/VFS.cpp.obj
+src/VFS.o: src/VFS.cpp.o
 
-.PHONY : src/VFS.obj
+.PHONY : src/VFS.o
 
 # target to build an object file
-src/VFS.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/VFS.cpp.obj
-.PHONY : src/VFS.cpp.obj
+src/VFS.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/my_VFS.dir/build.make CMakeFiles/my_VFS.dir/src/VFS.cpp.o
+.PHONY : src/VFS.cpp.o
 
 src/VFS.i: src/VFS.cpp.i
 
@@ -367,28 +367,28 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... my_VFS"
-	@echo "... main.obj"
+	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... src/BufferCache.obj"
+	@echo "... src/BufferCache.o"
 	@echo "... src/BufferCache.i"
 	@echo "... src/BufferCache.s"
-	@echo "... src/DiskDriver.obj"
+	@echo "... src/DiskDriver.o"
 	@echo "... src/DiskDriver.i"
 	@echo "... src/DiskDriver.s"
-	@echo "... src/FileSystem.obj"
+	@echo "... src/FileSystem.o"
 	@echo "... src/FileSystem.i"
 	@echo "... src/FileSystem.s"
-	@echo "... src/Kernel.obj"
+	@echo "... src/Kernel.o"
 	@echo "... src/Kernel.i"
 	@echo "... src/Kernel.s"
-	@echo "... src/Shell.obj"
+	@echo "... src/Shell.o"
 	@echo "... src/Shell.i"
 	@echo "... src/Shell.s"
-	@echo "... src/Tools.obj"
+	@echo "... src/Tools.o"
 	@echo "... src/Tools.i"
 	@echo "... src/Tools.s"
-	@echo "... src/VFS.obj"
+	@echo "... src/VFS.o"
 	@echo "... src/VFS.i"
 	@echo "... src/VFS.s"
 .PHONY : help

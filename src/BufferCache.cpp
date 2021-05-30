@@ -1,8 +1,10 @@
 #include "BufferCache.h"
 #include "Kernel.h"
 
-#include "Logcat.h"
-#include "Buf.h"
+#include "Tools.h"
+
+
+
 // 缓存控制块目前只有结构，没有任何方法。
 void BufferCache::setDiskDriver(DiskDriver *diskDriver)
 {
@@ -43,7 +45,7 @@ void BufferCache::initialize()
         //this->bFreeList.b_forw = bp;
         /* 初始化自由队列 */
         bp->b_flags = Buf::B_BUSY;
-        Brelse(bp); //放入自有缓存队列
+        Brelse(bp); //放入自由缓存队列
     }
 }
 
@@ -65,7 +67,9 @@ Buf *BufferCache::Bread(int blkno)
     /* 没有找到相应缓存，构成I/O读请求块 */
     bp->b_flags |= Buf::B_READ;
     bp->b_wcount = DISK_BLOCK_SIZE;
+
     diskDriver->readBlk(blkno, bp->b_addr);
+    
     bp->b_flags |= Buf::B_DONE;
 
     return bp;

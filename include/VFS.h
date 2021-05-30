@@ -1,10 +1,9 @@
 #ifndef VFS_H
 #define VFS_H
 #include "define.h"
-#include "Ext2.h"
-#include "SuperBlockCache.h"
-#include "InodeCache.h"
-#include "DirectoryCache.h"
+#include "FileSystem.h"
+
+
 class VFS
 {
 private:

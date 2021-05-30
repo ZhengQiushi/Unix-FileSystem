@@ -10,7 +10,7 @@
 #include <fcntl.h>    //open系统调用
 #include <unistd.h>   //lseek函数
 
-#define WINDOWS
+//#define WINDOWS
 
 #if defined(WINDOWS) 
 #include <sys/mman.h>

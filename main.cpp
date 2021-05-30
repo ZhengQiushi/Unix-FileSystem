@@ -1,7 +1,7 @@
 #include "define.h"
 #include "Shell.h"
 #include "VFS.h"
-#include "Ext2.h"
+#include "FileSystem.h"
 #include "DiskDriver.h"
 #include "BufferCache.h"
 #include "Kernel.h"
