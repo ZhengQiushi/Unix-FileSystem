@@ -7,7 +7,7 @@ Kernel Kernel::kernelInstance;
 Kernel::Kernel()
 {
 #ifdef IS_DEBUG
-    std::cout << "Construct Kernel" << std::endl;
+    std::cout << "Construct Kernel!!!!!!!!!!!!!!!!!!" << std::endl;
 #endif
 
     bufferCache.setDiskDriver(&this->diskDriver);
@@ -123,7 +123,6 @@ int Kernel::format(){
         }
     return OK;
 }
-
 InodeId Kernel::createFile(const char *fileName){
     /*
      * @biref 在当前目录下创建文件(不管是文件还是文件夹)，文件名为fileName,
@@ -154,7 +153,7 @@ InodeId Kernel::createFile(const char *fileName){
     InodeId where_to_write;
     if(new_file_dir.level <= 1){
         /* 深度为0 如 touch a */
-        where_to_write = Kernel::instance().getUser().curDirInodeId;
+        where_to_write = getUser().curDirInodeId;
     }
     else{
         where_to_write = file_folder_inode;
@@ -173,6 +172,7 @@ InodeId Kernel::createFile(const char *fileName){
     Inode *p_dirInode = inodeCache.getInodeByID(where_to_write); // 不是当前文件中
     int blkno = p_dirInode->Bmap(0); //Bmap查物理块号
     Buf *pBuf = bufferCache.Bread(blkno);
+
     DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
 
     int i;
@@ -405,7 +405,7 @@ void Kernel::ls(InodeId dirInodeID)
     Inode &inode = *inodeCache.getInodeByID(dirInodeID);
     if (inode.i_mode & Inode::IFMT != Inode::IFDIR)
     {
-        printf("ERROR! ls的参数只能为空或者目录名！\n");
+        printf("[ERROR]非法的参数\n");
         return;
     }
 
@@ -448,17 +448,17 @@ void Kernel::ls(const char *dirName)
     }
     else
     {
-        Logcat::log("ERROR!ls指令只能对目录");
+        Logcat::log("[ERROR]操作对象不可为文件");
     }
 }
 
 /**
  * 打开一个普通文件,返回文件的句柄
  */
-FileFd Kernel::open(Path path, int mode)
+FileFd Kernel::open(const Path& path, int mode)
 {
     FileFd fd;
-    //Step1. 查找该文件的inode号
+   /*先找inode*/
     InodeId openFileInodeId = ext2.locateInode(path);
 
     // 返回-1 说明打开失败
@@ -586,6 +586,8 @@ int Kernel::write(int fd, uint8_t *content, int length)
         {
             printf("暂时停下");
         }
+
+        
         BlkNum phyBlkno = p_inode->Bmap(logicBlkno);            //物理盘块号
 
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移

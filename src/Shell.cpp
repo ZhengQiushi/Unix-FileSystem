@@ -117,13 +117,7 @@ int Shell::readUserInput()
             strcpy(split_cmd[cmd_param_seq], p);
         }
         param_num = cmd_param_seq;
-#ifdef IS_DEBUG
-        for (int i = 0; i < param_num; i++)
-        {
-            std::cout << "看一下刚输入的参数：" << split_cmd[i] << ' ';
-        }
-        std::cout << std::endl;
-#endif
+
         //TODO
 
         //Step4:解析执行指令
@@ -306,16 +300,8 @@ void Shell::unmount()
  */
 void Shell::format()
 {
-
-    if (1)
-    {
-        my_kernel.format();
-        Logcat::devlog(TAG, "format EXEC");
-    }
-    else
-    {
-        Logcat::log(TAG, "ERROR,DISK NOT MOUNTED!");
-    }
+    my_kernel.format();
+    Logcat::devlog(TAG, "format EXEC");
 }
 void Shell::mkdir()
 {
@@ -483,12 +469,17 @@ void Shell::store()
         }
         //Step2：打开文件
         Path desPath(getParam(2));
+
         FileFd fd_des = my_kernel.open(desPath, File::FWRITE);
+
         //Step3：写入文件
         FILE *fd_src = fopen(getParam(1), "rb");
         if (fd_src == NULL)
         {
-            Logcat::log("源文件打开失败！");
+            Logcat::log("[ERROR]源文件打开失败！");
+            // 删除该文件...
+            Kernel::instance().deleteObject(getParam(2));
+
             return;
         }
         DiskBlock tempBuf;
@@ -509,7 +500,7 @@ void Shell::store()
     }
     else
     {
-        Logcat::log("ERROR!store命令参数个数错误");
+        Logcat::log("[ERROR]store命令参数个数错误");
     }
 }
 
@@ -527,7 +518,7 @@ void Shell::withdraw()
         FILE *fd_des = fopen(getParam(2), "wb");
         if (fd_des == NULL)
         {
-            Logcat::log("目的文件创建失败！");
+            Logcat::log("[ERROR]目的文件创建失败！");
             return;
         }
 
@@ -536,7 +527,7 @@ void Shell::withdraw()
         FileFd fd_src = my_kernel.open(srcPath, File::FREAD);
         if (fd_src < 0)
         {
-            Logcat::log("源文件打开失败！");
+            Logcat::log("[ERROR]源文件打开失败！");
             return;
         }
         //Step3：写入文件
@@ -556,7 +547,7 @@ void Shell::withdraw()
     }
     else
     {
-        Logcat::log("ERROR!store命令参数个数错误");
+        Logcat::log("[ERROR]非法的参数个数");
     }
 }
 
@@ -575,14 +566,8 @@ Shell::~Shell()
 {
     delete TAG;
 }
-void Shell::setKernel(Kernel& kernel){
-    my_kernel = kernel;
-}
-
-
 
 //隐式调用
-
 void Shell::creat()
 {
     /*
@@ -597,13 +582,13 @@ void Shell::creat()
     {
         int md = FileMode(getParam(2));
         if (md == 0) {
-            Logcat::log(TAG, "this mode is undefined !");
+            Logcat::log("[ERROR]没有定义的操作类型");
             return;
         }
 
         if (0 > my_kernel.createFile(getParam(1)))
         {
-            Logcat::log("[ERROR]存在同名文件，创建失败！");
+            Logcat::log("[ERROR]存在同名文件，创建失败");
             return;
         }
         //Step1：打开内部文件
@@ -632,7 +617,7 @@ void Shell::open()
     {
         int md = FileMode(getParam(2));
         if (md == 0) {
-            Logcat::log(TAG, "this mode is undefined !");
+            Logcat::log("[ERROR]没有定义的操作类型");
             return;
         }
 
@@ -655,14 +640,14 @@ void Shell::open()
 
         if (fd_des < 0)
         {
-            Logcat::log("文件打开失败！");
+            Logcat::log("[ERROR]文件打开失败");
             return;
         }
-        printf("成功打开文件，fd = %d\n", fd_des);
+        printf("[INFO]成功打开文件，fd = %d\n", fd_des);
     }
     else
     {
-        Logcat::log("ERROR!store命令参数个数错误");
+        Logcat::log("[ERROR]非法的参数个数");
     }
 
 }
@@ -682,15 +667,15 @@ void Shell::close()
         /* 获取打开文件控制块File结构 */
         File* pFile = u.u_ofiles.GetF(fd_src);
         if (NULL == pFile) {
-            Logcat::log("不存在这个fd");
+            Logcat::log("[ERROR]不存在这个fd");
             return;
         }
-        printf("成功关闭fd = %d\n", fd_src);
+        printf("[INFO]成功关闭fd = %d\n", fd_src);
         my_kernel.close(fd_src);
     }
     else
     {
-        Logcat::log("ERROR!fclose命令参数个数错误");
+        Logcat::log("[ERROR]非法的参数个数");
     }
 }
 
@@ -817,15 +802,14 @@ void Shell::read(){
         }
         //WITHDRAW的步骤
         else{
-            Logcat::log("ERROR!store命令参数个数错误");
+            Logcat::log("[ERROR]非法的参数个数");
         }
     }
     else
     {
-        Logcat::log("ERROR!store命令参数个数错误");
+        Logcat::log("[ERROR]非法的参数个数");
     }
 
-    Logcat::log(TAG, "read EXEC");
 }
 
 /**

@@ -7,7 +7,6 @@ CMakeFiles/my_VFS.dir/main.cpp.o: ../include/FileSystem.h
 CMakeFiles/my_VFS.dir/main.cpp.o: ../include/Kernel.h
 CMakeFiles/my_VFS.dir/main.cpp.o: ../include/Shell.h
 CMakeFiles/my_VFS.dir/main.cpp.o: ../include/Tools.h
-CMakeFiles/my_VFS.dir/main.cpp.o: ../include/VFS.h
 CMakeFiles/my_VFS.dir/main.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/main.cpp.o: ../main.cpp
 
@@ -16,7 +15,6 @@ CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/DiskDriver.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/FileSystem.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/Kernel.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/Tools.h
-CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/VFS.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o: ../src/BufferCache.cpp
 
@@ -30,7 +28,6 @@ CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/DiskDriver.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/FileSystem.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/Kernel.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/Tools.h
-CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/VFS.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o: ../src/FileSystem.cpp
 
@@ -39,7 +36,6 @@ CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/DiskDriver.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/FileSystem.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/Kernel.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/Tools.h
-CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/VFS.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/Kernel.cpp.o: ../src/Kernel.cpp
 
@@ -49,7 +45,6 @@ CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/FileSystem.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/Kernel.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/Shell.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/Tools.h
-CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/VFS.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/Shell.cpp.o: ../src/Shell.cpp
 
@@ -62,7 +57,6 @@ CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/DiskDriver.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/FileSystem.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/Kernel.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/Tools.h
-CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/VFS.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../include/define.h
 CMakeFiles/my_VFS.dir/src/VFS.cpp.o: ../src/VFS.cpp
 

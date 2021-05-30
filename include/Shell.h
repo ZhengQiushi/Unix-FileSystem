@@ -5,7 +5,7 @@
 
 #include "Kernel.h"
 
-#include "VFS.h"
+
 
 #define TTY_BUFFER_SIZE 4096
 #define MAX_CMD_LEN 4096
@@ -32,7 +32,7 @@ public:
   char *getInstStr();
   char *getParam(int i);
   int getParamAmount();
-  void setKernel(Kernel& kernel);
+  //void setKernel(Kernel* kernel);
   int FileMode(std::string mode);
 
   //shell调用的功能

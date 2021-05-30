@@ -1,4 +1,4 @@
-#include "VFS.h"
+
 #include "Tools.h"
 #include "Kernel.h"
 #include "DiskDriver.h"
@@ -169,7 +169,7 @@ int Inode::Bmap(int lbn)
     int phyBlkno; /* 转换后的物理盘块号 */
     int *iTable;  /* 用于访问索引盘块中一次间接、两次间接索引表 */
     int index;
-    //User &u = Kernel::Instance().GetUser();
+    //User &u = Kernel::instance().GetUser();
 
     /**
      * 超出支持的最大文件块数
@@ -183,7 +183,6 @@ int Inode::Bmap(int lbn)
     if (lbn < 6) /* 如果是小型文件，从基本索引表i_addr[0-5]中获得物理盘块号即可 */
     {
         phyBlkno = this->i_addr[lbn];
-
         /*
     	 * 如果该逻辑块号还没有相应的物理盘块号与之对应，则分配一个物理块。
     	 * 这通常发生在对文件的写入，当写入位置超出文件大小，即对当前
@@ -493,7 +492,7 @@ File *OpenFileTable::FAlloc()
 void OpenFileTable::CloseF(File *pFile)
 {
     Inode *pNode;
-    //ProcessManager &procMgr = Kernel::Instance().GetProcessManager();
+    //ProcessManager &procMgr = Kernel::instance().GetProcessManager();
 
     if (pFile->f_count <= 1)
     {

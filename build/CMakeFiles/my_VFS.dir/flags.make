@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/truth/Desktop/hai/my_filesystem/include
+CXX_INCLUDES = -I/home/truth/Desktop/hai/Unix-FileSystem/include
 
 CXX_FLAGS = 
 

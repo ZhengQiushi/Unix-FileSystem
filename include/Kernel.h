@@ -1,7 +1,7 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 #include "define.h"
-#include "VFS.h"
+
 #include "FileSystem.h"
 #include "DiskDriver.h"
 #include "BufferCache.h"
@@ -219,7 +219,7 @@ public:
   int cd(const char *dirName);    //返回进入的dir的Inode
   void ls(const char *dirName);
   void ls(InodeId dirInodeID);
-  int open(Path path, int mode);
+  int open(const Path& path, int mode);
   int close(int fd);
   int read(int fd, uint8_t *content, int length);  //用户层面，文件必须先打开才可读
   int write(int fd, uint8_t *content, int length); //用户层面，文件必须先打开才可写

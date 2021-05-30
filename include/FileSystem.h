@@ -70,8 +70,8 @@ public:
   DiskInode getDiskInodeByNum(int inodeID);
   void updateDiskInode(int inodeID, DiskInode diskInode);
 
-  InodeId locateInode(Path &path);
-  InodeId locateDir(Path &path);
+  InodeId locateInode(const Path& path);
+  InodeId locateDir(const Path& path);
   InodeId getInodeIdInDir(InodeId dirInodeId, FileName fileName);
 
   int bmap(int inodeNum, int logicBlockNum); //文件中的地址映射。查混合索引表，确定物理块号。

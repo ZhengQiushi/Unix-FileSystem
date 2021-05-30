@@ -6,6 +6,38 @@
 
 #IncludeRegexTransform: 
 
+../include/BufferCache.h
+define.h
+../include/define.h
+DiskDriver.h
+../include/DiskDriver.h
+
+../include/DiskDriver.h
+define.h
+../include/define.h
+Tools.h
+../include/Tools.h
+
+../include/FileSystem.h
+define.h
+../include/define.h
+DiskDriver.h
+../include/DiskDriver.h
+BufferCache.h
+../include/BufferCache.h
+Tools.h
+../include/Tools.h
+
+../include/Kernel.h
+define.h
+../include/define.h
+FileSystem.h
+../include/FileSystem.h
+DiskDriver.h
+../include/DiskDriver.h
+BufferCache.h
+../include/BufferCache.h
+
 ../include/Tools.h
 define.h
 ../include/define.h
@@ -38,15 +70,11 @@ time.h
 string
 -
 
-/home/truth/Desktop/hai/my_filesystem/src/Tools.cpp
+/home/truth/Desktop/hai/Unix-FileSystem/src/VFS.cpp
 Tools.h
-/home/truth/Desktop/hai/my_filesystem/src/Tools.h
-Tools.h
-/home/truth/Desktop/hai/my_filesystem/src/Tools.h
-cmath
--
-Tools.h
-/home/truth/Desktop/hai/my_filesystem/src/Tools.h
-ctime
--
+/home/truth/Desktop/hai/Unix-FileSystem/src/Tools.h
+Kernel.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.h
+DiskDriver.h
+/home/truth/Desktop/hai/Unix-FileSystem/src/DiskDriver.h
 

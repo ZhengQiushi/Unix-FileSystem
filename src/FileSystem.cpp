@@ -13,7 +13,6 @@ SuperBlock::SuperBlock() : disk_block_bitmap(DISK_SIZE / DISK_BLOCK_SIZE)
     
 
     total_inode_num = MAX_INODE_NUM - 1; //总inode数  -1是因为0#inode不可用
-    printf("SuperBlock construct:  %d \n", total_inode_num);
 
     free_inode_num = total_inode_num;    //空闲inode
     for (int i = 0; i < total_inode_num; i++)
@@ -42,7 +41,6 @@ void SuperBlock::writeBack()
     *p_superBlock = tempSuperBlock; //没有动态申请，不用管深浅拷贝
     Kernel::instance().getBufferCache().Bdwrite(pBuf);
 
-    printf("writeBack %d\n", tempSuperBlock.total_inode_num);
 
     //下面是硬写入（不经过缓存）
     // DiskBlock *diskMemAddr = Kernel::instance().getDiskDriver().getDiskMemAddr();
@@ -88,9 +86,6 @@ void SuperBlock::bsetOccupy(BlkNum blkNum)
  */
 InodeId SuperBlock::ialloc()
 {
-    printf("ialloc\n");
-    
-    printf("%d\n", this->free_inode_num);
     if (free_inode_num != 0)
     {
         return s_inode[--free_inode_num];
@@ -275,8 +270,8 @@ DiskInode::DiskInode(Inode inode)
 void Ext2::format()
 {
     p_bufferCache->init();
-    //0# superblock
-    //1,2,3# inodePool
+    // 0# superblock
+    // 1,2,3# inodePool
     // 4~DISK_BLOCK_NUM-1# 放数据
     DiskBlock *diskMemAddr = Kernel::instance().getDiskDriver().getDiskMemAddr();
     memset(diskMemAddr, 0, DISK_SIZE);
@@ -288,9 +283,11 @@ void Ext2::format()
     // tempSuperBlock.total_inode_num = MAX_INODE_NUM;
     // tempSuperBlock.free_inode_num = MAX_INODE_NUM;
     tempSuperBlock.bsetOccupy(0); //0#盘块被superblock占据
+
     tempSuperBlock.bsetOccupy(1);
     tempSuperBlock.bsetOccupy(2);
     tempSuperBlock.bsetOccupy(3); //1~3#盘块被inodePool占据(即磁盘Inode区)
+
     tempSuperBlock.bsetOccupy(4); //4#盘块放根目录文件
     tempSuperBlock.bsetOccupy(5); //5#盘块放bin目录文件
     tempSuperBlock.bsetOccupy(6); //6#盘块放etc目录文件
@@ -336,6 +333,8 @@ void Ext2::format()
     tempDiskInode.d_size = sizeof(DirectoryEntry) * 2;
     tempInodePool.iupdate(5, tempDiskInode);
     //5#inode，是dev
+
+
     InodePool *p_InodePool = (InodePool *)diskMemAddr;
     *p_InodePool = tempInodePool;
     p_InodePool++;
@@ -448,7 +447,6 @@ void Ext2::loadSuperBlock(SuperBlock &superBlock)
 
     memcpy(&superBlock, pBuf->b_addr, DISK_BLOCK_SIZE);
 
-    printf("loadSuperBlock  %d\n", superBlock.total_block_num);
 
     p_bufferCache->Brelse(pBuf);
 }
@@ -495,9 +493,11 @@ DiskInode Ext2::getDiskInodeByNum(int inodeID)
  * VFS在inodeDirectoryCache失效的时候，会调用本函数，在磁盘上根据路径确定inode号。
  * 
  */
-InodeId Ext2::locateInode(Path &path){
+InodeId Ext2::locateInode(const Path& path){
     InodeId dirInodeId = locateDir(path); //先确定其父目录的inode号
 
+    //printf("path: %d %s \n", path.level, path.toString().c_str());
+    
     if (path.level == 0)
     {
         return ROOT_INODE_ID;
@@ -511,7 +511,7 @@ InodeId Ext2::locateInode(Path &path){
  * VFS在inodeDirectoryCache失效的时候，会调用本函数，在磁盘上根据路径确定
  * 一个路径截至最后一层之前的目录inode号
  */
-InodeId Ext2::locateDir(Path &path){
+InodeId Ext2::locateDir(const Path& path){
     //目录文件的inode号
     InodeId dirInode;   
     if (path.from_root){ 

@@ -65,6 +65,8 @@ private:
   DiskDriver *diskDriver;
 
 public:
+  BufferCache(){
+  }
   void init(); //缓存控制块的初始化。
   void setDiskDriver(DiskDriver *diskDriver);
   int mount();
