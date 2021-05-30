@@ -1,6 +1,6 @@
 #ifndef OS_MAIN_DEFINE //确保不重复编译
 #define OS_MAIN_DEFINE
-//#define IS_DEBUG //调试状态
+#define IS_DEBUG //调试状态
 
 #include <iostream> //大家都懂
 #include <stdio.h>
@@ -54,12 +54,20 @@
 #define ERROR_CLOSE_FAIL -12
 #define ERROR_OUTOF_BLOCK -13
 #define ERROR_DELETE_FAIL -14
+#define ERROR_NO_FOLDER_EXSIT -15
 
 typedef int FileFd;  //文件句柄，实际上就是一个int
 typedef int InodeId; //inode号，实际上是一个int
 typedef int BlkNum;  //扇区号
 
 typedef const char *FileName; //文件名
+
+enum Ext2_Status
+{
+  Ext2_UNINITIALIZED,
+  Ext2_NOFORM,
+  Ext2_READY
+}; //未初始化，完成挂载但是未格式化，挂载且格式化（或事先有格式）
 
 enum INSTRUCT
 {

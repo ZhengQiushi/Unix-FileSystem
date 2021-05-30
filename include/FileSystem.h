@@ -46,12 +46,7 @@ public:
 
 
 #define ROOT_INODE_ID 1
-enum Ext2_Status
-{
-  Ext2_UNINITIALIZED,
-  Ext2_NOFORM,
-  Ext2_READY
-}; //未初始化，完成挂载但是未格式化，挂载且格式化（或事先有格式）
+
 class Ext2
 {
 private:
@@ -64,9 +59,12 @@ private:
 
 public:
   void format(); //格式化
-  int registerFs();
+  int registerFs(int mountRes);
   int unregisterFs();
+  
   Ext2_Status getExt2Status();
+  Ext2_Status setExt2Status(Ext2_Status ext2_status);
+
   int setBufferCache(BufferCache *p_bufferCache);
   int allocNewInode(); //分配一个新的inode
   DiskInode getDiskInodeByNum(int inodeID);

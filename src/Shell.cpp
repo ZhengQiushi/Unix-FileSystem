@@ -292,12 +292,12 @@ void Shell::mount()
      * ③装载SuperBlock到VFS的SuperBlock缓存
      * 
      *  */
-    bounded_VFS->mount();
+    my_kernel.mount();
 }
 
 void Shell::unmount()
 {
-    bounded_VFS->unmount();
+    my_kernel.unmount();
     Logcat::devlog(TAG, "unmount EXEC");
 }
 
@@ -307,9 +307,9 @@ void Shell::unmount()
 void Shell::format()
 {
 
-    if (bounded_VFS->isMounted())
+    if (1)
     {
-        bounded_VFS->format();
+        my_kernel.format();
         Logcat::devlog(TAG, "format EXEC");
     }
     else
@@ -319,11 +319,18 @@ void Shell::format()
 }
 void Shell::mkdir()
 {
-    if (getParamAmount() == 2)
-    {
-        if (bounded_VFS->mkDir(getParam(1)) < 0)
-        {
-            Logcat::log("ERROR!存在同名目录，创建失败！");
+    if (getParamAmount() == 2){
+
+        switch (my_kernel.mkDir(getParam(1))){
+            case ERROR_FILENAME_EXSIST:
+                Logcat::log("[ERROR]创建失败,存在同名目录");
+                break;
+            case ERROR_NO_FOLDER_EXSIT:
+                Logcat::log("[ERROR]创建失败,请先创建文件夹");
+                break;
+            default:
+                Logcat::devlog(TAG, "创建成功");
+                break;
         }
     }
     else
@@ -346,13 +353,18 @@ void Shell::touch()
     }
     else
     {
-        if (0 > bounded_VFS->createFile(getParam(1)))
-        {
-            Logcat::log("ERROR!存在同名文件，创建失败！");
+        switch (my_kernel.createFile(getParam(1))){
+            case ERROR_FILENAME_EXSIST:
+                Logcat::log("[ERROR]创建失败,存在同名文件");
+                break;
+            case ERROR_NO_FOLDER_EXSIT:
+                Logcat::log("[ERROR]创建失败,请先创建文件夹");
+                break;
+            default:
+                Logcat::devlog(TAG, "创建成功");
+                break;
         }
     }
-
-    Logcat::devlog(TAG, "touch EXEC");
 }
 
 /**
@@ -367,7 +379,7 @@ void Shell::rm()
     }
     else
     {
-        if (0 > bounded_VFS->deleteFile(getParam(1)))
+        if (0 > my_kernel.deleteFile(getParam(1)))
         {
             Logcat::log("删除文件失败！");
         }
@@ -388,7 +400,7 @@ void Shell::rmdir()
     }
     else
     {
-        if (0 > bounded_VFS->deleteDir(getParam(1)))
+        if (0 > my_kernel.deleteFolder(getParam(1)))
         {
             Logcat::log("删除，目录失败！");
         }
@@ -410,9 +422,9 @@ void Shell::man()
 }
 void Shell::mexit()
 {
-    if (bounded_VFS->isMounted())
+    if (1)
     {
-        bounded_VFS->unmount();
+        my_kernel.unmount();
     }
     Logcat::devlog(TAG, "exit EXEC");
     Logcat::log("程序结束！");
@@ -432,7 +444,7 @@ void Shell::cd()
     }
     else
     {
-        bounded_VFS->cd(getParam(1));
+        my_kernel.cd(getParam(1));
     }
 }
 
@@ -444,11 +456,11 @@ void Shell::ls()
     if (!strcmp(getParam(1), ""))
     {
         //不带参数的ls，以curDir为默认参数
-        bounded_VFS->ls(Kernel::instance()->getUser().curDirInodeId);
+        my_kernel.ls(Kernel::instance().getUser().curDirInodeId);
     }
     else
     {
-        bounded_VFS->ls(getParam(1)); //getParam(1)获得的是ls后面跟的目录名（可能是相对的也可能是绝对的）
+        my_kernel.ls(getParam(1)); //getParam(1)获得的是ls后面跟的目录名（可能是相对的也可能是绝对的）
     }
 }
 
@@ -463,7 +475,7 @@ void Shell::store()
         InodeId desInodeId;
         //STORE的步骤
         //Step1：创建文件（如果有同名的返回失败）
-        desInodeId = bounded_VFS->createFile(getParam(2));
+        desInodeId = my_kernel.createFile(getParam(2));
         if (desInodeId < 0)
         {
             Logcat::log("ERROR!目标文件名已存在！");
@@ -471,7 +483,7 @@ void Shell::store()
         }
         //Step2：打开文件
         Path desPath(getParam(2));
-        FileFd fd_des = bounded_VFS->open(desPath, File::FWRITE);
+        FileFd fd_des = my_kernel.open(desPath, File::FWRITE);
         //Step3：写入文件
         FILE *fd_src = fopen(getParam(1), "rb");
         if (fd_src == NULL)
@@ -486,14 +498,14 @@ void Shell::store()
             //int blkCount = 0;
             int readsize = fread(&tempBuf, 1, DISK_BLOCK_SIZE, fd_src);
             file_size += readsize;
-            bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, readsize);
+            my_kernel.write(fd_des, (uint8_t *)&tempBuf, readsize);
         }
-        Inode *p_desInode = Kernel::instance()->getInodeCache().getInodeByID(desInodeId);
+        Inode *p_desInode = Kernel::instance().getInodeCache().getInodeByID(desInodeId);
         p_desInode->i_size = file_size; //TODO这一块不太好，封装性差了点
 
         //Step4：关闭文件
         fclose(fd_src);
-        bounded_VFS->close(fd_des);
+        my_kernel.close(fd_des);
     }
     else
     {
@@ -521,7 +533,7 @@ void Shell::withdraw()
 
         //Step2：打开文件
         Path srcPath(getParam(1));
-        FileFd fd_src = bounded_VFS->open(srcPath, File::FREAD);
+        FileFd fd_src = my_kernel.open(srcPath, File::FREAD);
         if (fd_src < 0)
         {
             Logcat::log("源文件打开失败！");
@@ -529,10 +541,10 @@ void Shell::withdraw()
         }
         //Step3：写入文件
         DiskBlock tempBuf;
-        while (!bounded_VFS->eof(fd_src))
+        while (!my_kernel.eof(fd_src))
         {
             //int blkCount = 0;
-            int writesize = bounded_VFS->read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
+            int writesize = my_kernel.read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
             //? 为什么最后一个是 \00
             if(writesize < DISK_BLOCK_SIZE)
                 writesize -= 1;
@@ -540,7 +552,7 @@ void Shell::withdraw()
         }
         //Step4：关闭文件
         fclose(fd_des);
-        bounded_VFS->close(fd_src);
+        my_kernel.close(fd_src);
     }
     else
     {
@@ -553,19 +565,21 @@ void Shell::clear()
     system("clear");
 }
 
-Shell::Shell()
-{
+Shell::Shell(Kernel& kernel):my_kernel(kernel){
     TAG = strdup("Shell");
+
 }
+
+
 Shell::~Shell()
 {
     delete TAG;
 }
-
-void Shell::setVFS(VFS *vfs)
-{
-    bounded_VFS = vfs;
+void Shell::setKernel(Kernel& kernel){
+    my_kernel = kernel;
 }
+
+
 
 //隐式调用
 
@@ -587,14 +601,14 @@ void Shell::creat()
             return;
         }
 
-        if (0 > bounded_VFS->createFile(getParam(1)))
+        if (0 > my_kernel.createFile(getParam(1)))
         {
             Logcat::log("[ERROR]存在同名文件，创建失败！");
             return;
         }
         //Step1：打开内部文件
         Path srcPath(getParam(1));
-        FileFd fd_des = bounded_VFS->open(srcPath, md);
+        FileFd fd_des = my_kernel.open(srcPath, md);
 
         if (fd_des < 0)
         {
@@ -625,19 +639,19 @@ void Shell::open()
         //Step1：打开内部文件
         Path srcPath(getParam(1));
 
-        InodeId targetInodeId = bounded_VFS->getFilesystem()->locateInode(srcPath);
+        InodeId targetInodeId = my_kernel.getExt2().locateInode(srcPath);
         if (targetInodeId <= 0)
         {
             Logcat::log("[ERROR]无法打开不存在的文件");
             return;
         }
-        else if ((bounded_VFS->getInodeCache()->getInodeByID(targetInodeId)->i_mode & Inode::IFMT) == Inode::IFDIR)
+        else if ((my_kernel.getInodeCache().getInodeByID(targetInodeId)->i_mode & Inode::IFMT) == Inode::IFDIR)
         {
             Logcat::log("[ERROR]无法打开一个目录");
             return;
         }
 
-        FileFd fd_des = bounded_VFS->open(srcPath, md);
+        FileFd fd_des = my_kernel.open(srcPath, md);
 
         if (fd_des < 0)
         {
@@ -662,7 +676,7 @@ void Shell::close()
      */
     if (getParamAmount() == 2)
     {
-        User& u = Kernel::instance()->getUser();
+        User& u = Kernel::instance().getUser();
         //Step1
         FileFd fd_src = std::stoi(getParam(1));
         /* 获取打开文件控制块File结构 */
@@ -672,7 +686,7 @@ void Shell::close()
             return;
         }
         printf("成功关闭fd = %d\n", fd_src);
-        bounded_VFS->close(fd_src);
+        my_kernel.close(fd_src);
     }
     else
     {
@@ -691,7 +705,7 @@ void Shell::read(){
     if (getParamAmount() == 3 || getParamAmount() == 5)
     {
         InodeId desInodeId;
-        User& u = Kernel::instance()->getUser();
+        User& u = Kernel::instance().getUser();
 
         if(!isdigit(std::string(getParam(1)).front())){
             Logcat::log("[ERROR]fd为非法输入");
@@ -705,7 +719,7 @@ void Shell::read(){
             return;
         }
 
-        Inode *p_inode = bounded_VFS->getInodeCache()->getInodeByID(pFile->f_inode_id); //TODO错误处理?
+        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); //TODO错误处理?
 
         int& file_size = p_inode->i_size;
         int& file_offset = pFile->f_offset;
@@ -731,10 +745,10 @@ void Shell::read(){
             if(strcmp(getParam(4), "-f") == 0){
                 //Step3：写入文件
                 DiskBlock tempBuf;
-                while (!bounded_VFS->eof(fd_src))
+                while (!my_kernel.eof(fd_src))
                 {
                     //int blkCount = 0;
-                    int writesize = bounded_VFS->read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
+                    int writesize = my_kernel.read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
                     
                     //? 为什么最后一个是 \00
                     if(writesize < DISK_BLOCK_SIZE)
@@ -750,7 +764,7 @@ void Shell::read(){
                 }
                 read_limit = std::stoi(getParam(4));
 
-                while (!bounded_VFS->eof(fd_src)){
+                while (!my_kernel.eof(fd_src)){
 
                     int readable_size = std::min(std::min(file_size - file_offset, read_limit - cur_read_num), DISK_BLOCK_SIZE);//
                     // 读不到了
@@ -759,7 +773,7 @@ void Shell::read(){
                         break;
                     }
 
-                    int real_read_num = bounded_VFS->read(fd_src, (uint8_t *)&tempBuf, readable_size);
+                    int real_read_num = my_kernel.read(fd_src, (uint8_t *)&tempBuf, readable_size);
                     tempBuf.content[real_read_num] = (uint8_t)'\0';
 
                     fwrite(&tempBuf, 1, readable_size, fd_des);
@@ -783,7 +797,7 @@ void Shell::read(){
             }
 
             std::string res_read = "";
-            while (!bounded_VFS->eof(fd_src)){
+            while (!my_kernel.eof(fd_src)){
                 
                 int readable_size = std::min(std::min(file_size - file_offset, read_limit - cur_read_num), DISK_BLOCK_SIZE);//
                 // 读不到了
@@ -791,7 +805,7 @@ void Shell::read(){
                     break;
                 }
 
-                int real_read_num = bounded_VFS->read(fd_src, (uint8_t *)&tempBuf, readable_size);
+                int real_read_num = my_kernel.read(fd_src, (uint8_t *)&tempBuf, readable_size);
 
                 tempBuf.content[real_read_num] = (uint8_t)'\0';
 
@@ -833,14 +847,14 @@ void Shell::write()
             Logcat::log("[ERROR]fd为非法输入");
             return;
         }
-        User& u = Kernel::instance()->getUser();
+        User& u = Kernel::instance().getUser();
         //Step1
 
         FileFd fd_des = std::stoi(getParam(1));
         /* 获取打开文件控制块File结构 */
         File* pFile = u.u_ofiles.GetF(fd_des);
 
-        Inode *p_inode = bounded_VFS->getInodeCache()->getInodeByID(pFile->f_inode_id); //TODO错误处理?
+        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); //TODO错误处理?
 
         int ori_file_size = p_inode->i_size;
         int file_offset = pFile->f_offset;
@@ -866,13 +880,13 @@ void Shell::write()
             int i;
             for(i = 0 ; i + DISK_BLOCK_SIZE < input.length(); i += DISK_BLOCK_SIZE){
                 memcpy(&tempBuf, input.data() + i, DISK_BLOCK_SIZE);
-                bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
+                my_kernel.write(fd_des, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
                 file_size += DISK_BLOCK_SIZE;
             }
             int last_readsize = input.length() - i;
             memcpy(&tempBuf, input.data() + i, last_readsize);
 
-            bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, last_readsize);
+            my_kernel.write(fd_des, (uint8_t *)&tempBuf, last_readsize);
             file_size += last_readsize;
         }
         else if(cur_arg_num == 5 && strcmp(getParam(2), "-d") == 0){
@@ -902,11 +916,11 @@ void Shell::write()
                 if(file_size >= file_size_limit){
                     int cur_readsize = file_size_limit - (file_size - readsize);
                     file_size = file_size_limit;
-                    bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, cur_readsize);
+                    my_kernel.write(fd_des, (uint8_t *)&tempBuf, cur_readsize);
                     break;
                 }
                 else{
-                    bounded_VFS->write(fd_des, (uint8_t *)&tempBuf, readsize);
+                    my_kernel.write(fd_des, (uint8_t *)&tempBuf, readsize);
                 }
             }
         }
@@ -915,7 +929,7 @@ void Shell::write()
             Logcat::log("[ERROR]不符合输入规则");
             return;
         }
-        Inode *p_desInode = Kernel::instance()->getInodeCache().getInodeByID(desInodeId);
+        Inode *p_desInode = Kernel::instance().getInodeCache().getInodeByID(desInodeId);
         p_desInode->i_size = std::max(file_offset + file_size, ori_file_size); //TODO这一块不太好，封装性差了点
 
         printf("[INFO]成功写入 fd = %d %d bytes\n", fd_des, file_size);
@@ -951,7 +965,7 @@ void Shell::lseek()
             return;
         }
 
-        User& u = Kernel::instance()->getUser();
+        User& u = Kernel::instance().getUser();
 
         FileFd fd_src = std::stoi(getParam(1));
         int offset = std::stoi(getParam(2));
@@ -962,7 +976,7 @@ void Shell::lseek()
             Logcat::log("[ERROR]不存在这个fd");
             return;
         }
-        Inode *p_inode = bounded_VFS->getInodeCache()->getInodeByID(pFile->f_inode_id); //TODO错误处理?
+        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); //TODO错误处理?
 
 
         int& file_size = p_inode->i_size;

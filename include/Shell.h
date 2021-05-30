@@ -2,7 +2,9 @@
 #define SHELL_H
 #include "define.h"
 #include "Tools.h"
-#include "Tools.h"
+
+#include "Kernel.h"
+
 #include "VFS.h"
 
 #define TTY_BUFFER_SIZE 4096
@@ -18,10 +20,11 @@ private:
   char split_cmd[MAX_PARAM_NUM][MAX_SINGLE_PARAM_LEN]{};
   int param_num = 0;
   char const *TAG;
-  VFS *bounded_VFS;
+  //VFS *bounded_VFS;
+  Kernel& my_kernel;
 
 public:
-  Shell();
+  Shell(Kernel& kernel);
   ~Shell();
   int readUserInput();
   void parseCmd();
@@ -29,7 +32,7 @@ public:
   char *getInstStr();
   char *getParam(int i);
   int getParamAmount();
-  void setVFS(VFS *vfs);
+  void setKernel(Kernel& kernel);
   int FileMode(std::string mode);
 
   //shell调用的功能

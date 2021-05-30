@@ -10,8 +10,11 @@
 
 SuperBlock::SuperBlock() : disk_block_bitmap(DISK_SIZE / DISK_BLOCK_SIZE)
 {
+    
 
     total_inode_num = MAX_INODE_NUM - 1; //总inode数  -1是因为0#inode不可用
+    printf("SuperBlock construct:  %d \n", total_inode_num);
+
     free_inode_num = total_inode_num;    //空闲inode
     for (int i = 0; i < total_inode_num; i++)
     {
@@ -19,6 +22,34 @@ SuperBlock::SuperBlock() : disk_block_bitmap(DISK_SIZE / DISK_BLOCK_SIZE)
     }
     //初始化空闲inode栈
 }
+
+void SuperBlock::writeBack()
+{
+    SuperBlock tempSuperBlock;
+
+    tempSuperBlock.disk_block_bitmap = this->disk_block_bitmap;
+    
+    tempSuperBlock.free_block_bum = this->free_block_bum;
+    tempSuperBlock.free_inode_num = this->free_inode_num;
+    tempSuperBlock.total_block_num = this->total_block_num;
+    tempSuperBlock.total_inode_num = this->total_inode_num;
+    tempSuperBlock.SuperBlockBlockNum = this->SuperBlockBlockNum;
+    memcpy(tempSuperBlock.s_inode, this->s_inode, sizeof(this->s_inode));
+
+    Buf *pBuf = Kernel::instance().getBufferCache().GetBlk(0);
+    
+    SuperBlock *p_superBlock = (SuperBlock *)pBuf->b_addr;
+    *p_superBlock = tempSuperBlock; //没有动态申请，不用管深浅拷贝
+    Kernel::instance().getBufferCache().Bdwrite(pBuf);
+
+    printf("writeBack %d\n", tempSuperBlock.total_inode_num);
+
+    //下面是硬写入（不经过缓存）
+    // DiskBlock *diskMemAddr = Kernel::instance().getDiskDriver().getDiskMemAddr();
+    // SuperBlock *p_superBlock = (SuperBlock *)diskMemAddr;
+    // *p_superBlock = tempSuperBlock; //没有动态申请，不用管深浅拷贝
+}
+
 
 /**
      * 分配一个空闲盘块号
@@ -57,6 +88,9 @@ void SuperBlock::bsetOccupy(BlkNum blkNum)
  */
 InodeId SuperBlock::ialloc()
 {
+    printf("ialloc\n");
+    
+    printf("%d\n", this->free_inode_num);
     if (free_inode_num != 0)
     {
         return s_inode[--free_inode_num];
@@ -81,25 +115,30 @@ Path::Path(){
     from_root=true;
     level=0;
 }
+
+Path::Path(const Path &full_path){
+    memcpy(this->path[0], full_path.path[0], MAX_PATH_LEVEL* MAX_FILENAME_LEN);
+    this->from_root = full_path.from_root;
+    this->level = full_path.level - 1;
+}
+
 Path::Path(const char *raw_path)
 {
     path_str = strdup(raw_path);
-    if (path_str[0] == '/')
-    {
+    if (path_str[0] == '/'){
         temp_str = path_str + 1; //跳过正斜
         from_root = true;
     }
-    else
-    {
+    else{
         temp_str = path_str;
         from_root = false;
     }
+
     l_len = strlen(path_str);
     i_len = 0;
     char *p = strtok(temp_str, "/");
     int i;
-    for (i = 0; p != nullptr && i_len < l_len; i++)
-    {
+    for (i = 0; p != nullptr && i_len < l_len; i++){
         strcpy(path[i], p);
         sec_len = strlen(p) + 1; //这次从路径str取出的字符数（+1是因为算上/）
         i_len += sec_len;
@@ -235,11 +274,11 @@ DiskInode::DiskInode(Inode inode)
  */
 void Ext2::format()
 {
-    p_bufferCache->initialize();
+    p_bufferCache->init();
     //0# superblock
     //1,2,3# inodePool
     // 4~DISK_BLOCK_NUM-1# 放数据
-    DiskBlock *diskMemAddr = Kernel::instance()->getDiskDriver().getDiskMemAddr();
+    DiskBlock *diskMemAddr = Kernel::instance().getDiskDriver().getDiskMemAddr();
     memset(diskMemAddr, 0, DISK_SIZE);
 
     //①构造一个superBlock结构，写入磁盘中
@@ -265,15 +304,15 @@ void Ext2::format()
     p_superBlock++;
     diskMemAddr = (DiskBlock *)p_superBlock;
     //还要送一份到VFS中
-    Kernel::instance()->getSuperBlockCache().dirty = false;
-    Kernel::instance()->getSuperBlockCache().SuperBlockBlockNum = tempSuperBlock.SuperBlockBlockNum;
-    Kernel::instance()->getSuperBlockCache().free_inode_num = tempSuperBlock.free_inode_num; //空闲inode
-    Kernel::instance()->getSuperBlockCache().free_block_bum = tempSuperBlock.free_block_bum;
+
+    Kernel::instance().getSuperBlockCache().SuperBlockBlockNum = tempSuperBlock.SuperBlockBlockNum;
+    Kernel::instance().getSuperBlockCache().free_inode_num = tempSuperBlock.free_inode_num; //空闲inode
+    Kernel::instance().getSuperBlockCache().free_block_bum = tempSuperBlock.free_block_bum;
     //空闲盘块数
-    Kernel::instance()->getSuperBlockCache().total_block_num = tempSuperBlock.total_block_num;     //总盘块数
-    Kernel::instance()->getSuperBlockCache().total_inode_num = tempSuperBlock.total_inode_num;     //总inode数
-    Kernel::instance()->getSuperBlockCache().disk_block_bitmap = tempSuperBlock.disk_block_bitmap; //用bitmap管理空闲盘块
-    memcpy(Kernel::instance()->getSuperBlockCache().s_inode, tempSuperBlock.s_inode, sizeof(tempSuperBlock.s_inode));
+    Kernel::instance().getSuperBlockCache().total_block_num = tempSuperBlock.total_block_num;     //总盘块数
+    Kernel::instance().getSuperBlockCache().total_inode_num = tempSuperBlock.total_inode_num;     //总inode数
+    Kernel::instance().getSuperBlockCache().disk_block_bitmap = tempSuperBlock.disk_block_bitmap; //用bitmap管理空闲盘块
+    memcpy(Kernel::instance().getSuperBlockCache().s_inode, tempSuperBlock.s_inode, sizeof(tempSuperBlock.s_inode));
 
     //②构造DiskInode,修改InodePool,将InodePool写入磁盘img
     InodePool tempInodePool;
@@ -369,49 +408,26 @@ void Ext2::format()
     tempDirctoryEntry.m_ino = 1;
     *p_directoryEntry = tempDirctoryEntry;
 
+
     //test:
-    p_bufferCache->unmount();
-    p_bufferCache->mount();
+    // p_bufferCache->unmount();
+    // p_bufferCache->mount();
     //如果格式话成功，将ext2_status置ready
     ext2_status = Ext2_READY;
 }
 
-int Ext2::registerFs()
+int Ext2::registerFs(int mountRes)
 {
     /**
      * mount的前一步在vfs.cpp中完成
      */
-    int mountRes = this->p_bufferCache->mount(); //②DiskDriver打开虚拟磁盘img，mmap，进入就绪状态
-    if (mountRes == -1)
-    {
-        ext2_status = Ext2_UNINITIALIZED;
-    }
-    else if (mountRes == 0) //有现成的(认为已经格式化)  //NOTE 这里可以提升
-    {
-        ext2_status = Ext2_READY;
-        //NOTE 显然，如果是一个未格式话的磁盘，下面的操作没有意义。
-        //④装载SuperBlock到VFS的SuperBlock缓存(这一步需要经过缓存层)
-        SuperBlock tempSuperBlock; //从磁盘上读的先放到这个对象里（用于解析），然后再挪到vfs superblock
-        loadSuperBlock(tempSuperBlock);
-        //搬到vfs中的superBlockCache
-        SuperBlockCache &kernelSBC = Kernel::instance()->getSuperBlockCache();
-        kernelSBC.dirty = false;
-        kernelSBC.disk_block_bitmap = tempSuperBlock.disk_block_bitmap;
-        kernelSBC.free_block_bum = tempSuperBlock.free_block_bum;
-        kernelSBC.free_inode_num = tempSuperBlock.free_inode_num;
-        kernelSBC.total_block_num = tempSuperBlock.total_block_num;
-        kernelSBC.total_inode_num = tempSuperBlock.total_inode_num;
-        kernelSBC.SuperBlockBlockNum = tempSuperBlock.SuperBlockBlockNum;
-        memcpy(kernelSBC.s_inode, tempSuperBlock.s_inode, sizeof(tempSuperBlock.s_inode));
-        // tempptr++;
-        // memcpy(tempptr, &tempSuperBlock, DISK_BLOCK_SIZE);
-    }
-    else if (mountRes == 1)
-    { // 新生成的img，还有待格式化
+    
 
-        //NO DO THIS//③ext模块中的指针赋值，指向img文件内存映射的地址。
-        ext2_status = Ext2_NOFORM;
-    }
+     //this->p_bufferCache->mount(); 
+    
+    //②DiskDriver打开虚拟磁盘img，mmap，进入就绪状态
+
+
 
     return OK;
 }
@@ -425,16 +441,21 @@ int Ext2::unregisterFs()
 
 void Ext2::loadSuperBlock(SuperBlock &superBlock)
 {
-    //User &u = Kernel::Instance()->getUser();
+    //User &u = Kernel::instance().getUser();
     Buf *pBuf;
     pBuf = p_bufferCache->Bread(0);
+    
+
     memcpy(&superBlock, pBuf->b_addr, DISK_BLOCK_SIZE);
+
+    printf("loadSuperBlock  %d\n", superBlock.total_block_num);
+
     p_bufferCache->Brelse(pBuf);
 }
 
-int Ext2::setBufferCache(BufferCache *p_bufferCache)
+int Ext2::setBufferCache(BufferCache *bufferCache)
 {
-    this->p_bufferCache = p_bufferCache;
+    this->p_bufferCache = bufferCache;
     return OK;
 }
 int Ext2::allocNewInode()
@@ -474,16 +495,14 @@ DiskInode Ext2::getDiskInodeByNum(int inodeID)
  * VFS在inodeDirectoryCache失效的时候，会调用本函数，在磁盘上根据路径确定inode号。
  * 
  */
-InodeId Ext2::locateInode(Path &path)
-{
-
+InodeId Ext2::locateInode(Path &path){
     InodeId dirInodeId = locateDir(path); //先确定其父目录的inode号
+
     if (path.level == 0)
     {
         return ROOT_INODE_ID;
     }
-    else
-    {
+    else{
         return getInodeIdInDir(dirInodeId, path.getInodeName());
     }
 }
@@ -492,21 +511,21 @@ InodeId Ext2::locateInode(Path &path)
  * VFS在inodeDirectoryCache失效的时候，会调用本函数，在磁盘上根据路径确定
  * 一个路径截至最后一层之前的目录inode号
  */
-InodeId Ext2::locateDir(Path &path)
-{
-
-    InodeId dirInode;   //目录文件的inode号
-    if (path.from_root) //如果是绝对路径,从根inode开始搜索
-    {
+InodeId Ext2::locateDir(Path &path){
+    //目录文件的inode号
+    InodeId dirInode;   
+    if (path.from_root){ 
+        //如果是绝对路径,从根inode开始搜索
         dirInode = ROOT_INODE_ID;
     }
-    else //如果是相对路径，从当前inode号开始搜索
-    {
-        dirInode = Kernel::instance()->getUser().curDirInodeId;
+    else{ 
+        //如果是相对路径，从当前inode号开始搜索
+        dirInode = Kernel::instance().getUser().curDirInodeId;
     }
 
-    for (int i = 0; i < path.level - 1; i++)
-    {
+    for (int i = 0; i < path.level - 1; i++){
+        //遍历全部路径，如果有一个没有找到就报错
+        //if(dirInode)
         dirInode = getInodeIdInDir(dirInode, path.path[i]);
         if (dirInode < 0)
         {
@@ -522,16 +541,23 @@ InodeId Ext2::locateDir(Path &path)
  * 可以知道目录搜索的起点一定是已知的inode号，要么是cur要么是ROOT
  */
 InodeId Ext2::getInodeIdInDir(InodeId dirInodeId, FileName fileName)
-{
+{ 
+    /*
+     * @brief 在当前目录下， 找指定文件名的文件
+     *
+     * @return 找到了就返回该文件的Inode，不然就返回-1 
+     */
     //Step1:先根据目录inode号dirInodeId获得目录inode对象
-    Inode *p_dirInode = Kernel::instance()->getInodeCache().getInodeByID(dirInodeId);
+    Inode *p_dirInode = Kernel::instance().getInodeCache().getInodeByID(dirInodeId);
     //TODO 错误处理
 
     
     //Step2：读取该inode指示的数据块
     int blkno = p_dirInode->Bmap(0); //Bmap查物理块号
+
     Buf *pBuf;
-    pBuf = Kernel::instance()->getBufferCache().Bread(blkno);
+
+    pBuf = Kernel::instance().getBufferCache().Bread(blkno);
     DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
     //Step3：访问这个目录文件中的entry，搜索（同时缓存到dentryCache中）
     //TODO 缓存到dentryCache中
@@ -544,7 +570,7 @@ InodeId Ext2::getInodeIdInDir(InodeId dirInodeId, FileName fileName)
         p_directoryEntry++;
     }
 
-    Kernel::instance()->getBufferCache().Brelse(pBuf);
+    Kernel::instance().getBufferCache().Brelse(pBuf);
     return -1;
 }
 
@@ -559,3 +585,9 @@ Ext2_Status Ext2::getExt2Status()
 {
     return ext2_status;
 }
+
+Ext2_Status Ext2::setExt2Status(Ext2_Status ext2_status)
+{
+    this->ext2_status = ext2_status;
+}
+

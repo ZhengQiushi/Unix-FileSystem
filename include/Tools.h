@@ -25,6 +25,7 @@ public:
     int level;
     //Operations:
     Path();
+    Path(const Path &full_path);
     explicit Path(const char *raw_path); //explicit关键字避免隐式类型转换
     bool isSingleName() const;
     std::string toString();

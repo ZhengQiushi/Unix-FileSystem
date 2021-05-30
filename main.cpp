@@ -9,11 +9,13 @@
 int main()
 {
    int i;
-   Shell shell;
+   Shell shell(Kernel::instance());
 
    //这些模块是依赖关系，不是组合关系。
 
-   shell.setVFS(&Kernel::instance()->getVFS());
+
+
+   printf("%d %d\n", sizeof(SuperBlock), sizeof(SuperBlock));
 
    shell.readUserInput();
 

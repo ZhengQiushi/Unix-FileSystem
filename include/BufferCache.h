@@ -65,7 +65,7 @@ private:
   DiskDriver *diskDriver;
 
 public:
-  void initialize(); //缓存控制块的初始化。
+  void init(); //缓存控制块的初始化。
   void setDiskDriver(DiskDriver *diskDriver);
   int mount();
   void unmount();        //unmount的时候需要把脏缓存刷回

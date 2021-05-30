@@ -20,34 +20,29 @@ DiskDriver::~DiskDriver()
  * @return: 如果返回-1表示mount失败，返回0表示有现成的img文件，
  * 返回1表示img文件新生成
  *  */
-int DiskDriver::mount()
-{
+Ext2_Status DiskDriver::mountImg()
+{ 
+  
 
-   int retVal = -1;
+   Ext2_Status retVal = Ext2_UNINITIALIZED;
    //打开img文件,如果没有就尝试创建
    DiskFd = open(DISK_IMG_FILEPATH, O_RDWR | O_CREAT, DEF_MODE);
-   if (DiskFd == -1)
-   {
-      Logcat::log("[ERROR]镜像加载失败");
-      retVal = -1;
+   if (DiskFd == -1){
+      retVal = Ext2_UNINITIALIZED;
       exit(-1);
    }
-
 
    /**
     * 新创建的文件，需要做扩容操作，扩大到指定虚拟磁盘大小
     */
-   if (lseek(DiskFd, 0, SEEK_END) < DISK_SIZE)
-   {
-      Logcat::log("[INFO]您刚刚创建了一块新的镜像！");
+   if (lseek(DiskFd, 0, SEEK_END) < DISK_SIZE){
       //说明是新创建的文件，需要改变文件的大小
       lseek(DiskFd, 0, SEEK_SET);
       ftruncate(DiskFd, DISK_SIZE);
-      retVal = 1;
+      retVal = Ext2_NOFORM;
    }
    else{
-      Logcat::log("[INFO]镜像加载成功");
-      retVal = 0;
+      retVal = Ext2_READY;
    }
 
    /**
@@ -56,16 +51,17 @@ int DiskDriver::mount()
     * 但需注意,直接对该段内存写时不会写入超过当前文件大小的内容.
     */
    DiskMemAddr = (DiskBlock *)mmap(nullptr, DISK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, DiskFd, 0);
-   if (DiskMemAddr == MAP_FAILED)
-   {
-      Logcat::log("[ERROR]镜像映射失败");
+   if (DiskMemAddr == MAP_FAILED){
+      #ifdef IS_DEBUG
+         Logcat::log("[ERROR]镜像映射失败");
+      #endif
       exit(-1);
-      retVal = -1;
+      retVal = Ext2_UNINITIALIZED;
    }
-   else
-   {
-      Logcat::log("[INFO]镜像映射成功");
-      isMounted = true;
+   else{
+      #ifdef IS_DEBUG
+         Logcat::log("[INFO]镜像映射成功");
+      #endif
    }
 
    return retVal;

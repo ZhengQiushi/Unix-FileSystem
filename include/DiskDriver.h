@@ -65,7 +65,7 @@ private:
 public:
   DiskDriver();
   ~DiskDriver();
-  int mount();                                       //安装img磁盘
+  Ext2_Status mountImg();                                       //安装img磁盘
   void unmount();                                    //卸载磁盘
   DiskBlock *getBlk(int blockNum);                   //获得指向块的指针
   void readBlk(int blockNum, DiskBlock *dst);        //读取块
@@ -123,6 +123,7 @@ public:
 
   Inode();                  //构造函数
   Inode(DiskInode d_inode); //转换构造函数
+  void newInode(int flag, int inode_num);
   int Bmap(int lbn);        //根据逻辑块号查混合索引表，得到物理块号。
 };
 
@@ -148,7 +149,7 @@ private:
 
 public:
   InodeCache() : inodeCacheBitmap(INODE_CACHE_SIZE) {}
-  void clearCache();
+  void init();
   Inode *getInodeByID(int inodeID); //返回inodeCache块的缓存
   int addInodeCache(DiskInode inode, InodeId inodeId);
   int freeInodeCache(int inodeID);
@@ -207,32 +208,34 @@ public:
   void bsetOccupy(BlkNum blkNum);
   InodeId ialloc();
   void ifree(InodeId inodeId);
+
+  void writeBack();
 };
 
 
-class SuperBlockCache
-{
-public:
-    SuperBlockCache();
-    bool dirty = false;
+// class SuperBlock
+// {
+// public:
+//     SuperBlock();
+//     bool dirty = false;
 
-    size_t SuperBlockBlockNum = 1;      //暂时考虑superblock占1个磁盘block
-    int free_inode_num;                 //空闲inode
-    int free_block_bum;                 //空闲盘块数
-    int total_block_num;                //总盘块数
-    int total_inode_num;                //总inode数
-    InodeId s_inode[MAX_INODE_NUM - 1]; //空闲inode栈，用于管理inode的分配和回收
-    Bitmap disk_block_bitmap;           //用bitmap管理空闲盘块
-    char padding[1504];                 //NOTE:这个1504是手工计算的结果。只针对ubuntu系统，也许别的机器就不对了。
-                                        //确保一个SuperBlock填满一个block
+//     size_t SuperBlockBlockNum = 1;      //暂时考虑superblock占1个磁盘block
+//     int free_inode_num;                 //空闲inode
+//     int free_block_bum;                 //空闲盘块数
+//     int total_block_num;                //总盘块数
+//     int total_inode_num;                //总inode数
+//     InodeId s_inode[MAX_INODE_NUM - 1]; //空闲inode栈，用于管理inode的分配和回收
+//     Bitmap disk_block_bitmap;           //用bitmap管理空闲盘块
+//     char padding[1504];                 //NOTE:这个1504是手工计算的结果。只针对ubuntu系统，也许别的机器就不对了。
+//                                         //确保一个SuperBlock填满一个block
 
-    BlkNum balloc();
-    void bfree(BlkNum blkNum);
-    void bsetOccupy(BlkNum blkNum);
-    void flushBack();
-    InodeId ialloc();
-    void ifree(InodeId inodeId);
-};
+//     BlkNum balloc();
+//     void bfree(BlkNum blkNum);
+//     void bsetOccupy(BlkNum blkNum);
+//     void flushBack();
+//     InodeId ialloc();
+//     void ifree(InodeId inodeId);
+// };
 
 
 

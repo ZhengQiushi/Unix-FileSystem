@@ -6,14 +6,14 @@
 
 
 // 缓存控制块目前只有结构，没有任何方法。
-void BufferCache::setDiskDriver(DiskDriver *diskDriver)
+void BufferCache::setDiskDriver(DiskDriver *my_diskDriver)
 {
-    this->diskDriver = diskDriver;
+    this->diskDriver = my_diskDriver;
 }
 int BufferCache::mount()
 {
-    initialize();
-    return diskDriver->mount();
+    init();
+    return 1;//diskDriver->mount();
 }
 void BufferCache::unmount()
 {
@@ -24,7 +24,7 @@ void BufferCache::unmount()
 /**
  * 缓存控制块的初始化。
  */
-void BufferCache::initialize()
+void BufferCache::init()
 {
     int i;
     Buf *bp;
@@ -149,7 +149,7 @@ Buf *BufferCache::GetBlk(int blkno)
 {
     Buf *bp;
     //Devtab *dp;
-    User &u = Kernel::instance()->getUser();
+    User &u = Kernel::instance().getUser();
 
     /* 
 	 * 如果设备队列中已经存在相应缓存，则返回该缓存；
