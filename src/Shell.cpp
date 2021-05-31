@@ -11,6 +11,9 @@ int Shell::readUserInput()
 {
     mount();
     Logcat::log("建议先输入help指令，查看使用说明");
+    
+
+
 
     static int auto_test = 0;
     
@@ -74,18 +77,39 @@ int Shell::readUserInput()
                          };
 
     // strcat(tty_buffer, test);
-    
-    while (true)
-    {
+    static int format_inst_num = 0;
+    char format_inst[50][100] = {
+        " ",
+        "mkdir home",
+        "mkdir dev",
+        "mkdir etc",
+        "mkdir bin",
+        "cd home",
+        "store ../assets/img.png photos",
+        "store ../assets/readme.txt reports",
+        "store ../assets/report.txt texts" ,
+        "cd /"
+    };
+
+    int need_format = 0;
+
+    while (true){
         //Step0:
         //显示命令提示符
 
-        putchar('$');
+        printf("[host-1851447] %s $", Kernel::instance().getUser().cur_path.c_str());
         putchar(' ');
         //TODO
-
-        //Step1:获取用户输入放到缓冲区
-        if(auto_test ++ < 0){
+        if(need_format == 1){
+            if(format_inst_num ++ < 9){
+                strcpy(tty_buffer, format_inst[format_inst_num]);
+            }
+            else{
+                need_format = 0;
+                format_inst_num = 0;
+            }
+        }
+        else if(auto_test ++ < 0){
             strcpy(tty_buffer, test[auto_test]);
             //printf("%s\n", tty_buffer);
         }
@@ -122,6 +146,9 @@ int Shell::readUserInput()
 
         //Step4:解析执行指令
         parseCmd();
+        if(getInstType() == FORMAT){
+            need_format = 1;
+        }
         delete dupl_tty_buffer;
         fflush(stdin);
     }
@@ -194,9 +221,10 @@ void Shell::parseCmd()
     case FSEEK:
         lseek();
         break;
-    
+    case NOHUP:
+        break;
     default:
-        Logcat::log("CMD NOT SUPPORTED!\n");
+        Logcat::log("你输入了非法命令\n");
         break;
     }
 }
@@ -207,11 +235,12 @@ void Shell::parseCmd()
 INSTRUCT Shell::getInstType()
 {
     char *instStr = getInstStr();
+
 #ifdef IS_DEBUG
     Logcat::log(TAG, "命令行命令字为:");
     Logcat::log(TAG, instStr);
-
 #endif
+
     //为什么从1开始
     for (int i = 1; i < INST_NUM; i++)
     {
@@ -439,15 +468,18 @@ void Shell::cd()
  */
 void Shell::ls()
 {
-    if (!strcmp(getParam(1), ""))
-    {
+    if(getParamAmount() == 1){
         //不带参数的ls，以curDir为默认参数
         my_kernel.ls(Kernel::instance().getUser().curDirInodeId);
     }
-    else
-    {
+    else if(getParamAmount() == 2){
         my_kernel.ls(getParam(1)); //getParam(1)获得的是ls后面跟的目录名（可能是相对的也可能是绝对的）
+
     }
+    else{
+        Logcat::log("[ERROR]非法的参数个数");
+    }
+
 }
 
 /**
@@ -500,7 +532,7 @@ void Shell::store()
     }
     else
     {
-        Logcat::log("[ERROR]store命令参数个数错误");
+        Logcat::log("[ERROR]非法的参数个数");
     }
 }
 

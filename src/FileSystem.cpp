@@ -128,8 +128,14 @@ Path::Path(const char *raw_path)
         temp_str = path_str;
         from_root = false;
     }
-
+    
     l_len = strlen(path_str);
+    if(l_len == 1){
+        // '/'
+        strcpy(path[0], "");
+        level = 0;
+        return;
+    }
     i_len = 0;
     char *p = strtok(temp_str, "/");
     int i;
@@ -289,12 +295,12 @@ void Ext2::format()
     tempSuperBlock.bsetOccupy(3); //1~3#盘块被inodePool占据(即磁盘Inode区)
 
     tempSuperBlock.bsetOccupy(4); //4#盘块放根目录文件
-    tempSuperBlock.bsetOccupy(5); //5#盘块放bin目录文件
-    tempSuperBlock.bsetOccupy(6); //6#盘块放etc目录文件
-    tempSuperBlock.bsetOccupy(7); //7#盘块放home目录文件
-    tempSuperBlock.bsetOccupy(8); //8#盘块放dev目录文件
+    // tempSuperBlock.bsetOccupy(5); //5#盘块放bin目录文件
+    // tempSuperBlock.bsetOccupy(6); //6#盘块放etc目录文件
+    // tempSuperBlock.bsetOccupy(7); //7#盘块放home目录文件
+    // tempSuperBlock.bsetOccupy(8); //8#盘块放dev目录文件
     //tempSuperBlock.free_block_bum -= 9;
-    tempSuperBlock.free_inode_num -= 5;
+    tempSuperBlock.free_inode_num -= 1;
 
     SuperBlock *p_superBlock = (SuperBlock *)diskMemAddr;
     *p_superBlock = tempSuperBlock; //没有动态申请，不用管深浅拷贝
@@ -312,29 +318,12 @@ void Ext2::format()
     memcpy(Kernel::instance().getSuperBlockCache().s_inode, tempSuperBlock.s_inode, sizeof(tempSuperBlock.s_inode));
 
     //②构造DiskInode,修改InodePool,将InodePool写入磁盘img
+    //1#inode，是根目录
     InodePool tempInodePool;
     int tempAddr[10] = {4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     DiskInode tempDiskInode = DiskInode(Inode::IFDIR, 1, 1, 1, 6 * sizeof(DirectoryEntry), tempAddr, TimeHelper::getCurTime(), TimeHelper::getCurTime());
     tempInodePool.iupdate(1, tempDiskInode);
-    //1#inode，是根目录
-    tempDiskInode.d_addr[0] = 5;
-    tempDiskInode.d_size = sizeof(DirectoryEntry) * 2;
-    tempInodePool.iupdate(2, tempDiskInode);
-    //2#inode，是bin
-    tempDiskInode.d_addr[0] = 6;
-    tempDiskInode.d_size = sizeof(DirectoryEntry) * 2;
-    tempInodePool.iupdate(3, tempDiskInode);
-    //3#inode，是etc
-    tempDiskInode.d_addr[0] = 7;
-    tempDiskInode.d_size = sizeof(DirectoryEntry) * 2;
-    tempInodePool.iupdate(4, tempDiskInode);
-    //4#inode，是home
-    tempDiskInode.d_addr[0] = 8;
-    tempDiskInode.d_size = sizeof(DirectoryEntry) * 2;
-    tempInodePool.iupdate(5, tempDiskInode);
-    //5#inode，是dev
-
-
+    
     InodePool *p_InodePool = (InodePool *)diskMemAddr;
     *p_InodePool = tempInodePool;
     p_InodePool++;
@@ -351,89 +340,14 @@ void Ext2::format()
     tempDirctoryEntry.m_ino = 1;
     *p_directoryEntry = tempDirctoryEntry;
     p_directoryEntry++;
-    strcpy(tempDirctoryEntry.m_name, "bin");
-    tempDirctoryEntry.m_ino = 2;
-    *p_directoryEntry = tempDirctoryEntry;
-    p_directoryEntry++;
-    strcpy(tempDirctoryEntry.m_name, "etc");
-    tempDirctoryEntry.m_ino = 3;
-    *p_directoryEntry = tempDirctoryEntry;
-    p_directoryEntry++;
-    strcpy(tempDirctoryEntry.m_name, "dev");
-    tempDirctoryEntry.m_ino = 4;
-    *p_directoryEntry = tempDirctoryEntry;
-    p_directoryEntry++;
-    strcpy(tempDirctoryEntry.m_name, "home");
-    tempDirctoryEntry.m_ino = 5;
-    *p_directoryEntry = tempDirctoryEntry;
 
-    diskMemAddr++; //移动到下一个盘块，写bin目录
-    p_directoryEntry = (DirectoryEntry *)diskMemAddr;
-    strcpy(tempDirctoryEntry.m_name, ".");
-    tempDirctoryEntry.m_ino = 2;
-    *p_directoryEntry = tempDirctoryEntry;
-    p_directoryEntry++;
-    strcpy(tempDirctoryEntry.m_name, "..");
-    tempDirctoryEntry.m_ino = 1;
-    *p_directoryEntry = tempDirctoryEntry;
-
-    diskMemAddr++; //移动到下一个盘块，写etc目录
-    p_directoryEntry = (DirectoryEntry *)diskMemAddr;
-    strcpy(tempDirctoryEntry.m_name, ".");
-    tempDirctoryEntry.m_ino = 3;
-    *p_directoryEntry = tempDirctoryEntry;
-    p_directoryEntry++;
-    strcpy(tempDirctoryEntry.m_name, "..");
-    tempDirctoryEntry.m_ino = 1;
-    *p_directoryEntry = tempDirctoryEntry;
-
-    diskMemAddr++; //移动到下一个盘块，写dev目录
-    p_directoryEntry = (DirectoryEntry *)diskMemAddr;
-    strcpy(tempDirctoryEntry.m_name, ".");
-    tempDirctoryEntry.m_ino = 4;
-    *p_directoryEntry = tempDirctoryEntry;
-    p_directoryEntry++;
-    strcpy(tempDirctoryEntry.m_name, "..");
-    tempDirctoryEntry.m_ino = 1;
-    *p_directoryEntry = tempDirctoryEntry;
-
-    diskMemAddr++; //移动到下一个盘块，写home目录
-    p_directoryEntry = (DirectoryEntry *)diskMemAddr;
-    strcpy(tempDirctoryEntry.m_name, ".");
-    tempDirctoryEntry.m_ino = 5;
-    *p_directoryEntry = tempDirctoryEntry;
-    p_directoryEntry++;
-    strcpy(tempDirctoryEntry.m_name, "..");
-    tempDirctoryEntry.m_ino = 1;
-    *p_directoryEntry = tempDirctoryEntry;
-
-
-    //test:
-    // p_bufferCache->unmount();
-    // p_bufferCache->mount();
-    //如果格式话成功，将ext2_status置ready
+    Kernel::instance().getUser().cur_path = "/";
     ext2_status = Ext2_READY;
-}
-
-int Ext2::registerFs(int mountRes)
-{
-    /**
-     * mount的前一步在vfs.cpp中完成
-     */
-    
-
-     //this->p_bufferCache->mount(); 
-    
-    //②DiskDriver打开虚拟磁盘img，mmap，进入就绪状态
-
-
-
-    return OK;
 }
 
 int Ext2::unregisterFs()
 {
-    p_bufferCache->unmount();
+    
     ext2_status = Ext2_UNINITIALIZED;
     return OK;
 }

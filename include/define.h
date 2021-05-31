@@ -92,9 +92,10 @@ enum INSTRUCT
     FREAD,
     FWRITE,
     FCLOSE,
-    FSEEK
+    FSEEK,
+    NOHUP
 };
-const int INST_NUM = 22;
+const int INST_NUM = 23;
 //NOTE 注意，如果改了上面的枚举类型，那么下面的这个数字也需要相应修改
 
 static const char *instructStr[]{
@@ -119,7 +120,8 @@ static const char *instructStr[]{
     "fread",
     "fwrite",
     "fclose",
-    "fseek"
+    "fseek",
+    ""
     };
 enum FileType
 {

@@ -59,7 +59,7 @@ private:
 
 public:
   void format(); //格式化
-  int registerFs(int mountRes);
+  
   int unregisterFs();
   
   Ext2_Status getExt2Status();

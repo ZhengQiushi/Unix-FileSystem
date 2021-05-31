@@ -51,6 +51,8 @@ User &Kernel::getUser()
 
 User::User(){
 	curDirInodeId = 1;
+    cur_path = "/";
+
 }
 
 
@@ -87,8 +89,8 @@ void Kernel::unmount(){
         /* 刷回InodeCache,SuperBlock */
         inodeCache.flushAllCacheDirtyInode();
         superBlock.writeBack();
-
-        ext2.unregisterFs();
+        bufferCache.unmount();
+        
 }
 
 int Kernel::format(){
@@ -240,7 +242,7 @@ int Kernel::mkDir(const char *dirName){
         where_to_write = file_folder_inode;
     }
     strcpy(tempDirectoryEntry.m_name, "..");
-    tempDirectoryEntry.m_ino = where_to_write; //错啦
+    tempDirectoryEntry.m_ino = where_to_write; 
     *p_directoryEntry = tempDirectoryEntry;
 
 
@@ -375,6 +377,9 @@ InodeId Kernel::deleteObject(const char *fileName){
     //Step3 释放inode
     p_delete_inode->i_flag = 0; //这里是为了不再把删除的inode刷回，只用在superblock中标记inode删除即可
     superBlock.ifree(deleteFileInode);
+
+    printf("deleteFileInode: %d %s\n", deleteFileInode, p_directoryEntry->m_name);
+
     return deleteFileInode;
 }
 
@@ -382,17 +387,56 @@ InodeId Kernel::deleteObject(const char *fileName){
 int Kernel::cd(const char *dirName)
 {
     Path path(dirName);
+    //printf("dirName %s Path %s\n", dirName, path.toString().c_str());
     InodeId targetInodeId = ext2.locateInode(path);
     if (targetInodeId <= 0)
     {
-        Logcat::log("目录查找失败！");
+        Logcat::log("[ERROR]目录查找失败");
     }
     else if ((inodeCache.getInodeByID(targetInodeId)->i_mode & Inode::IFMT) != Inode::IFDIR)
     {
-        Logcat::log("ERROR! cd 命令的参数必须是目录！");
+        Logcat::log("[ERROR]cd 命令的参数必须是目录");
     }
     else{
+
         Kernel::instance().getUser().curDirInodeId = targetInodeId;
+
+        // 实时修改当前路径
+        Path cur_path(Kernel::instance().getUser().cur_path.c_str());
+
+        // printf("%s \n", path.toString().c_str());
+        // printf("%s \n", path.path[0]);
+        if(path.toString().c_str()[0] == '/'){
+            // 全部路径修改
+            Kernel::instance().getUser().cur_path = path.toString();
+        }
+        else{
+            int cur_len = cur_path.level;
+            for(int i = 0 ; i < path.level && cur_len >=0 ; i ++ ){
+                //printf("%d: |%s| |%s| \n",i, path.path[i], cur_path.path[cur_len - 1]);
+                if(strcmp(path.path[i], ".") == 0){
+                    continue;
+                }
+                else if(strcmp(path.path[i], "..") == 0){
+                    cur_len --;
+                    memcpy(cur_path.path[cur_len], "", MAX_FILENAME_LEN);
+                }
+                else if(strlen(path.path[i]) != 0){
+                    memcpy(cur_path.path[cur_len], path.path[i], MAX_FILENAME_LEN);
+                    cur_len ++;
+                }
+            }
+            //printf("cur_len : %d \n", cur_len);
+            
+            cur_path.level = cur_len;
+            // 部分路径添加
+            Kernel::instance().getUser().cur_path = cur_path.toString();
+
+        }
+
+        //printf("cur: %s\n ", Kernel::instance().getUser().cur_path.c_str());
+        
+
     }
 
     return targetInodeId;
@@ -442,8 +486,9 @@ void Kernel::ls(const char *dirName)
 
     //没有，则向Ext模块要
     dirInodeId = ext2.locateInode(path);
-    if ((inodeCache.getInodeByID(dirInodeId)->i_mode & Inode::IFMT) == Inode::IFDIR)
-    {
+    printf("dirInodeId: %d\n", dirInodeId);
+
+    if ((inodeCache.getInodeByID(dirInodeId)->i_mode & Inode::IFMT) == Inode::IFDIR){
         ls(dirInodeId);
     }
     else

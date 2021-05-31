@@ -10,6 +10,41 @@ int TimeHelper::getCurTime()
     return int(now);
 } //获取当前时间
 
+std::string gengerString(int n){
+	srand((unsigned)time(NULL));                        
+   //产生随机化种子
+	printf("生成%d个字符的字符串\n",n);                                      
+	std::string str = "";
+	for(int i=1;i <= n;i++){
+		int flag;                        
+		flag = rand()%2;                     
+      //随机使flag为1或0，为1就是大写，为0就是小写 
+		if(flag == 1)                        
+      //如果flag=1 
+			str += rand()%('Z'-'A'+1)+'A';       
+         //追加大写字母的ascii码 
+		else 
+			str += rand()%('z'-'a'+1)+'a';       
+         //如果flag=0，追加为小写字母的ascii码 
+		
+	}
+	return str;
+} 
+
+bool genTestsFile(std::string res_dir, const int test_str_len){
+   FILE *fd_des = fopen(res_dir.data(), "wb");
+   if (fd_des == NULL){
+      Logcat::log("[ERROR]测试文件创建失败！");
+      return -1;
+   }
+   std::string test_str = gengerString(test_str_len);
+   //printf("%s\n", test_str.c_str());
+
+   fwrite(test_str.data(), 1, test_str_len, fd_des);
+   fclose(fd_des);
+   return 1;
+}
+
 Bitmap::~Bitmap()
 {
     // if(bitmap!=nullptr){

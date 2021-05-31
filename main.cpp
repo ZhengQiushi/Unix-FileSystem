@@ -5,10 +5,18 @@
 #include "BufferCache.h"
 #include "Kernel.h"
 
-int main()
-{
-   int i;
+/* 是否需要产生测试字符串 */
+// #define GEN_TEST_FILE 
+
+
+
+int main(){
    Shell shell(Kernel::instance());
+
+#ifdef GEN_TEST_FILE
+   if(0 > genTestsFile("../assets/tests"))
+      return -1;
+#endif
 
    shell.readUserInput();
 
