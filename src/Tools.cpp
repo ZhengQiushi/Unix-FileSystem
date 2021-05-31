@@ -4,11 +4,6 @@
 #include "Tools.h"
 #include <ctime>
 
-int TimeHelper::getCurTime()
-{
-    time_t now = time(0);
-    return int(now);
-} //获取当前时间
 
 std::string gengerString(int n){
 	srand((unsigned)time(NULL));                        
@@ -52,16 +47,12 @@ Bitmap::~Bitmap()
     // }
 }
 
-Bitmap::Bitmap(int elemNum)
-{
-    //bitmap=new uint8_t[elemNum/BITMAP_PERBLOCK_SIZE+1]{0};
+Bitmap::Bitmap(int elemNum){
     bitmapSize = elemNum;
-    //   memcpy(bitmap,0,DISK_SIZE/DISK_BLOCK_SIZE/8);
 }
 
 //NOTE 注意，盘块号是从0开始的。但是盘块数量是从1开始的
-int Bitmap::setBit(int blockID)
-{
+int Bitmap::setBit(int blockID){
 
     if (blockID > bitmapSize - 1 || blockID < 0)
         return ERROR_OFR; //范围非法
@@ -141,7 +132,7 @@ int Bitmap::unsetBit(int blockID)
     }
     return OK;
 }
-bool Bitmap::getBitStat(int blockID)
+bool Bitmap::isAvai(int blockID)
 {
     if (blockID > bitmapSize - 1 || blockID < 0)
         return false; //范围非法
@@ -186,7 +177,7 @@ bool Bitmap::getBitStat(int blockID)
  * 如果需要获用的话，在getAFreeBitNum之后，要手动setBit
  * 
  */
-int Bitmap::getAFreeBitNum()
+int Bitmap::getFreeBitId()
 {
     int ret = -1;
     for (int i = 0; i < ceil(bitmapSize / BITMAP_PERBLOCK_SIZE); i++)
@@ -250,7 +241,7 @@ void Bitmap::clear()
 /**
  * 有多少个元素
  */
-int Bitmap::getElemNum()
+int Bitmap::getMapSize()
 {
     return this->bitmapSize;
 }
@@ -275,4 +266,81 @@ void Logcat::devlog(const char *str)
 #ifdef IS_DEBUG
     std::cout << str << std::endl;
 #endif
+}
+
+
+Path::Path(){
+    memset(path,0,sizeof(path));
+    strcpy(path[0],"/");
+    from_root=true;
+    level=0;
+}
+
+Path::Path(const Path &full_path){
+    memcpy(this->path[0], full_path.path[0], MAX_PATH_LEVEL* MAX_FILENAME_LEN);
+    this->from_root = full_path.from_root;
+    this->level = full_path.level - 1;
+}
+
+Path::Path(const char *raw_path)
+{
+    path_str = strdup(raw_path);
+    if (path_str[0] == '/'){
+        temp_str = path_str + 1; //跳过正斜
+        from_root = true;
+    }
+    else{
+        temp_str = path_str;
+        from_root = false;
+    }
+    
+    l_len = strlen(path_str);
+    if(l_len == 1){
+        // '/'
+        if(strcmp(path[0], "/") == 0){
+            strcpy(path[0], "");
+            level = 0;
+        }
+        else{
+            strcpy(path[0], raw_path);
+            level = 1;
+        }
+        return;
+    }
+    i_len = 0;
+    char *p = strtok(temp_str, "/");
+    int i;
+    for (i = 0; p != nullptr && i_len < l_len; i++){
+        strcpy(path[i], p);
+        sec_len = strlen(p) + 1; //这次从路径str取出的字符数（+1是因为算上/）
+        i_len += sec_len;
+        temp_str += sec_len;
+        p = strtok(temp_str, "/");
+    }
+    level = i; /*类似于"/home"这样的属于level=1*/
+    delete path_str;
+}
+
+bool Path::isSingleName() const
+{
+    return level == 1;
+}
+std::string Path::toString()
+{
+    std::string path_str;
+    if (from_root)
+    {
+        path_str.append("/");
+    }
+    int i;
+    for (i = 0; i < level - 1; i++){
+        path_str.append(path[i]).append("/");
+    }
+    path_str.append(path[i]);
+    return path_str;
+}
+
+const char *Path::getInodeName() const
+{
+    return path[level - 1];
 }

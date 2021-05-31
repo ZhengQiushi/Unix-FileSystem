@@ -32,6 +32,12 @@ public:
     const char *getInodeName() const;
 };
 
+
+// class myPath{
+// public:
+//   std::vector
+// }
+
 class Logcat
 {
 private:
@@ -65,10 +71,10 @@ public:
   ~Bitmap();
   int setBit(int elemID);
   int unsetBit(int elemID);
-  bool getBitStat(int elemID);
-  int getAFreeBitNum();
+  bool isAvai(int elemID);
+  int getFreeBitId();
   void clear();
-  int getElemNum();
+  int getMapSize();
 };
 
 #endif

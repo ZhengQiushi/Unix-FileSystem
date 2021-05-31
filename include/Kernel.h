@@ -192,7 +192,7 @@ private:
 
   BufferCache bufferCache;
   DiskDriver diskDriver;
-  Ext2 ext2;
+  VFS ext2;
 
   User my_user;
 
@@ -200,22 +200,29 @@ public:
   OpenFileTable m_OpenFileTable;
   static Kernel& instance();
 
-  Ext2 &getExt2();
+  VFS &getFileSystem();
   DiskDriver &getDiskDriver();
-  BufferCache &getBufferCache();
-  SuperBlock &getSuperBlockCache();
+  BufferCache &getBufferManager();
+  SuperBlock &getSuperBlock();
   InodeCache &getInodeCache();
   User &getUser();
   
   
 
-  void mount();
-  void unmount();
+  void initKernel();
+  void relsKernel();
+
+
+  void relseBlock(Inode *delete_inode);
+
   int format();
   InodeId createFile(const char *fileName); //返回分配的Inode编号
   InodeId deleteFile(const char *fileName); //删除文件
+  InodeId deleteFile(const InodeId &cur_Inode, const InodeId &par_Inode);
+  
   InodeId deleteFolder(const char *dirName);
   InodeId deleteObject(const char *fileName);
+  InodeId deleteObject(const InodeId &cur_Inode, const InodeId &par_Inode);
   int mkDir(const char *dirName); //返回分配的Inode编号
   int cd(const char *dirName);    //返回进入的dir的Inode
   void ls(const char *dirName);
@@ -228,7 +235,7 @@ public:
   
   void unregisterExt2();         //注销加载的文件系统，要刷回脏inode和superblock
 
-  void registerExt2(Ext2 *ext2); //注册文件系统，载入SuperBlock 
+  void registerExt2(VFS *ext2); //注册文件系统，载入SuperBlock 
   void bindSuperBlockCache(SuperBlock *SuperBlock);
   void bindInodeCache(InodeCache *inodeCache);
   void bindDirectoryInodeCache(DirectoryCache *directoryCache);

@@ -3,6 +3,7 @@
 #define IS_DEBUG //调试状态
 
 #include <iostream> //大家都懂
+#include <vector>
 #include <stdio.h>
 #include <cstring>    //用到str函数
 #include <string>     //沈坚不让用的String类
@@ -24,11 +25,11 @@
 #include <time.h>     //随机数种子要用
 #include <string>
 
-//const和define的区别》
+//const和define的区别
 #define DISK_BLOCK_SIZE 4096                         //每个磁盘块的大小（字节）
 #define DISK_SIZE (64 * 1024 * 1024)                 //磁盘大小（字节）
 #define DISK_BLOCK_NUM (DISK_SIZE / DISK_BLOCK_SIZE) //磁盘有多少个磁盘块
-#define DISK_IMG_FILEPATH "./disk.img"
+#define DISK_IMG_DIR "./1851447.img"
 #define BITMAP_PERBLOCK_SIZE 8
 #define BUFFER_CACHE_NUM 20
 #define DISKINODE_SIZE 64
@@ -58,19 +59,17 @@
 
 typedef int FileFd;  //文件句柄，实际上就是一个int
 typedef int InodeId; //inode号，实际上是一个int
-typedef int BlkNum;  //扇区号
+typedef int BlkId;  //扇区号
 
 typedef const char *FileName; //文件名
 
-enum Ext2_Status
-{
-  Ext2_UNINITIALIZED,
-  Ext2_NOFORM,
-  Ext2_READY
+enum VFS_Status {
+  VFS_UNINITIALIZED,
+  VFS_NOFORM,
+  VFS_READY
 }; //未初始化，完成挂载但是未格式化，挂载且格式化（或事先有格式）
 
-enum INSTRUCT
-{
+enum INSTRUCT {
     ERROR_INST = -1,
     MOUNT,
     UNMOUNT,
@@ -123,18 +122,11 @@ static const char *instructStr[]{
     "fseek",
     ""
     };
-enum FileType
-{
+
+enum FileType {
     NORMAL_FILE,
     DIRECTORY,
     DEVICE
 };
 
 #endif
-
-/**
- * 类型定义的反思：
- * 写到一半，发现如果把inodeNum、DiskBlockNum这种用typedef类型定义会更好。
- * 因为可能会中途想改变他们的数据类型，再去挨个找的话太困难了：函数返回类型、形参类型等一堆
- * 
- */

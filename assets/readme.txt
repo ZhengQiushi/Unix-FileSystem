@@ -261,7 +261,7 @@ class VFS
 {
 private:
   bool Mounted = false;
-  Ext2 *p_ext2;                     //绑定的Ext2操纵模块。
+  VFS *p_ext2;                     //绑定的Ext2操纵模块。
   SuperBlockCache *superBlockCache; //VFS中的内存超级块，来自磁盘超级块在装载的时候刷入，卸载的时候刷回。
   InodeCache *inodeCache;           //VFS中内存Inode缓存
   DirectoryCache *directoryCache;   //与vfs绑定的目录项缓存
@@ -284,7 +284,7 @@ public:
   int read(int fd, u_int8_t *content, int length);  //用户层面，文件必须先打开才可读
   int write(int fd, u_int8_t *content, int length); //用户层面，文件必须先打开才可写
   bool eof(FileFd fd);
-  void registerExt2(Ext2 *ext2); //注册文件系统，载入SuperBlock
+  void registerExt2(VFS *ext2); //注册文件系统，载入SuperBlock
   void unregisterExt2();         //注销加载的文件系统，要刷回脏inode和superblock
   void bindSuperBlockCache(SuperBlockCache *superBlockCache);
   void bindInodeCache(InodeCache *inodeCache);
@@ -296,24 +296,24 @@ public:
 
 
 
-#### 4.2.3. Ext2
+#### 4.2.3. VFS
 
 ```CPP
-class Ext2
+class VFS
 {
 private:
 
   BufferCache *p_bufferCache; //绑定的BufferCache,ext2不直接和DiskDriver打交道，透过这个缓存层
-  Ext2_Status ext2_status = Ext2_UNINITIALIZED;
+  VFS_Status ext2_status = VFS_UNINITIALIZED;
 public:
   void format(); //格式化
   int registerFs();
   int unregisterFs();
-  Ext2_Status getExt2Status();
+  VFS_Status getExt2Status();
   int setBufferCache(BufferCache *p_bufferCache);
   int allocNewInode(); //分配一个新的inode
-  DiskInode getDiskInodeByNum(int inodeID);
-  void updateDiskInode(int inodeID, DiskInode diskInode);
+  DiskInode getDiskInodeByNum(int inode_id);
+  void writeBackDiskInode(int inode_id, DiskInode disk_inode);
 
   InodeId locateInode(Path &path);
   InodeId locateDir(Path &path);
@@ -321,7 +321,7 @@ public:
 
   int bmap(int inodeNum, int logicBlockNum); //文件中的地址映射。查混合索引表，确定物理块号。
   //逻辑块号bn=u_offset/512
-  void loadSuperBlock(SuperBlock &superBlock);
+  void loadSuperBlock(const SuperBlock &superBlock);
 };
 ```
 
@@ -334,8 +334,8 @@ class DiskDriver
 {
 private:
   bool isMounted = false;
-  FileFd DiskFd; //挂载磁盘文件的句柄
-  DiskBlock *DiskMemAddr;
+  FileFd disk_img_fd; //挂载磁盘文件的句柄
+  DiskBlock *disk_mem_addr;
   const char *TAG;
 
 public:
@@ -343,9 +343,9 @@ public:
   ~DiskDriver();
   int mount();                                       //安装img磁盘
   void unmount();                                    //卸载磁盘
-  DiskBlock *getBlk(int blockNum);                   //获得指向块的指针
-  void readBlk(int blockNum, DiskBlock *dst);        //读取块
-  void writeBlk(int blockNum, const DiskBlock &blk); //写入块
+  DiskBlock *getBlk(int block_num);                   //获得指向块的指针
+  void readBlk(int block_num, DiskBlock *dst);        //读取块
+  void writeBlk(int block_num, const DiskBlock &blk); //写入块
   bool isDiskMounted();
   DiskBlock *getDiskMemAddr();
 };
@@ -370,12 +370,12 @@ public:
   void setDiskDriver(DiskDriver *diskDriver);
   int mount();
   void unmount();        //unmount的时候需要把脏缓存刷回
-  Buf *Bread(int blkno); //将物理盘块一整块读入diskBlockPool
+  Buf *Bread(int blk_num); //将物理盘块一整块读入diskBlockPool
   void Bwrite(Buf *bp);  //写一个磁盘块
   void Bdwrite(Buf *bp); //延迟写磁盘块
   void Bflush();         //将dev指定设备队列中延迟写的缓存全部输出到磁盘.可能是在卸载磁盘的时候，需要全部刷回
-  //void writeBlk(int blkno, const DiskBlock &contentToWrite); //将内存的一块区域，写入缓冲区（如果不在缓冲区的话，需要先读）
-  Buf *GetBlk(int blkno); /* 申请一块缓存，用于读写设备dev上的字符块blkno。*/
+  //void writeBlk(int blk_num, const DiskBlock &contentToWrite); //将内存的一块区域，写入缓冲区（如果不在缓冲区的话，需要先读）
+  Buf *GetBlk(int blk_num); /* 申请一块缓存，用于读写设备dev上的字符块blkno。*/
   void Brelse(Buf *bp);   /* 释放缓存控制块buf */
   Buf &GetBFreeList();    //获取自由缓存队列控制块Buf对象引用
   void NotAvail(Buf *bp);
@@ -390,17 +390,17 @@ public:
 class InodeCache
 {
 private:
-  Inode inodeCacheArea[INODE_CACHE_SIZE];
+  Inode inode_cache_area[INODE_CACHE_SIZE];
   Bitmap inodeCacheBitmap;
 
 public:
   InodeCache() : inodeCacheBitmap(INODE_CACHE_SIZE) {}
   void clearCache();
-  Inode *getInodeByID(int inodeID); //返回inodeCache块的缓存
-  int addInodeCache(DiskInode inode, InodeId inodeId);
-  int freeInodeCache(int inodeID);
+  Inode *getInodeByID(int inode_id); //返回inodeCache块的缓存
+  int addInodeCache(DiskInode inode, InodeId inode_id);
+  int freeInodeCache(int inode_id);
   void replaceInodeCache(DiskInode inode, int replacedInodeID);
-  int flushAllCacheDirtyInode();
+  int writeBackInode();
 };
 ```
 
@@ -415,7 +415,7 @@ public:
     SuperBlockCache();
     bool dirty = false;
 
-    size_t SuperBlockBlockNum = 1;      //暂时考虑superblock占1个磁盘block
+    size_t superBlock_block_num = 1;      //暂时考虑superblock占1个磁盘block
     int free_inode_num;                 //空闲inode
     int free_block_bum;                 //空闲盘块数
     int total_block_num;                //总盘块数
@@ -425,12 +425,12 @@ public:
     char padding[1504];                 //NOTE:这个1504是手工计算的结果。只针对ubuntu系统，也许别的机器就不对了。
                                         //确保一个SuperBlock填满一个block
 
-    BlkNum balloc();
-    void bfree(BlkNum blkNum);
-    void bsetOccupy(BlkNum blkNum);
+    BlkId balloc();
+    void bfree(BlkId blk_num);
+    void ballocCeratin(BlkId blk_num);
     void flushBack();
     InodeId ialloc();
-    void ifree(InodeId inodeId);
+    void ifree(InodeId inode_id);
 };
 ```
 
@@ -514,12 +514,12 @@ int VFS::write(int fd, u_int8_t *content, int length)
     Buf *pBuf;
     while (writeByteCount < length) 
     {
-        BlkNum logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
+        BlkId logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
         if (logicBlkno == 1030)
         {
             printf("暂时停下");
         }
-        BlkNum phyBlkno = p_inode->Bmap(logicBlkno);            //物理盘块号
+        BlkId phy_blk_id = p_inode->Bmap(logicBlkno);            //物理盘块号
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
         //NOTE:可能要先读后写！！！
         //当写不满一个盘块的时候，就要先读后写
@@ -527,12 +527,12 @@ int VFS::write(int fd, u_int8_t *content, int length)
         {
 
             //这种情况不需要先读后写
-            pBuf = Kernel::instance()->getBufferCache().GetBlk(phyBlkno);
+            pBuf = Kernel::instance()->getBufferManager().GetBlk(phy_blk_id);
         }
         else
         {
             //先读后写
-            pBuf = Kernel::instance()->getBufferCache().Bread(phyBlkno);
+            pBuf = Kernel::instance()->getBufferManager().Bread(phy_blk_id);
         }
 
         u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
@@ -553,7 +553,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
 
             //修改offset
         }
-        Kernel::instance()->getBufferCache().Bdwrite(pBuf);
+        Kernel::instance()->getBufferManager().Bdwrite(pBuf);
     }
 
     return writeByteCount;
@@ -585,10 +585,10 @@ int VFS::read(int fd, u_int8_t *content, int length)
 
     while (readByteCount < length && p_file->f_offset <= p_inode->i_size) //NOTE 这里是<还是<=再考虑一下
     {
-        BlkNum logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
-        BlkNum phyBlkno = p_inode->Bmap(logicBlkno);            //物理盘块号
+        BlkId logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
+        BlkId phy_blk_id = p_inode->Bmap(logicBlkno);            //物理盘块号
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
-        pBuf = Kernel::instance()->getBufferCache().Bread(phyBlkno);
+        pBuf = Kernel::instance()->getBufferManager().Bread(phy_blk_id);
         u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - readByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
@@ -608,7 +608,7 @@ int VFS::read(int fd, u_int8_t *content, int length)
             content += DISK_BLOCK_SIZE - offsetInBlock + 1;
             //修改offset
         }
-        Kernel::instance()->getBufferCache().Brelse(pBuf);
+        Kernel::instance()->getBufferManager().Brelse(pBuf);
     }
 
     return readByteCount;
@@ -654,7 +654,7 @@ void BufferCache::Bflush()
 {
     Buf *bp;
 
-    for (bp = this->bFreeList.av_forw; bp != &(this->bFreeList); bp = bp->av_forw)
+    for (bp = this->bFreeList->av_forw; bp != this->bFreeList; bp = bp->av_forw)
     {
         /* 找出自由队列中所有延迟写的块 */
         if ((bp->b_flags & Buf::B_DELWRI))
@@ -681,7 +681,7 @@ void BufferCache::Bflush()
 {
     Buf *bp;
 
-    for (bp = this->bFreeList.av_forw; bp != &(this->bFreeList); bp = bp->av_forw)
+    for (bp = this->bFreeList->av_forw; bp != this->bFreeList; bp = bp->av_forw)
     {
         /* 找出自由队列中所有延迟写的块 */
         if ((bp->b_flags & Buf::B_DELWRI))

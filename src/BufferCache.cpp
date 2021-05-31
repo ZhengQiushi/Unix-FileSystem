@@ -10,15 +10,10 @@ void BufferCache::setDiskDriver(DiskDriver *my_diskDriver)
 {
     this->diskDriver = my_diskDriver;
 }
-int BufferCache::mount()
-{
-    init();
-    return 1;//diskDriver->mount();
-}
+
 void BufferCache::unmount()
 {
     Bflush();
-    diskDriver->unmount();
 } //unmount的时候需要把脏缓存刷回
 
 /**
@@ -52,11 +47,11 @@ void BufferCache::init()
 /**
  * 将物理盘块一整块读入diskBlockPool
  */
-Buf *BufferCache::Bread(int blkno)
+Buf *BufferCache::Bread(int blk_num)
 {
     Buf *bp;
     /* 根据块号申请缓存 */
-    bp = this->GetBlk(blkno);
+    bp = this->GetBlk(blk_num);
 
     /* 如果在设备队列中找到所需缓存，即B_DONE已设置，就不需进行I/O操作 */
     if (bp->b_flags & Buf::B_DONE) //DONE是数据一致性的表示
@@ -68,13 +63,16 @@ Buf *BufferCache::Bread(int blkno)
     bp->b_flags |= Buf::B_READ;
     bp->b_wcount = DISK_BLOCK_SIZE;
 
-    diskDriver->readBlk(blkno, bp->b_addr);
+    diskDriver->readBlk(blk_num, bp->b_addr);
     
     bp->b_flags |= Buf::B_DONE;
 
     return bp;
 }
-
+void BufferCache::Bclear(Buf *bp) {
+    memset(bp->b_addr, 0, DISK_BLOCK_SIZE);
+	return;
+}
 /**
  * 将一个缓存块中的东西写回磁盘
  */
@@ -90,7 +88,7 @@ void BufferCache::Bwrite(Buf *bp)
 
     if ((flags & Buf::B_DELWRI) == 0)
     {
-        /*
+    /*
      * 如果不是延迟写，则检查错误；否则不检查。
      * 这是因为如果延迟写，则很有可能当前进程不是
      * 操作这一缓存块的进程，而在GetError()主要是
@@ -134,18 +132,17 @@ void BufferCache::Bflush()
             //this->NotAvail(bp);
             this->Bwrite(bp);
             //this->Brelse(bp);
-            //std::cout << bp->b_blkno << std::endl;
         }
     }
 
     return;
 }
-//void writeBlk(int blkno, const DiskBlock &contentToWrite); //将内存的一块区域，写入缓冲区（如果不在缓冲区的话，需要先读）
+//void writeBlk(int blk_num, const DiskBlock &contentToWrite); //将内存的一块区域，写入缓冲区（如果不在缓冲区的话，需要先读）
 
 /**
  * 申请一块缓存，用于读写设备dev上的字符块blkno
  */
-Buf *BufferCache::GetBlk(int blkno)
+Buf *BufferCache::GetBlk(int blk_num)
 {
     Buf *bp;
     //Devtab *dp;
@@ -162,7 +159,7 @@ Buf *BufferCache::GetBlk(int blkno)
     for (bp = bFreeList.b_forw; bp != &bFreeList; bp = bp->b_forw)
     {
         /* 不是要找的缓存，则继续 */
-        if (bp->b_blkno != blkno)
+        if (bp->b_blkno != blk_num)
             continue;
 
         /* 从自由队列中抽取出来 */
@@ -172,7 +169,11 @@ Buf *BufferCache::GetBlk(int blkno)
 
     /* 取自由队列第一个空闲块 */
     bp = this->bFreeList.av_forw;
+    if(bp == &this->bFreeList){
+        
+    }
     this->NotAvail(bp);
+
 
     /* 如果该字符块是延迟写，将其异步写到磁盘上 */
     if (bp->b_flags & Buf::B_DELWRI)
@@ -180,11 +181,13 @@ Buf *BufferCache::GetBlk(int blkno)
         this->Bwrite(bp);
     }
 
-
     /* 注意: 这里清除了所有其他位，只设了B_BUSY */
     bp->b_flags = Buf::B_BUSY; //若有延迟写bit，也一并消除了
-    bp->b_blkno = blkno;
+    bp->b_blkno = blk_num;
     memset(bp->b_addr, 0, DISK_BLOCK_SIZE);
+    
+    //std::cout <<"bp->b_blkno: " <<  blk_num << "\n";
+
     if (bp->b_dev != devno)
     {
         //加入设备缓存队列

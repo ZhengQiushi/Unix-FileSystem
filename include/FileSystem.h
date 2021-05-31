@@ -47,28 +47,28 @@ public:
 
 #define ROOT_INODE_ID 1
 
-class Ext2
+class VFS
 {
 private:
   //SuperBlock *p_superBlock;
   //磁盘SuperBlock的内存映像的指针。
   //因为神奇的mmap，这里可以用这个指针指向虚拟磁盘的superblock
-  //InodePool *p_InodePool;     //DiskInode池
+  //InodeBlock *p_InodePool;     //DiskInode池
   BufferCache *p_bufferCache; //绑定的BufferCache,ext2不直接和DiskDriver打交道，透过这个缓存层
-  Ext2_Status ext2_status = Ext2_UNINITIALIZED;
+  VFS_Status ext2_status = VFS_UNINITIALIZED;
 
 public:
   void format(); //格式化
   
   int unregisterFs();
   
-  Ext2_Status getExt2Status();
-  Ext2_Status setExt2Status(Ext2_Status ext2_status);
+  VFS_Status getExt2Status();
+  VFS_Status setExt2Status(VFS_Status ext2_status);
 
   int setBufferCache(BufferCache *p_bufferCache);
   int allocNewInode(); //分配一个新的inode
-  DiskInode getDiskInodeByNum(int inodeID);
-  void updateDiskInode(int inodeID, DiskInode diskInode);
+  DiskInode getDiskInodeByNum(int inode_id);
+  void writeBackDiskInode(int inode_id, DiskInode disk_inode);
 
   InodeId locateInode(const Path& path);
   InodeId locateDir(const Path& path);

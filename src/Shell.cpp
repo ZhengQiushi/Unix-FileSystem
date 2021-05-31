@@ -307,20 +307,12 @@ int Shell::getParamAmount()
 void Shell::mount()
 {
     Logcat::devlog(TAG, "MOUNT EXEC");
-    /**
-     * 装载磁盘的最上层命令调用函数：
-     * 硬盘装载的步骤：
-     * ①内存inodeCache初始化
-     * ②DiskDriver打开虚拟磁盘img，mmap，进入就绪状态
-     * ③装载SuperBlock到VFS的SuperBlock缓存
-     * 
-     *  */
-    my_kernel.mount();
+    my_kernel.initKernel();
 }
 
 void Shell::unmount()
 {
-    my_kernel.unmount();
+    my_kernel.relsKernel();
     Logcat::devlog(TAG, "unmount EXEC");
 }
 
@@ -435,14 +427,11 @@ void Shell::man()
 
     Logcat::devlog(TAG, "man EXEC");
 }
-void Shell::mexit()
-{
-    if (1)
-    {
-        my_kernel.unmount();
-    }
+void Shell::mexit(){
+
+    my_kernel.relsKernel();
     Logcat::devlog(TAG, "exit EXEC");
-    Logcat::log("程序结束！");
+    Logcat::log("[INFO]程序结束,期望下次与您相会");
     exit(OK);
 }
 
@@ -525,6 +514,9 @@ void Shell::store()
         }
         Inode *p_desInode = Kernel::instance().getInodeCache().getInodeByID(desInodeId);
         p_desInode->i_size = file_size; //TODO这一块不太好，封装性差了点
+
+
+        
 
         //Step4：关闭文件
         fclose(fd_src);
@@ -656,7 +648,7 @@ void Shell::open()
         //Step1：打开内部文件
         Path srcPath(getParam(1));
 
-        InodeId targetInodeId = my_kernel.getExt2().locateInode(srcPath);
+        InodeId targetInodeId = my_kernel.getFileSystem().locateInode(srcPath);
         if (targetInodeId <= 0)
         {
             Logcat::log("[ERROR]无法打开不存在的文件");
@@ -695,6 +687,10 @@ void Shell::close()
     {
         User& u = Kernel::instance().getUser();
         //Step1
+        if(!isdigit(std::string(getParam(1)).front())){
+            Logcat::log("[ERROR]fd为非法输入");
+            return;
+        }
         FileFd fd_src = std::stoi(getParam(1));
         /* 获取打开文件控制块File结构 */
         File* pFile = u.u_ofiles.GetF(fd_src);

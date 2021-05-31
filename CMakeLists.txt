@@ -46,6 +46,6 @@ if("${FLATFORM}" STREQUAL "WINDOWS")
 else ()
     message(STATUS " Compiling for Linux")
     add_executable(my_VFS  main.cpp src/Shell.cpp src/Kernel.cpp src/BufferCache.cpp src/DiskDriver.cpp src/FileSystem.cpp 
-    src/Tools.cpp src/VFS.cpp)
+    src/Tools.cpp)
 
 endif()
