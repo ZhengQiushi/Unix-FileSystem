@@ -1,20 +1,20 @@
 #include "Shell.h"
-
 #include "Kernel.h"
 
-void Shell::help()
-{
+void Shell::help(){
     system("cat help");
 }
 
-int Shell::readUserInput()
-{
+int Shell::readUserInput(){
+    /**
+     * @brief 解析输入，调用功能。
+     * @notice 这是一个死循环
+     */
     mount();
-    Logcat::log("建议先输入help指令，查看使用说明");
+
+    std::cout << "[INFO]程序成功启动，祝您使用愉快" << std::endl;
+    std::cout << "[INFO]help 和 man 指令随时为您效劳 :)" << std::endl;
     
-
-
-
     static int auto_test = 0;
     
     char test[50][100] = { " ",
@@ -76,7 +76,6 @@ int Shell::readUserInput()
 
                          };
 
-    // strcat(tty_buffer, test);
     static int format_inst_num = 0;
     char format_inst[50][100] = {
         " ",
@@ -94,15 +93,16 @@ int Shell::readUserInput()
     int need_format = 0;
 
     while (true){
-        //Step0:
-        //显示命令提示符
+        //显示命令提示符与当前路径
 
         printf("[host-1851447] %s $", Kernel::instance().getUser().cur_path.c_str());
         putchar(' ');
-        //TODO
+
+        //是否执行初始化语句
         if(need_format == 1){
             if(format_inst_num ++ < 9){
                 strcpy(tty_buffer, format_inst[format_inst_num]);
+                std::cout << tty_buffer << std::endl;
             }
             else{
                 need_format = 0;
@@ -110,143 +110,133 @@ int Shell::readUserInput()
             }
         }
         else if(auto_test ++ < 0){
+            // 是否执行自动测试语句
             strcpy(tty_buffer, test[auto_test]);
-            //printf("%s\n", tty_buffer);
+            std::cout << tty_buffer << std::endl;
         }
         else{
+            // 从命令行读语句
             std::cin.getline(tty_buffer, MAX_CMD_LEN, '\n');
         }
-        
-
-        //Step2:先将tab转换为space
-        for (char *checker = strrchr(tty_buffer, '\t'); checker != NULL; checker = strrchr(checker, '\t'))
-        {
-            *checker = ' ';
-        }
-
-        //Step3:以空格、tab为界，分解命令参数，存到Shell::split_cmd中
-        char *dupl_tty_buffer = strdup(tty_buffer);
-        /**
-         * NOTE strdup创建的字符串是在堆上的，需要自己delete释放
-         *@comment:这里拷贝一份tty_buffer的副本，因为后面用strtok函数的时候，会改变参数的字符串
-         *当然也不是非要调用strtok，但是方便啊
-         * 
-         */
-
-        //splitCmd先清空一下
-        memset(split_cmd, 0x0, sizeof(split_cmd));
-        int cmd_param_seq = 0;
-        for (char *p = strtok(dupl_tty_buffer, " "); p != nullptr; p = strtok(NULL, " "), cmd_param_seq++)
-        {
-            strcpy(split_cmd[cmd_param_seq], p);
-        }
-        param_num = cmd_param_seq;
-
-        //TODO
-
-        //Step4:解析执行指令
+        //解析指令
         parseCmd();
+        //执行指令
+        executeCmd();
+        //如果是初始化...
         if(getInstType() == FORMAT){
             need_format = 1;
         }
-        delete dupl_tty_buffer;
+        
         fflush(stdin);
     }
 }
 
-void Shell::parseCmd()
-{
-    switch (getInstType())
-    {
-    case MOUNT:
-        mount(); //OK
-        break;
-    case UNMOUNT:
-        unmount(); //OK
-        break;
-    case FORMAT:
-        format(); //OK
-        break;
-    case CD:
-        cd(); //OK
-        break;
-    case LS:
-        ls(); //OK
-        break;
-    case RM:
-        rm(); //OK
-        break;
-    case RMDIR:
-        rmdir(); //OK
-        break;
-    case MKDIR:
-        mkdir(); //OK
-        break;
-    case TOUCH:
-        touch(); //OK
-        break;
-    case CLEAR:
-        clear(); //OK
-        break;
-    case HELP:
-        help(); //OK
-        break;
-    case EXIT:
-        mexit(); //OK
-        break;
-    case VERSION:
-        version(); //OK
-        break;
-    case STORE:
-        store(); //OK
-        break;
-    case WITHDRAW:
-        withdraw(); //OKKK
-        break;
-    case FOPEN: 
-        open();
-        break;
-    case FCREAT: 
-        creat();
-        break;
-    case FREAD:
-        read();
-        break;
-    case FWRITE:
-        write();
-        break;
-    case FCLOSE:
-        close();
-        break;
-    case FSEEK:
-        lseek();
-        break;
-    case NOHUP:
-        break;
-    default:
-        Logcat::log("你输入了非法命令\n");
-        break;
+void Shell::parseCmd(){
+    //先将tab转换为space
+    for (char *checker = strrchr(tty_buffer, '\t'); checker != NULL; checker = strrchr(checker, '\t')){
+        *checker = ' ';
+    }
+
+    //Step3:以空格、tab为界，分解命令参数，存到Shell::split_cmd中
+    char *dupl_tty_buffer = strdup(tty_buffer);
+    //splitCmd先清空一下
+    memset(split_cmd, 0x0, sizeof(split_cmd));
+    int cmd_param_seq = 0;
+    for (char *p = strtok(dupl_tty_buffer, " "); p != nullptr; p = strtok(NULL, " "), cmd_param_seq++){
+        strcpy(split_cmd[cmd_param_seq], p);
+    }
+    param_num = cmd_param_seq;
+    delete dupl_tty_buffer;
+}
+
+void Shell::executeCmd(){
+    switch (getInstType()){
+        case MOUNT:
+            mount(); //OK
+            break;
+        case UNMOUNT:
+            unmount(); //OK
+            break;
+        case FORMAT:
+            format(); //OK
+            break;
+        case CD:
+            cd(); //OK
+            break;
+        case LS:
+            ls(); //OK
+            break;
+        case RM:
+            rm(); //OK
+            break;
+        case RMDIR:
+            rmdir(); //OK
+            break;
+        case MKDIR:
+            mkdir(); //OK
+            break;
+        case TOUCH:
+            touch(); //OK
+            break;
+        case CLEAR:
+            clear(); //OK
+            break;
+        case HELP:
+            help(); //OK
+            break;
+        case EXIT:
+            mexit(); //OK
+            break;
+        case VERSION:
+            version(); //OK
+            break;
+        case STORE:
+            store(); //OK
+            break;
+        case WITHDRAW:
+            withdraw(); //OKKK
+            break;
+        case FOPEN: 
+            open();
+            break;
+        case FCREAT: 
+            creat();
+            break;
+        case FREAD:
+            read();
+            break;
+        case FWRITE:
+            write();
+            break;
+        case FCLOSE:
+            close();
+            break;
+        case FSEEK:
+            lseek();
+            break;
+        case NOHUP:
+            break;
+        default:
+            std::cout <<("[ERROR]你输入了非法命令") << std::endl;
+            break;
     }
 }
 
-/**
- * @comment:实际上是做字符串到枚举类型的转化，为了switch case
- */
-INSTRUCT Shell::getInstType()
-{
+
+INSTRUCT Shell::getInstType(){
+    /**
+     * @comment:实际上是做字符串到枚举类型的转化，为了switch case
+     */
     char *instStr = getInstStr();
 
 #ifdef IS_DEBUG
-    Logcat::log(TAG, "命令行命令字为:");
-    Logcat::log(TAG, instStr);
+    std::cout <<"命令行命令字为:" << instStr << std::endl;
 #endif
 
     //为什么从1开始
-    for (int i = 1; i < INST_NUM; i++)
-    {
+    for (int i = 1; i < INST_NUM; i++){
         //这里要加感叹号，注意strcmp在相等时返回的是0
-        if (!strcmp(instructStr[i], instStr))
-        {
+        if (!strcmp(instructStr[i], instStr)){
 
 #ifdef IS_DEBUG
             //std::cout<<INSTRUCT(i)<<std::endl;
@@ -271,183 +261,136 @@ int Shell::FileMode(std::string mode) {
     return md;
 }
 
-/**
- * @comment:命令缓冲区→命令参数字符数组→第一个参数得到命令字符串
- * 此函数的功能就是读出第一个字符串，亦即InstStr
- */
-char *Shell::getInstStr()
-{
+
+char *Shell::getInstStr(){
+    /**
+     * 
+     */
     return split_cmd[0];
     //很简单，数组首个就是命令关键字
 }
 
-/**
- * @comment:这个是getInstStr更通用的情况
- */
-char *Shell::getParam(int i)
-{
+
+char *Shell::getParam(int i){
     return split_cmd[i];
 }
 
-/**
- * 获得参数的个数
- */
-int Shell::getParamAmount()
-{
-    for (int i = 0; i < MAX_PARAM_NUM; i++)
-    {
-        if (!strcmp(split_cmd[i], ""))
-        {
+
+int Shell::getParamAmount(){
+    /**
+     * 获得参数的个数
+     */
+    for (int i = 0; i < MAX_PARAM_NUM; i++){
+        if (!strcmp(split_cmd[i], "")){
             return i;
         }
     }
     return MAX_PARAM_NUM;
 }
 
-void Shell::mount()
-{
-    Logcat::devlog(TAG, "MOUNT EXEC");
+void Shell::mount(){
     my_kernel.initKernel();
 }
 
-void Shell::unmount()
-{
+void Shell::unmount(){
     my_kernel.relsKernel();
-    Logcat::devlog(TAG, "unmount EXEC");
 }
 
 /**
  * 对装载的磁盘镜像做格式化
  */
-void Shell::format()
-{
+void Shell::format(){
     my_kernel.format();
-    Logcat::devlog(TAG, "format EXEC");
 }
-void Shell::mkdir()
-{
-    if (getParamAmount() == 2){
 
+void Shell::mkdir(){
+    if (getParamAmount() == 2){
         switch (my_kernel.mkDir(getParam(1))){
             case ERROR_FILENAME_EXSIST:
-                Logcat::log("[ERROR]创建失败,存在同名目录");
+                std::cout <<("[ERROR]创建失败,存在同名目录") << std::endl;
                 break;
             case ERROR_NO_FOLDER_EXSIT:
-                Logcat::log("[ERROR]创建失败,请先创建文件夹");
+                std::cout <<("[ERROR]创建失败,请先创建文件夹") << std::endl;
                 break;
             default:
-                Logcat::devlog(TAG, "创建成功");
                 break;
         }
     }
-    else
-    {
-        Logcat::log("ERROR！MKDIR参数个数错误！");
+    else{
+        std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
-    Logcat::devlog(TAG, "mkdir EXEC");
 }
-void Shell::cat()
-{
-    Logcat::devlog(TAG, "cat EXEC");
-    Logcat::log("cat 暂不支持");
-}
-void Shell::touch()
-{
-    if (getParamAmount() != 2)
-    {
-        Logcat::log("ERROR!参数个数错误！");
+
+void Shell::touch(){
+    if (getParamAmount() != 2){
+        std::cout <<("ERROR!参数个数错误！") << std::endl;
         return;
     }
     else
     {
-        switch (my_kernel.createFile(getParam(1))){
+        switch (my_kernel.kernelTouch(getParam(1))){
             case ERROR_FILENAME_EXSIST:
-                Logcat::log("[ERROR]创建失败,存在同名文件");
+                std::cout <<("[ERROR]创建失败,存在同名文件") << std::endl;
                 break;
             case ERROR_NO_FOLDER_EXSIT:
-                Logcat::log("[ERROR]创建失败,请先创建文件夹");
+                std::cout <<("[ERROR]创建失败,请先创建文件夹") << std::endl;
                 break;
             default:
-                Logcat::devlog(TAG, "创建成功");
                 break;
         }
     }
 }
 
-/**
- * 删除文件
- */
-void Shell::rm()
-{
-    if (getParamAmount() != 2)
-    {
-        Logcat::log("ERROR!参数个数错误！");
+
+void Shell::rm(){
+    if (getParamAmount() != 2){
+        std::cout <<("ERROR!参数个数错误！") << std::endl;
         return;
     }
-    else
-    {
-        if (0 > my_kernel.deleteFile(getParam(1)))
-        {
-            Logcat::log("删除文件失败！");
+    else{
+        if (0 > my_kernel.deleteFile(getParam(1))){
+            std::cout <<("删除文件失败！") << std::endl;
+        }
+    }
+}
+
+
+void Shell::rmdir(){
+    if (getParamAmount() != 2){
+        std::cout <<("ERROR!参数个数错误！") << std::endl;
+        return;
+    }
+    else{
+        if (0 > my_kernel.deleteFolder(getParam(1))){
+            std::cout <<("删除，目录失败！") << std::endl;
         }
     }
 
-    Logcat::devlog(TAG, "rm EXEC");
 }
 
-/**
- * 删除目录以及其下的所有文件
- */
-void Shell::rmdir()
-{
-    if (getParamAmount() != 2)
-    {
-        Logcat::log("ERROR!参数个数错误！");
-        return;
-    }
-    else
-    {
-        if (0 > my_kernel.deleteFolder(getParam(1)))
-        {
-            Logcat::log("删除，目录失败！");
-        }
-    }
-
-    Logcat::devlog(TAG, "rmdir EXEC");
-}
-
-void Shell::version()
-{
+void Shell::version(){
     system("cat version");
-    Logcat::devlog(TAG, "version EXEC");
 }
-void Shell::man()
-{
-    Logcat::log(TAG, "欢迎求助那个男人");
 
-    Logcat::devlog(TAG, "man EXEC");
+void Shell::man(){
+    std::cout <<(TAG, "欢迎求助那个男人");
 }
 void Shell::mexit(){
-
     my_kernel.relsKernel();
-    Logcat::devlog(TAG, "exit EXEC");
-    Logcat::log("[INFO]程序结束,期望下次与您相会");
+    std::cout <<("[INFO]程序结束,期望下次与您相会") << std::endl;
     exit(OK);
 }
 
 /**
  * 用户指令：更改当前目录
  */
-void Shell::cd()
-{
+void Shell::cd(){
 
     //cd必须带参数
-    if (getParamAmount() != 2)
-    {
-        Logcat::log("Error!cd命令参数个数错误！");
+    if (getParamAmount() != 2){
+        std::cout <<("Error!cd命令参数个数错误！")  << std::endl;
     }
-    else
-    {
+    else{
         my_kernel.cd(getParam(1));
     }
 }
@@ -466,7 +409,7 @@ void Shell::ls()
 
     }
     else{
-        Logcat::log("[ERROR]非法的参数个数");
+        std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
 
 }
@@ -482,14 +425,14 @@ void Shell::store()
         InodeId desInodeId;
         //STORE的步骤
         //Step1：创建文件（如果有同名的返回失败）
-        desInodeId = my_kernel.createFile(getParam(2));
+        desInodeId = my_kernel.kernelTouch(getParam(2));
         if (desInodeId < 0)
         {
-            Logcat::log("ERROR!目标文件名已存在！");
+            std::cout <<("ERROR!目标文件名已存在！") << std::endl;
             return;
         }
         //Step2：打开文件
-        Path desPath(getParam(2));
+        myPath desPath(getParam(2));
 
         FileFd fd_des = my_kernel.open(desPath, File::FWRITE);
 
@@ -497,7 +440,7 @@ void Shell::store()
         FILE *fd_src = fopen(getParam(1), "rb");
         if (fd_src == NULL)
         {
-            Logcat::log("[ERROR]源文件打开失败！");
+            std::cout <<("[ERROR]源文件打开失败！") << std::endl;
             // 删除该文件...
             Kernel::instance().deleteObject(getParam(2));
 
@@ -524,7 +467,7 @@ void Shell::store()
     }
     else
     {
-        Logcat::log("[ERROR]非法的参数个数");
+        std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
 }
 
@@ -542,16 +485,16 @@ void Shell::withdraw()
         FILE *fd_des = fopen(getParam(2), "wb");
         if (fd_des == NULL)
         {
-            Logcat::log("[ERROR]目的文件创建失败！");
+            std::cout <<("[ERROR]目的文件创建失败！") << std::endl;
             return;
         }
 
         //Step2：打开文件
-        Path srcPath(getParam(1));
+        myPath srcPath(getParam(1));
         FileFd fd_src = my_kernel.open(srcPath, File::FREAD);
         if (fd_src < 0)
         {
-            Logcat::log("[ERROR]源文件打开失败！");
+            std::cout <<("[ERROR]源文件打开失败！") << std::endl;
             return;
         }
         //Step3：写入文件
@@ -571,7 +514,7 @@ void Shell::withdraw()
     }
     else
     {
-        Logcat::log("[ERROR]非法的参数个数");
+        std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
 }
 
@@ -599,32 +542,32 @@ void Shell::creat()
      */
     if (getParamAmount() != 3)
     {
-        Logcat::log("[ERROR]参数个数错误！");
+        std::cout <<("[ERROR]参数个数错误！") << std::endl;
         return;
     }
     else
     {
         int md = FileMode(getParam(2));
         if (md == 0) {
-            Logcat::log("[ERROR]没有定义的操作类型");
+            std::cout <<("[ERROR]没有定义的操作类型") << std::endl;
             return;
         }
 
-        if (0 > my_kernel.createFile(getParam(1)))
+        if (0 > my_kernel.kernelTouch(getParam(1)))
         {
-            Logcat::log("[ERROR]存在同名文件，创建失败");
+            std::cout <<("[ERROR]存在同名文件，创建失败") << std::endl;
             return;
         }
         //Step1：打开内部文件
-        Path srcPath(getParam(1));
+        myPath srcPath(getParam(1));
         FileFd fd_des = my_kernel.open(srcPath, md);
 
         if (fd_des < 0)
         {
-            Logcat::log("[ERROR]文件打开失败！");
+            std::cout <<("[ERROR]文件打开失败！") << std::endl;
             return;
         }
-        printf("[INFO]成功创建并打开文件，fd = %d\n", fd_des);
+        std::cout << "[INFO]成功创建并打开文件，fd = " << fd_des  << std::endl;
     }
 }
 
@@ -641,22 +584,22 @@ void Shell::open()
     {
         int md = FileMode(getParam(2));
         if (md == 0) {
-            Logcat::log("[ERROR]没有定义的操作类型");
+            std::cout <<("[ERROR]没有定义的操作类型") << std::endl;
             return;
         }
 
         //Step1：打开内部文件
-        Path srcPath(getParam(1));
-
+        myPath srcPath(getParam(1));
+         
         InodeId targetInodeId = my_kernel.getFileSystem().locateInode(srcPath);
         if (targetInodeId <= 0)
         {
-            Logcat::log("[ERROR]无法打开不存在的文件");
+            std::cout <<("[ERROR]无法打开不存在的文件") << std::endl;
             return;
         }
         else if ((my_kernel.getInodeCache().getInodeByID(targetInodeId)->i_mode & Inode::IFMT) == Inode::IFDIR)
         {
-            Logcat::log("[ERROR]无法打开一个目录");
+            std::cout <<("[ERROR]无法打开一个目录") << std::endl;
             return;
         }
 
@@ -664,14 +607,14 @@ void Shell::open()
 
         if (fd_des < 0)
         {
-            Logcat::log("[ERROR]文件打开失败");
+            std::cout <<("[ERROR]文件打开失败") << std::endl;
             return;
         }
-        printf("[INFO]成功打开文件，fd = %d\n", fd_des);
+        std::cout << "[INFO]成功打开文件，fd = " << fd_des << std::endl;
     }
     else
     {
-        Logcat::log("[ERROR]非法的参数个数");
+        std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
 
 }
@@ -688,22 +631,22 @@ void Shell::close()
         User& u = Kernel::instance().getUser();
         //Step1
         if(!isdigit(std::string(getParam(1)).front())){
-            Logcat::log("[ERROR]fd为非法输入");
+            std::cout <<("[ERROR]fd为非法输入") << std::endl;
             return;
         }
         FileFd fd_src = std::stoi(getParam(1));
         /* 获取打开文件控制块File结构 */
         File* pFile = u.u_ofiles.GetF(fd_src);
         if (NULL == pFile) {
-            Logcat::log("[ERROR]不存在这个fd");
+            std::cout <<("[ERROR]不存在这个fd") << std::endl;
             return;
         }
-        printf("[INFO]成功关闭fd = %d\n", fd_src);
+        std::cout << "[INFO]成功关闭fd = " << fd_src << std::endl;
         my_kernel.close(fd_src);
     }
     else
     {
-        Logcat::log("[ERROR]非法的参数个数");
+        std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
 }
 
@@ -721,14 +664,14 @@ void Shell::read(){
         User& u = Kernel::instance().getUser();
 
         if(!isdigit(std::string(getParam(1)).front())){
-            Logcat::log("[ERROR]fd为非法输入");
+            std::cout <<("[ERROR]fd为非法输入") << std::endl;
             return;
         }
         FileFd fd_src = std::stoi(getParam(1));
         File* pFile = u.u_ofiles.GetF(fd_src);
 
         if (NULL == pFile) {
-            Logcat::log("[ERROR]不存在这个fd");
+            std::cout <<("[ERROR]不存在这个fd") << std::endl;
             return;
         }
 
@@ -745,13 +688,13 @@ void Shell::read(){
 
             if(strcmp(getParam(2), "-o") != 0){
                 //
-                Logcat::log("[ERROR]第二个参数应该为-o");
+                std::cout <<("[ERROR]第二个参数应该为-o") << std::endl;
                 return;
             }
             //Step1：创建文件（如果有同名的返回失败）
             FILE *fd_des = fopen(getParam(3), "wb");
             if (fd_des == NULL){
-                Logcat::log("[ERROR]目的文件创建失败！");
+                std::cout <<("[ERROR]目的文件创建失败") << std::endl;
                 return;
             }
 
@@ -772,7 +715,7 @@ void Shell::read(){
             }
             else{
                 if(!isdigit(std::string(getParam(4)).front())){
-                    Logcat::log("[ERROR]size为非法输入");
+                    std::cout <<("[ERROR]size为非法输入") << std::endl;
                     return;
                 }
                 read_limit = std::stoi(getParam(4));
@@ -803,7 +746,7 @@ void Shell::read(){
         else if(getParamAmount() == 3){
             if(strcmp(getParam(2), "-f") != 0){
                 if(!isdigit(std::string(getParam(2)).front())){
-                    Logcat::log("[ERROR]size为非法输入");
+                    std::cout <<("[ERROR]size为非法输入") << std::endl;
                     return;
                 }
                 read_limit = std::stoi(getParam(2));
@@ -826,16 +769,16 @@ void Shell::read(){
                 cur_read_num += readable_size;
             }
             char s[1];
-            printf("[INFO] 成功读出%d bytes,内容为: %s\n", cur_read_num, res_read.data()); // s);//
+            std::cout << "[INFO] 成功读出" << cur_read_num << " bytes,内容为: \n" << res_read.data() << std::endl; // s);//
         }
         //WITHDRAW的步骤
         else{
-            Logcat::log("[ERROR]非法的参数个数");
+            std::cout <<("[ERROR]非法的参数个数") << std::endl;
         }
     }
     else
     {
-        Logcat::log("[ERROR]非法的参数个数");
+        std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
 
 }
@@ -856,7 +799,7 @@ void Shell::write()
     if (cur_arg_num == 3 || cur_arg_num == 5)
     {
         if(!isdigit(std::string(getParam(1)).front())){
-            Logcat::log("[ERROR]fd为非法输入");
+            std::cout <<("[ERROR]fd为非法输入") << std::endl;
             return;
         }
         User& u = Kernel::instance().getUser();
@@ -872,12 +815,12 @@ void Shell::write()
         int file_offset = pFile->f_offset;
 
         if (NULL == pFile) {
-            Logcat::log("[ERROR]不存在这个fd");
+            std::cout <<("[ERROR]不存在这个fd") << std::endl;
             return;
         }
 
         if(pFile->f_flag < File::FWRITE){
-            Logcat::log("[ERROR]没有写的权利");
+            std::cout <<("[ERROR]没有写的权利") << std::endl;
             return;
         }
         //
@@ -905,7 +848,7 @@ void Shell::write()
 
             FILE *fd_src = fopen(getParam(3), "rb");
             if (fd_src == NULL){
-                Logcat::log("[ERROR]不存在的外部文件");
+                std::cout <<("[ERROR]不存在的外部文件") << std::endl;
                 return;
             }
             // 从文件中写入
@@ -938,19 +881,19 @@ void Shell::write()
         }
         
         else{
-            Logcat::log("[ERROR]不符合输入规则");
+            std::cout <<("[ERROR]不符合输入规则") << std::endl;
             return;
         }
         Inode *p_desInode = Kernel::instance().getInodeCache().getInodeByID(desInodeId);
         p_desInode->i_size = std::max(file_offset + file_size, ori_file_size); //TODO这一块不太好，封装性差了点
 
-        printf("[INFO]成功写入 fd = %d %d bytes\n", fd_des, file_size);
+        std::cout << "[INFO]成功写入fd = " << fd_des << "  " << file_size << " bytes" << std::endl;
         //printf("%d %d\n", file_offset + file_size, ori_file_size);
 
     }
     else
     {
-        Logcat::log("[ERROR]参数个数错误");
+        std::cout <<("[ERROR]参数个数错误") << std::endl;
     }
 }
 
@@ -967,13 +910,13 @@ void Shell::lseek()
 
 
         if(!isdigit(std::string(getParam(1)).front())){
-            Logcat::log("[ERROR]fd为非法输入");
+            std::cout <<("[ERROR]fd为非法输入") << std::endl;
             return;
         }
         char front = std::string(getParam(2)).front();
 
         if(!isdigit(front) && front != '-' ){
-            Logcat::log("[ERROR]offset为非法输入");
+            std::cout <<("[ERROR]offset为非法输入") << std::endl;
             return;
         }
 
@@ -985,7 +928,7 @@ void Shell::lseek()
         File* pFile = u.u_ofiles.GetF(fd_src);
 
         if (NULL == pFile) {
-            Logcat::log("[ERROR]不存在这个fd");
+            std::cout <<("[ERROR]不存在这个fd") << std::endl;
             return;
         }
         Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); //TODO错误处理?
@@ -1005,7 +948,7 @@ void Shell::lseek()
         }
         int real_offset = pFile->f_offset - file_offset; // (+往后，-往前)
 
-        printf("[INFO]成功seek %d bytes, 当前位置： %d \n", real_offset, pFile->f_offset);
+        std::cout << "[INFO]成功seek " << real_offset << " bytes, 当前位置： " << pFile->f_offset << std::endl;
 
 
     }

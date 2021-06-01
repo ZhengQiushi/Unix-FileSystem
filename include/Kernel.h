@@ -216,7 +216,8 @@ public:
   void relseBlock(Inode *delete_inode);
 
   int format();
-  InodeId createFile(const char *fileName); //返回分配的Inode编号
+  InodeId kernelTouch(const char *fileName); //返回分配的Inode编号
+  InodeId createFile(const InodeId &cur_Inode, const InodeId &par_inode, const std::string &node_name);
   InodeId deleteFile(const char *fileName); //删除文件
   InodeId deleteFile(const InodeId &cur_Inode, const InodeId &par_Inode);
   
@@ -227,7 +228,7 @@ public:
   int cd(const char *dirName);    //返回进入的dir的Inode
   void ls(const char *dirName);
   void ls(InodeId dirInodeID);
-  int open(const Path& path, int mode);
+  int open(const myPath& path, int mode);
   int close(int fd);
   int read(int fd, uint8_t *content, int length);  //用户层面，文件必须先打开才可读
   int write(int fd, uint8_t *content, int length); //用户层面，文件必须先打开才可写

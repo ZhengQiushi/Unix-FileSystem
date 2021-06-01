@@ -27,6 +27,7 @@ public:
   Shell(Kernel& kernel);
   ~Shell();
   int readUserInput();
+  void executeCmd();
   void parseCmd();
   INSTRUCT getInstType();
   char *getInstStr();
@@ -41,7 +42,6 @@ public:
   void unmount(); //卸载磁盘
   void format();
   void mkdir();
-  void cat();
   void touch();
   void rm();
   void rmdir();

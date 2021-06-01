@@ -1,16 +1,16 @@
-#ifndef OS_MAIN_DEFINE //确保不重复编译
+#ifndef OS_MAIN_DEFINE 
 #define OS_MAIN_DEFINE
-#define IS_DEBUG //调试状态
+//#define IS_DEBUG //调试状态
 
-#include <iostream> //大家都懂
+#include <iostream>
+#include <iomanip>
 #include <vector>
 #include <stdio.h>
-#include <cstring>    //用到str函数
-#include <string>     //沈坚不让用的String类
-#include <stdint.h>   //需要用到比特类型
-#include <fcntl.h>    //open系统调用
-#include <unistd.h>   //lseek函数
-
+#include <cstring>   
+#include <string>     
+#include <stdint.h>  
+#include <fcntl.h>    
+#include <unistd.h>   
 //#define WINDOWS
 
 #if defined(WINDOWS) 
@@ -20,15 +20,15 @@
 #endif
 
 
-#include <sys/stat.h> //文件设置权限
-#include <stdlib.h>   //随机数
-#include <time.h>     //随机数种子要用
+#include <sys/stat.h> 
+#include <stdlib.h>  
+#include <time.h>     
 #include <string>
 
-//const和define的区别
-#define DISK_BLOCK_SIZE 4096                         //每个磁盘块的大小（字节）
-#define DISK_SIZE (64 * 1024 * 1024)                 //磁盘大小（字节）
-#define DISK_BLOCK_NUM (DISK_SIZE / DISK_BLOCK_SIZE) //磁盘有多少个磁盘块
+
+#define DISK_BLOCK_SIZE 4096                         
+#define DISK_SIZE (64 * 1024 * 1024)                 
+#define DISK_BLOCK_NUM (DISK_SIZE / DISK_BLOCK_SIZE) 
 #define DISK_IMG_DIR "./1851447.img"
 #define BITMAP_PERBLOCK_SIZE 8
 #define BUFFER_CACHE_NUM 20
@@ -94,6 +94,9 @@ enum INSTRUCT {
     FSEEK,
     NOHUP
 };
+
+
+
 const int INST_NUM = 23;
 //NOTE 注意，如果改了上面的枚举类型，那么下面的这个数字也需要相应修改
 

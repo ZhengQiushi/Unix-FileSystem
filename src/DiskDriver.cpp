@@ -50,14 +50,14 @@ VFS_Status DiskDriver::mountImg(){
    disk_mem_addr = (DiskBlock *)mmap(nullptr, DISK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, disk_img_fd, 0);
    if (disk_mem_addr == MAP_FAILED){
       #ifdef IS_DEBUG
-         Logcat::log("[ERROR]镜像映射失败");
+         std::cout << "[ERROR]镜像映射失败" << std::endl;
       #endif
       exit(-1);
       ret_status = VFS_UNINITIALIZED;
    }
    else{
       #ifdef IS_DEBUG
-         Logcat::log("[INFO]镜像映射成功");
+         std::cout << "[INFO]镜像映射成功" << std::endl;
       #endif
    }
 
@@ -70,13 +70,13 @@ void DiskDriver::unmount(){
     */
    if (munmap(disk_mem_addr, DISK_SIZE) == -1){
       #ifdef IS_DEBUG
-         Logcat::log(TAG, "Munmap失败！");
+         std::cout << "[ERROR]镜像映射解除失败" << std::endl;
       #endif
       return;
    }
    else{
       #ifdef IS_DEBUG
-         Logcat::log(TAG, "Munmap成功！");
+         std::cout << "[INFO]镜像映射解除成功" << std::endl;
       #endif
       close(disk_img_fd);
    }
@@ -109,7 +109,7 @@ DirectoryCache::DirectoryCache() : directoryEntryCacheBitmap(DIRECTORY_ENTRY_CAC
 /**
  * 根据filepath来查找，如果有的话，返回该目录的inode号(若没有返回-1)
  */
-InodeId DirectoryCache::findInodeIdByPath(Path path)
+InodeId DirectoryCache::findInodeIdByPath(myPath path)
 {
     return -1;
 }

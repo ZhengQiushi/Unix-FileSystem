@@ -223,7 +223,7 @@ public:
   Shell();
   ~Shell();
   int readUserInput();
-  void parseCmd();
+  void executeCmd();
   INSTRUCT getInstType();
   char *getInstStr();
   char *getParam(int i);
@@ -316,7 +316,7 @@ public:
   void writeBackDiskInode(int inode_id, DiskInode disk_inode);
 
   InodeId locateInode(Path &path);
-  InodeId locateDir(Path &path);
+  InodeId locateParDir(Path &path);
   InodeId getInodeIdInDir(InodeId dirInodeId, FileName fileName);
 
   int bmap(int inodeNum, int logicBlockNum); //文件中的地址映射。查混合索引表，确定物理块号。

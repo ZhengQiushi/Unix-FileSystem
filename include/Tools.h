@@ -2,56 +2,66 @@
 #define BITMAP_H
 #include "define.h"
 
-class TimeHelper
-{
-public:
-    static int getCurTime(); //获取当前时间
-};
-
-
-/**
- * Path是一个路径类，是将原始路径字符串解析构造而来
- */
-
-class Path
-{
-private:
-    char *path_str, *temp_str;
-    int sec_len, i_len, l_len;
-    //上面都是临时的，外部不要用
-public:
-    char path[MAX_PATH_LEVEL][MAX_FILENAME_LEN];
-    bool from_root;
-    int level;
-    //Operations:
-    Path();
-    Path(const Path &full_path);
-    explicit Path(const char *raw_path); //explicit关键字避免隐式类型转换
-    bool isSingleName() const;
-    std::string toString();
-    const char *getInodeName() const;
-};
-
-
-// class myPath{
+// class TimeHelper
+// {
 // public:
-//   std::vector
-// }
+//     static int getCurTime(); //获取当前时间
+// };
 
-class Logcat
-{
-private:
-  enum LOGCAT_STYLE
-  {
-    DEFAULT
-  };
 
+// /**
+//  * Path是一个路径类，是将原始路径字符串解析构造而来
+//  */
+
+// class Path
+// {
+// private:
+//     char *path_str, *temp_str;
+//     int sec_len, i_len, l_len;
+//     //上面都是临时的，外部不要用
+// public:
+//     char path[MAX_PATH_LEVEL][MAX_FILENAME_LEN];
+//     bool from_root;
+//     int level;
+//     //Operations:
+//     Path();
+//     Path(const Path &full_path);
+//     explicit Path(const char *raw_path); //explicit关键字避免隐式类型转换
+//     bool isSingleName() const;
+//     std::string toString();
+//     const char *getInodeName() const;
+// };
+
+
+class myPath{
 public:
-  static void log(const char *str);
-  static void log(const char *tag, const char *str);
-  static void devlog(const char *str);
-  static void devlog(const char *tag, const char *str);
+  std::vector<std::string> path;
+  bool from_root;
+  //int level;
+  myPath();
+  myPath(const myPath &full_path);
+  explicit myPath(const std::string& raw_path); //explicit关键字避免隐式类型转换
+  std::string toString() const;
+  const std::string getInodeName() const;
+  int getLevel() const;
+  std::string my_pop();
 };
+
+
+// class Logcat
+// {
+// private:
+//   enum LOGCAT_STYLE
+//   {
+//     DEFAULT
+//   };
+
+// public:
+//   static void log(const char *str);
+//   static void log(const char *tag, const char *str);
+//   static void devlog(const char *str);
+//   static void devlog(const char *tag, const char *str);
+// };
 std::string gengerString(int n);
 
 bool genTestsFile(std::string res_dir, const int test_str_len = 800);

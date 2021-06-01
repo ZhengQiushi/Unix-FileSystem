@@ -94,7 +94,7 @@ void BufferCache::Bwrite(Buf *bp)
      * 操作这一缓存块的进程，而在GetError()主要是
      * 给当前进程附上错误标志。
      */
-        Logcat::log("BufferCache", "bwrite出错！");
+        std::cout << "[ERROR]bwrite出错" << std::endl;
     }
     else
     {

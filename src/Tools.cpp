@@ -29,7 +29,7 @@ std::string gengerString(int n){
 bool genTestsFile(std::string res_dir, const int test_str_len){
    FILE *fd_des = fopen(res_dir.data(), "wb");
    if (fd_des == NULL){
-      Logcat::log("[ERROR]测试文件创建失败！");
+      std::cout <<("[ERROR]测试文件创建失败！");
       return -1;
    }
    std::string test_str = gengerString(test_str_len);
@@ -245,102 +245,103 @@ int Bitmap::getMapSize()
 {
     return this->bitmapSize;
 }
-void Logcat::log(const char *str)
-{
-    std::cout << str << std::endl;
-}
 
-void Logcat::log(const char *tag, const char *str)
-{
-    std::cout << tag << ":" << str << std::endl;
-}
+// void std::cout <<(const char *str)
+// {
+//     std::cout << str << std::endl;
+// }
 
-void Logcat::devlog(const char *tag, const char *str)
-{
-#ifdef IS_DEBUG
-    std::cout << tag << ":" << str << std::endl;
-#endif
-}
-void Logcat::devlog(const char *str)
-{
-#ifdef IS_DEBUG
-    std::cout << str << std::endl;
-#endif
-}
+// void std::cout <<(const char *tag, const char *str)
+// {
+//     std::cout << tag << ":" << str << std::endl;
+// }
 
+// void Logcat::devlog(const char *tag, const char *str)
+// {
+// #ifdef IS_DEBUG
+//     std::cout << tag << ":" << str << std::endl;
+// #endif
+// }
+// void Logcat::devlog(const char *str)
+// {
+// #ifdef IS_DEBUG
+//     std::cout << str << std::endl;
+// #endif
+// }
 
-Path::Path(){
-    memset(path,0,sizeof(path));
-    strcpy(path[0],"/");
+myPath::myPath(){
+    path.clear();
+    //path.push_back("/");
     from_root=true;
-    level=0;
+    //level=0;
 }
-
-Path::Path(const Path &full_path){
-    memcpy(this->path[0], full_path.path[0], MAX_PATH_LEVEL* MAX_FILENAME_LEN);
+myPath::myPath(const myPath &full_path){
+    this->path = full_path.path;
     this->from_root = full_path.from_root;
-    this->level = full_path.level - 1;
+    //this->level = full_path.level - 1;
 }
+myPath::myPath(const std::string& raw_path){
 
-Path::Path(const char *raw_path)
-{
-    path_str = strdup(raw_path);
-    if (path_str[0] == '/'){
-        temp_str = path_str + 1; //跳过正斜
+    std::string cur_str = raw_path;
+
+
+    // 去除一开始的斜杠
+    if (cur_str[0] == '/'){
+        cur_str = cur_str.substr(1, cur_str.length()); //跳过正斜
+        //path.push_back("/");
         from_root = true;
     }
     else{
-        temp_str = path_str;
         from_root = false;
     }
+    int index = cur_str.find("/");
+    while(index != std::string::npos){
+        //
+        std::string cur_piece = cur_str.substr(0, index);
+        if(cur_piece.length() == 0){
+            break;
+        }
+        path.push_back(cur_piece);
+        cur_str = cur_str.substr(index + 1, cur_str.length());
+        index = cur_str.find("/");
+    }
+
+    if(cur_str.length() > 0){
+        path.push_back(cur_str);
+    }
+
+
+    //std::cout << toString() <<"\n";
+    //level = path.size();
+} //explicit关键字避免隐式类型转换
+std::string myPath::toString() const {
+    std::string full_path = "";
     
-    l_len = strlen(path_str);
-    if(l_len == 1){
-        // '/'
-        if(strcmp(path[0], "/") == 0){
-            strcpy(path[0], "");
-            level = 0;
-        }
-        else{
-            strcpy(path[0], raw_path);
-            level = 1;
-        }
-        return;
+    if(path.size() > 0){
+        full_path += path[0];
     }
-    i_len = 0;
-    char *p = strtok(temp_str, "/");
-    int i;
-    for (i = 0; p != nullptr && i_len < l_len; i++){
-        strcpy(path[i], p);
-        sec_len = strlen(p) + 1; //这次从路径str取出的字符数（+1是因为算上/）
-        i_len += sec_len;
-        temp_str += sec_len;
-        p = strtok(temp_str, "/");
+
+    for(int i = 1 ; i < path.size(); i ++ ){
+        full_path += "/" + path[i];
     }
-    level = i; /*类似于"/home"这样的属于level=1*/
-    delete path_str;
+
+    return full_path;
+}
+const std::string myPath::getInodeName() const{
+    if(path.size() < 1)
+        return "/";
+    else
+        return path[path.size() - 1]; 
 }
 
-bool Path::isSingleName() const
-{
-    return level == 1;
+int myPath::getLevel() const{
+    return path.size() - 1;
 }
-std::string Path::toString()
-{
-    std::string path_str;
-    if (from_root)
-    {
-        path_str.append("/");
+std::string myPath::my_pop(){
+    std::string cur = "/";
+    if(path.size() > 0){
+        cur = path[getLevel()];
+        path.pop_back();
     }
-    int i;
-    for (i = 0; i < level - 1; i++){
-        path_str.append(path[i]).append("/");
-    }
-    path_str.append(path[i]);
-    return path_str;
-}
-
-const char *Path::getInodeName() const
-{
-    return path[level - 1];
+    return cur;               
 }

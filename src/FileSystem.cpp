@@ -164,10 +164,7 @@ DiskInode::DiskInode(Inode inode)
 	memcpy(d_addr, inode.i_addr, MIXED_ADDR_TABLE_SIZE);
 
 } //转换构造函数
-/**
- * 这个函数貌似是最格格不入的。
- * 为了简便，做硬写入。不经过缓存层，直接借助mmap对img进行写入完成初始化。
- */
+
 void VFS::format()
 {
     
@@ -204,7 +201,7 @@ void VFS::format()
     //1#inode，是根目录
     InodeBlock tempInodePool;
     int tempAddr[10] = {4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    DiskInode tempDiskInode = DiskInode(Inode::IFDIR, 1, 1, 1, 6 * sizeof(DirectoryEntry), tempAddr);
+    DiskInode tempDiskInode = DiskInode(Inode::IFDIR, 1, 1, 1, 0, tempAddr);// 6 * sizeof(DirectoryEntry)
     tempInodePool.iupdate(1, tempDiskInode);
     
     InodeBlock *p_InodePool = (InodeBlock *)diskMemAddr;
@@ -281,28 +278,36 @@ DiskInode VFS::getDiskInodeByNum(int inode_id)
     return tempDiskInode; //外部可能会调用DiskInode的拷贝构造函数
 }
 
-/**
- * 功能：根据路径，做线性目录搜索
- * VFS在inodeDirectoryCache失效的时候，会调用本函数，在磁盘上根据路径确定inode号。
- * 
- */
-InodeId VFS::locateInode(const Path& path){
-    InodeId dirInodeId = locateDir(path); //先确定其父目录的inode号
-    if (path.level == 0){
+
+InodeId VFS::locateInode(const myPath& path){
+    /**
+     * @brief 根据路径，做线性目录搜索
+     * @return 该文件的InodeId
+     * 
+     */
+    //先确定其父目录的inode号
+    InodeId dirInodeId = locateParDir(path); 
+
+    //std::cout <<path.getLevel() << " " <<  dirInodeId << "\n";
+
+    if (path.getLevel() < 0){
+        // cd / (此时getLevel == -1)
         return ROOT_INODE_ID;
     }
     else{
-        return getInodeIdInDir(dirInodeId, path.getInodeName());
+        return getInodeIdInDir(dirInodeId, path.getInodeName().c_str());
     }
 }
 
-/**
- * VFS在inodeDirectoryCache失效的时候，会调用本函数，在磁盘上根据路径确定
- * 一个路径截至最后一层之前的目录inode号
- */
-InodeId VFS::locateDir(const Path& path){
+
+InodeId VFS::locateParDir(const myPath& path){
+    /**
+     * @brief 找到当前路径的父路径，从头开始遍历...
+     * @return 返回父路径
+     */
     //目录文件的inode号
-    InodeId dirInode;   
+    InodeId dirInode; 
+
     if (path.from_root){ 
         //如果是绝对路径,从根inode开始搜索
         dirInode = ROOT_INODE_ID;
@@ -312,11 +317,10 @@ InodeId VFS::locateDir(const Path& path){
         dirInode = Kernel::instance().getUser().curDirInodeId;
     }
 
-    for (int i = 0; i < path.level - 1; i++){
+    for (int i = 0; i < path.getLevel(); i++){
         //遍历全部路径，如果有一个没有找到就报错
         //if(dirInode)
-        dirInode = getInodeIdInDir(dirInode, path.path[i]);
-
+        dirInode = getInodeIdInDir(dirInode, path.path[i].c_str());
         if (dirInode < 0){
             return ERROR_PATH_NFOUND; //没有找到
         }
@@ -331,11 +335,11 @@ InodeId VFS::locateDir(const Path& path){
  */
 InodeId VFS::getInodeIdInDir(InodeId dirInodeId, FileName fileName)
 { 
-    /*
+    /**
      * @brief 在当前目录下， 找指定文件名的文件
-     *
      * @return 找到了就返回该文件的Inode，不然就返回-1 
      */
+
     //Step1:先根据目录inode号dirInodeId获得目录inode对象
     Inode *p_dirInode = Kernel::instance().getInodeCache().getInodeByID(dirInodeId);
     //TODO 错误处理

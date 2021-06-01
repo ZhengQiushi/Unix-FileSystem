@@ -41,7 +41,7 @@ private:
 
 public:
   DirectoryCache();
-  InodeId findInodeIdByPath(Path path); //根据filepath来查找，如果有的话，返回该目录的inode号(若没有返回-1)
+  InodeId findInodeIdByPath(myPath path); //根据filepath来查找，如果有的话，返回该目录的inode号(若没有返回-1)
 };
 
 
@@ -70,8 +70,8 @@ public:
   DiskInode getDiskInodeByNum(int inode_id);
   void writeBackDiskInode(int inode_id, DiskInode disk_inode);
 
-  InodeId locateInode(const Path& path);
-  InodeId locateDir(const Path& path);
+  InodeId locateInode(const myPath& path);
+  InodeId locateParDir(const myPath& path);
   InodeId getInodeIdInDir(InodeId dirInodeId, FileName fileName);
 
   int bmap(int inodeNum, int logicBlockNum); //文件中的地址映射。查混合索引表，确定物理块号。
