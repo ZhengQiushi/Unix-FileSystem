@@ -1,11 +1,12 @@
 #include "Shell.h"
 #include "Kernel.h"
 
-void Shell::help(){
-    system("cat help");
-}
 
-int Shell::readUserInput(){
+
+
+
+
+int Shell::run(){
     /**
      * @brief 解析输入，调用功能。
      * @notice 这是一个死循环
@@ -13,7 +14,7 @@ int Shell::readUserInput(){
     mount();
 
     std::cout << "[INFO]程序成功启动，祝您使用愉快" << std::endl;
-    std::cout << "[INFO]help 和 man 指令随时为您效劳 :)" << std::endl;
+    std::cout << "[INFO]man 指令随时为您效劳 :)" << std::endl;
     
     static int auto_test = 0;
     
@@ -150,13 +151,10 @@ void Shell::parseCmd(){
 }
 
 void Shell::executeCmd(){
+    #ifdef IS_DEBUG
+        std::cout << "getInstType(): " << getInstType() << "\n";
+    #endif
     switch (getInstType()){
-        case MOUNT:
-            mount(); //OK
-            break;
-        case UNMOUNT:
-            unmount(); //OK
-            break;
         case FORMAT:
             format(); //OK
             break;
@@ -181,20 +179,14 @@ void Shell::executeCmd(){
         case CLEAR:
             clear(); //OK
             break;
-        case HELP:
-            help(); //OK
-            break;
         case EXIT:
             mexit(); //OK
-            break;
-        case VERSION:
-            version(); //OK
             break;
         case STORE:
             store(); //OK
             break;
-        case WITHDRAW:
-            withdraw(); //OKKK
+        case LOAD:
+            load(); //OKKK
             break;
         case FOPEN: 
             open();
@@ -214,6 +206,9 @@ void Shell::executeCmd(){
         case FSEEK:
             lseek();
             break;
+        case MAN:
+            man();
+            break;
         case NOHUP:
             break;
         default:
@@ -225,17 +220,14 @@ void Shell::executeCmd(){
 
 INSTRUCT Shell::getInstType(){
     /**
-     * @comment:实际上是做字符串到枚举类型的转化，为了switch case
+     * @brief 实际上是做字符串到枚举类型的转化，为了switch case
      */
     char *instStr = getInstStr();
 
 #ifdef IS_DEBUG
     std::cout <<"命令行命令字为:" << instStr << std::endl;
 #endif
-
-    //为什么从1开始
     for (int i = 1; i < INST_NUM; i++){
-        //这里要加感叹号，注意strcmp在相等时返回的是0
         if (!strcmp(instructStr[i], instStr)){
 
 #ifdef IS_DEBUG
@@ -247,7 +239,7 @@ INSTRUCT Shell::getInstType(){
     return ERROR_INST;
 }
 
-int Shell::FileMode(std::string mode) {
+int Shell::getFileMode(std::string mode) {
     int md = 0;
     if (mode.find("-r") != std::string::npos) {
         md |= File::FREAD;
@@ -305,7 +297,7 @@ void Shell::format(){
 
 void Shell::mkdir(){
     if (getParamAmount() == 2){
-        switch (my_kernel.mkDir(getParam(1))){
+        switch (my_kernel.mkdir(getParam(1))){
             case ERROR_FILENAME_EXSIST:
                 std::cout <<("[ERROR]创建失败,存在同名目录") << std::endl;
                 break;
@@ -368,12 +360,20 @@ void Shell::rmdir(){
 
 }
 
-void Shell::version(){
-    system("cat version");
-}
+
 
 void Shell::man(){
-    std::cout <<(TAG, "欢迎求助那个男人");
+    if(getParamAmount() > 2){
+        std::cout << "[ERROR]你给了那个男人太多参数了" << std::endl;
+    }
+    else{
+        if(getParamAmount() == 1){
+            my_kernel.my_man(getParam(0));
+        }
+        else{
+            my_kernel.my_man(getParam(1));
+        }
+    }
 }
 void Shell::mexit(){
     my_kernel.relsKernel();
@@ -473,10 +473,9 @@ void Shell::store()
 
 /**
  * 将文件从虚拟磁盘中拷出
- * Usage: withdraw [src filename] [des outer_path]
+ * Usage: load [src filename] [des outer_path]
  */
-void Shell::withdraw()
-{
+void Shell::load(){
     if (getParamAmount() == 3)
     {
         InodeId desInodeId;
@@ -492,9 +491,9 @@ void Shell::withdraw()
         //Step2：打开文件
         myPath srcPath(getParam(1));
         FileFd fd_src = my_kernel.open(srcPath, File::FREAD);
-        if (fd_src < 0)
-        {
+        if (fd_src < 0){
             std::cout <<("[ERROR]源文件打开失败！") << std::endl;
+            unlink(getParam(2));
             return;
         }
         //Step3：写入文件
@@ -547,7 +546,7 @@ void Shell::creat()
     }
     else
     {
-        int md = FileMode(getParam(2));
+        int md = getFileMode(getParam(2));
         if (md == 0) {
             std::cout <<("[ERROR]没有定义的操作类型") << std::endl;
             return;
@@ -582,7 +581,7 @@ void Shell::open()
 
     if (getParamAmount() == 3)
     {
-        int md = FileMode(getParam(2));
+        int md = getFileMode(getParam(2));
         if (md == 0) {
             std::cout <<("[ERROR]没有定义的操作类型") << std::endl;
             return;
@@ -650,12 +649,9 @@ void Shell::close()
     }
 }
 
-/**
- * 临时的，不应该是一个用户接口
- */
 void Shell::read(){
-    /*
-     * brief@ read fd size/-f
+    /**
+     * @brief read fd size/-f
      *        read fd -o path size/-f 输出到外面
      */
     if (getParamAmount() == 3 || getParamAmount() == 5)
@@ -783,13 +779,10 @@ void Shell::read(){
 
 }
 
-/**
- * 临时的，不应该是一个用户接口
- */
-void Shell::write()
-{
-    /*
-     * brief@ fwrite fd string....
+
+void Shell::write(){
+    /**
+     * @brief fwrite fd string....
      *        fwrite fd -d pathname size/-f  外部文件写入！
      * 
      */
@@ -897,15 +890,11 @@ void Shell::write()
     }
 }
 
-/**
- * 临时的，不应该是一个用户接口
- */
-void Shell::lseek()
-{
+
+void Shell::lseek(){
     /*
      * brief@ fseek fd offset
      */
-
     if(getParamAmount() == 3){
 
 

@@ -32,17 +32,6 @@ public:
  * 缓存最近使用过的目录项，减少访问磁盘的次数
  */
 
-class DirectoryCache
-{
-
-private:
-  DirectoryEntry directoryEntryCacheArea[DIRECTORY_ENTRY_CACHE_SIZE];
-  Bitmap directoryEntryCacheBitmap;
-
-public:
-  DirectoryCache();
-  InodeId findInodeIdByPath(myPath path); //根据filepath来查找，如果有的话，返回该目录的inode号(若没有返回-1)
-};
 
 
 #define ROOT_INODE_ID 1
@@ -60,21 +49,17 @@ private:
 public:
   void format(); //格式化
   
-  int unregisterFs();
-  
   VFS_Status getExt2Status();
   VFS_Status setExt2Status(VFS_Status ext2_status);
 
   int setBufferCache(BufferCache *p_bufferCache);
-  int allocNewInode(); //分配一个新的inode
-  DiskInode getDiskInodeByNum(int inode_id);
+  DiskInode getDiskInodeById(int inode_id);
   void writeBackDiskInode(int inode_id, DiskInode disk_inode);
 
   InodeId locateInode(const myPath& path);
   InodeId locateParDir(const myPath& path);
-  InodeId getInodeIdInDir(InodeId dirInodeId, FileName fileName);
+  InodeId getInodeIdInDir(InodeId par_inode_id, FileName fileName);
 
-  int bmap(int inodeNum, int logicBlockNum); //文件中的地址映射。查混合索引表，确定物理块号。
   //逻辑块号bn=u_offset/512
   void loadSuperBlock(SuperBlock &superBlock);
 };

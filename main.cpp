@@ -8,8 +8,6 @@
 /* 是否需要产生测试字符串 */
 // #define GEN_TEST_FILE 
 
-
-
 int main(){
    Shell shell(Kernel::instance());
 
@@ -18,7 +16,7 @@ int main(){
       return -1;
 #endif
 
-   shell.readUserInput();
+   shell.run();
 
    return 0;
 }

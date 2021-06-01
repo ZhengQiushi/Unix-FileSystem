@@ -7,35 +7,28 @@ Kernel Kernel::kernelInstance;
 Kernel::Kernel()
 {
 #ifdef IS_DEBUG
-    std::cout << "Construct Kernel!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << "Construct Kernel" << std::endl;
 #endif
-
     bufferCache.setDiskDriver(&this->diskDriver);
-
-    ext2.setBufferCache(&this->bufferCache);
-    
+    fileSystem.setBufferCache(&this->bufferCache);
 }
-Kernel& Kernel::instance()
-{
-
+Kernel& Kernel::instance(){
     return Kernel::kernelInstance;
 }
 
-VFS &Kernel::getFileSystem()
-{
-    return ext2;
+VFS &Kernel::getFileSystem(){
+    return fileSystem;
 }
-DiskDriver &Kernel::getDiskDriver()
-{
+
+DiskDriver &Kernel::getDiskDriver(){
     return diskDriver;
 }
-BufferCache &Kernel::getBufferManager()
-{
+
+BufferCache &Kernel::getBufferManager(){
     return bufferCache;
 }
 
-SuperBlock &Kernel::getSuperBlock()
-{
+SuperBlock &Kernel::getSuperBlock(){
     return superBlock;
 }
 
@@ -54,9 +47,6 @@ User::User(){
     cur_path = "/";
 }
 
-
-
-
 void Kernel::initKernel(){
 
     /* 内存inodeCache初始化 */
@@ -67,15 +57,15 @@ void Kernel::initKernel(){
     VFS_Status mount_img = diskDriver.mountImg();
      
     /* 设置当前的加载状态 */
-    ext2.setExt2Status(mount_img);
+    fileSystem.setExt2Status(mount_img);
     if(mount_img == VFS_READY){
         std::cout << "[INFO]镜像加载成功" << std::endl;
         /* 如果成功加载，就读入superblock，否则就是默认 */
-        ext2.loadSuperBlock(Kernel::instance().getSuperBlock());
+        fileSystem.loadSuperBlock(Kernel::instance().getSuperBlock());
     }
     else if(mount_img == VFS_NOFORM){
         std::cout << "[INFO]您刚刚创建了一块新的镜像！" << std::endl;
-        ext2.format();
+        fileSystem.format();
         std::cout << "[INFO]成功初始化" << std::endl;
     }
     else{
@@ -92,14 +82,23 @@ void Kernel::relsKernel(){
     diskDriver.unmount();
 }
 
+void Kernel::my_man(std::string cur_inst) {
+    auto it = my_man_map.find(cur_inst);
+    if (it == my_man_map.end()) {
+        std::cout << "[ERROR]似乎并不存在 '" << cur_inst << "' 这条指令... \n";
+        return;
+    }
+    std::cout << *it->second << std::endl;
+}
+
 int Kernel::format(){
-        switch (ext2.getExt2Status()){
+        switch (fileSystem.getExt2Status()){
         case VFS_UNINITIALIZED:
             std::cout << ("[ERROR]磁盘装载错误")<< std::endl;
             exit(-1);
             break;
         case VFS_NOFORM:
-            ext2.format();
+            fileSystem.format();
             break;
         case VFS_READY:
             std::cout << ("[WARNING] 磁盘可能已有数据，确定要格式化吗？\n")<< std::endl;
@@ -107,7 +106,7 @@ int Kernel::format(){
             char temp_cmd;
             while (temp_cmd = getchar()){
                 if (temp_cmd == 'y'){
-                    ext2.format();
+                    fileSystem.format();
                     break;
                 }
                 else if (temp_cmd == 'n'){
@@ -136,7 +135,7 @@ InodeId Kernel::kernelTouch(const char *fileName){
     myPath new_file_dir(fileName);
 
     /* 尚未存在路径 */
-    InodeId file_folder_inode = ext2.locateParDir(new_file_dir);
+    InodeId file_folder_inode = fileSystem.locateParDir(new_file_dir);
     if(file_folder_inode < 0){
         return ERROR_NO_FOLDER_EXSIT;
     }
@@ -146,59 +145,12 @@ InodeId Kernel::kernelTouch(const char *fileName){
     }
 
     /* 不重名 */
-    InodeId file_inode = ext2.locateInode(new_file_dir);
+    InodeId file_inode = fileSystem.locateInode(new_file_dir);
 
     if (file_inode > 0){
         return ERROR_FILENAME_EXSIST;
     }
-
-    // /* 为该创建文件的目录... */
-    // InodeId where_to_write;
-    // if((new_file_dir.getLevel() <= 0) && (new_file_dir.from_root == false)){
-    //     /* 深度为0 如 touch a */
-    //     where_to_write = getUser().curDirInodeId;
-    // }
-    // else{
-    //     where_to_write = file_folder_inode;
-    // }
-
     new_file_node = createFile(file_inode, file_folder_inode, new_file_dir.getInodeName());
-
-    // /* 为新文件分配新inode */
-    // new_file_node = superBlock.ialloc(); //得到inode号
-
-    // if (new_file_node <= 0){
-    //     return -1;
-    // }
-    // Inode *p_inode = inodeCache.getInodeByID(new_file_node); //并将这个inode写入inodeCache
-    // p_inode->newInode(Inode::IUPD | Inode::IACC, new_file_node);
-
-    // /* 在当前目录文件中写入新的目录项 */
-    // Inode *p_dirInode = inodeCache.getInodeByID(where_to_write); // 不是当前文件中
-    // int blk_num = p_dirInode->Bmap(0); //Bmap查物理块号
-    // Buf *pBuf = bufferCache.Bread(blk_num);
-
-    // DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
-
-    // int i;
-    // for (i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++)
-    // {
-    //     if ((p_directoryEntry->m_ino == 0)) //找到目录文件中可以见缝插针的地方，填入创建的inode信息
-    //     {
-    //         p_directoryEntry->m_ino = new_file_node;
-    //         strcpy(p_directoryEntry->m_name, new_file_dir.getInodeName().c_str());
-    //         break;
-    //     } //ino==0表示该文件被删除
-
-    //     p_directoryEntry++;
-    // }
-    // if (i == DISK_BLOCK_SIZE / sizeof(DirectoryEntry))
-    // {
-    //     return ERROR_NOTSPEC;
-    // }
-    // Kernel::instance().getBufferManager().Bdwrite(pBuf);
-    // //Kernel::instance().getBufferManager().Brelse(pBuf);
-
     return new_file_node;
 }
 
@@ -218,44 +170,35 @@ InodeId Kernel::createFile(const InodeId &cur_Inode, const InodeId &par_inode, c
     p_inode->newInode(Inode::IUPD | Inode::IACC, new_file_node);
 
     /* 在当前目录文件中写入新的目录项 */
-    Inode *p_dirInode = inodeCache.getInodeByID(par_inode); // 不是当前文件中
-    int blk_num = p_dirInode->Bmap(0); //Bmap查物理块号
-    Buf *pBuf = bufferCache.Bread(blk_num);
+    Inode *p_dir_inode = inodeCache.getInodeByID(par_inode); // 不是当前文件中
+    int blk_num = p_dir_inode->Bmap(0); //Bmap查物理块号
+    Buf *p_buf = bufferCache.Bread(blk_num);
 
-    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
+    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
 
     int i;
-    for (i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++)
-    {
-        if ((p_directoryEntry->m_ino == 0)) //找到目录文件中可以见缝插针的地方，填入创建的inode信息
-        {
+    for (i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++){
+        if ((p_directoryEntry->m_ino == 0)){
+            //ino==0表示该文件被删除
             p_directoryEntry->m_ino = new_file_node;
             strcpy(p_directoryEntry->m_name, node_name.c_str());
             break;
-        } //ino==0表示该文件被删除
-
+        } 
         p_directoryEntry++;
     }
-    if (i == DISK_BLOCK_SIZE / sizeof(DirectoryEntry))
-    {
+    if (i == DISK_BLOCK_SIZE / sizeof(DirectoryEntry)){
         return ERROR_NOTSPEC;
     }
-    Kernel::instance().getBufferManager().Bdwrite(pBuf);
-    //Kernel::instance().getBufferManager().Brelse(pBuf);
+    Kernel::instance().getBufferManager().Bdwrite(p_buf);
 
     return new_file_node;
 }
 
-/**
- * 创建目录
- */
-int Kernel::mkDir(const char *dirName){
+
+int Kernel::mkdir(const char *dirName){
 
     /* 记录到该文件目录 */
     myPath new_file_dir(dirName);
-    /* 记录到该文件的父亲目录 */
-    // myPath new_file_folder_dir(new_file_dir);
-    // new_file_folder_dir.my_pop();
 
     // 相当于先建立文件...
     int newDirInodeId = kernelTouch(dirName);
@@ -268,48 +211,24 @@ int Kernel::mkDir(const char *dirName){
     Inode *p_inode = inodeCache.getInodeByID(newDirInodeId);
     p_inode->i_mode = Inode::IFDIR;
 
-    DirectoryEntry tempDirectoryEntry;
     
     BlkId blk_num = p_inode->Bmap(0);
-    Buf *pBuf = bufferCache.Bread(blk_num);
-    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
+    Buf *p_buf = bufferCache.Bread(blk_num);
+    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
 
+    /* 同时添加. 和 .. */
+    DirectoryEntry tempDirectoryEntry;
     strcpy(tempDirectoryEntry.m_name, ".");
     tempDirectoryEntry.m_ino = newDirInodeId;
     *p_directoryEntry = tempDirectoryEntry;
     p_directoryEntry++;
 
-    InodeId where_to_write;
-
-    InodeId file_folder_inode = ext2.locateParDir(new_file_dir);
-    /*mkdir /....*/
-    // if(new_file_dir.from_root == true){
-    //     InodeId full_dir = ext2.locateInode(new_file_dir);
-    //     where_to_write = full_dir;
-    // }
-    //else{
-        /* mkdir a/b/c */
-        // if(new_file_dir.getLevel() == 1){
-        //     /* 深度为0 如 touch a */
-        //     where_to_write = Kernel::instance().getUser().curDirInodeId;
-        // }
-        // else{
-        //     InodeId file_folder_inode = ext2.locateParDir(new_file_dir);
-        //     where_to_write = file_folder_inode;
-        // }
-    //}
-
-
+    InodeId file_folder_inode = fileSystem.locateParDir(new_file_dir);
     strcpy(tempDirectoryEntry.m_name, "..");
     tempDirectoryEntry.m_ino = file_folder_inode; 
     *p_directoryEntry = tempDirectoryEntry;
 
-    p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
-    for (int de_i = 0; de_i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); de_i++){
-        p_directoryEntry++;
-    }
-
-    Kernel::instance().getBufferManager().Bdwrite(pBuf);
+    Kernel::instance().getBufferManager().Bdwrite(p_buf);
 
     return OK;
 }
@@ -317,108 +236,88 @@ int Kernel::mkDir(const char *dirName){
 
 
 InodeId Kernel::deleteFolder(const char *dirName){
-    /*
+    /**
      * @brief 递归删除文件夹
+     *        首先，删除其父目录的项目（该步骤包含在deleteFile中）
+     *        然后，删除该文件，如果是文件夹则需要递归进入
      * @return 
      */
 
     myPath path(dirName);
-    InodeId deleteFileInode = ext2.locateInode(path);
-    if (deleteFileInode < 0){
-        return deleteFileInode;
+    InodeId file_InodeID = fileSystem.locateInode(path);
+    if (file_InodeID < 0){
+        return file_InodeID;
     }
+    InodeId dir_InodeID = fileSystem.locateParDir(path);
 
-    InodeId file_InodeID = deleteFileInode;
-    InodeId dir_InodeID = ext2.locateParDir(path);
-    
-    Inode &inode = *inodeCache.getInodeByID(file_InodeID);
-    Inode &p_dirInode = *inodeCache.getInodeByID(dir_InodeID);
+    /* 定位当前删除节点以及其父目录节点 */
+    Inode &p_delete_inode = *inodeCache.getInodeByID(file_InodeID);
+    Inode &p_dir_inode = *inodeCache.getInodeByID(dir_InodeID);
 
-    if (inode.i_mode & Inode::IFMT != Inode::IFDIR){
+    if (p_delete_inode.i_mode & Inode::IFMT != Inode::IFDIR){
         printf("[ERROR]非法的参数\n");
         return -1;
     }
-
-    inode.i_flag |= Inode::IACC;
-    
-    //Step2：读这个目录文件到缓存块中（可能已经存在于缓存块中,规定目录文件不能超过4096B）
-
-
-
-    Inode &p_delete_inode = inode;//inodeCache.getInodeByID(deleteFileInode);
-    //Inode *p_dirInode = inodeCache.getInodeByID(ext2.locateParDir(path));
 
     p_delete_inode.i_flag |= Inode::IACC;
 
     /* 如果要删除的是目录 */
     if ((p_delete_inode.i_mode & Inode::IFMT) == Inode::IFDIR){
-        //递归删除该目录下的所有文件
-        int blk_num = inode.Bmap(0); //Bmap查物理块号
-        Buf *pBuf;
-
-        pBuf = Kernel::instance().getBufferManager().Bread(blk_num);
-        DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
-        //Step3：访问这个目录文件中的entry，打印出来（同时缓存到dentryCache中）
+        /** 读出其数据帧，查看其所有的目录项*/
+        int blk_num = p_delete_inode.Bmap(0); 
+        Buf *p_buf = Kernel::instance().getBufferManager().Bread(blk_num);
+        DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
+        
         for (int i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++){
-            const InodeId entry_inodeId = p_directoryEntry->m_ino;
-            if ((entry_inodeId != 0)){
-
-                Inode &per_inode = *inodeCache.getInodeByID(entry_inodeId);
-                std::string p_mode = "";
+            /* 遍历目录项，进行逐个删除*/
+            const InodeId entry_inode_Id = p_directoryEntry->m_ino;
+            if ((entry_inode_Id != 0)){
                 if (!strcmp(p_directoryEntry->m_name, ".") || !strcmp(p_directoryEntry->m_name, "..")){
                     p_directoryEntry++; // 别忘记啦
                     continue;
                 }
                 else{
-
-
-                    if ((inodeCache.getInodeByID(entry_inodeId)->i_mode & Inode::IFMT) == Inode::IFDIR){
-                        deleteFolder(p_directoryEntry->m_name);
+                    /* 该目录有意义 */
+                    if ((inodeCache.getInodeByID(entry_inode_Id)->i_mode & Inode::IFMT) == Inode::IFDIR){
+                        std::string absolut_path = path.toString() + "/" + std::string(p_directoryEntry->m_name);
+                        deleteFolder(absolut_path.c_str());
                     }
                     else{
-                        deleteFile(entry_inodeId, file_InodeID);
-                        //deleteFile(p_directoryEntry->m_name);
+                        deleteFile(entry_inode_Id, file_InodeID);
                     }
                 }
-            
-            
-            } //ino==0表示该文件被删除
+            } 
 
             p_directoryEntry++;
         }
-        Kernel::instance().getBufferManager().Bdwrite(pBuf);
-        //删除该目录本身
-
+        /* 删除该目录本身 */
+        Kernel::instance().getBufferManager().Bdwrite(p_buf);
         deleteObject(dirName);
     }
-    else
-    {
+    else{
         std::cout <<("[ERROR]不能删除文件");
         return ERROR_DELETE_FAIL;
     }
-    return deleteFileInode;
+    return file_InodeID;
 }
 
-/**
- * 删除文件
- */
-InodeId Kernel::deleteFile(const char *fileName){
 
-    //目录文件和普通文件要分别处理！
+InodeId Kernel::deleteFile(const char *fileName){
+    /**
+     * @brief 直接通过名字，删除文件
+     */
     myPath path(fileName);
-    InodeId deleteFileInode = ext2.locateInode(path);
-    if (deleteFileInode < 0)
-    {
+    InodeId deleteFileInode = fileSystem.locateInode(path);
+    if (deleteFileInode < 0){
         return deleteFileInode;
     }
     Inode *p_delete_inode = inodeCache.getInodeByID(deleteFileInode);
-    Inode *p_dirInode = inodeCache.getInodeByID(ext2.locateParDir(path));
+    Inode *p_dir_inode = inodeCache.getInodeByID(fileSystem.locateParDir(path));
 
     if ((p_delete_inode->i_mode & Inode::IFMT) != Inode::IFDIR){ //普通文件
-        return deleteObject(deleteFileInode, ext2.locateParDir(path));//fileName);
+        return deleteObject(deleteFileInode, fileSystem.locateParDir(path));//fileName);
     }
-    else
-    {
+    else{
         std::cout <<("[ERROR]不能删除文件夹");
         return ERROR_DELETE_FAIL;
     }
@@ -452,23 +351,23 @@ InodeId Kernel::deleteFile(const InodeId &cur_Inode, const InodeId &par_Inode){
  */
 InodeId Kernel::deleteObject(const char *fileName){
     myPath path(fileName);
-    InodeId deleteFileInode = ext2.locateInode(path);
+    InodeId deleteFileInode = fileSystem.locateInode(path);
     if (deleteFileInode < 0)
     {
         return ERROR_DELETE_FAIL;
     }
 
     Inode *p_delete_inode = inodeCache.getInodeByID(deleteFileInode);
-    Inode *p_dirInode = inodeCache.getInodeByID(ext2.locateParDir(path));
+    Inode *p_dir_inode = inodeCache.getInodeByID(fileSystem.locateParDir(path));
 
     BlkId phyno;
     //Step1 释放盘块
     relseBlock(p_delete_inode);
     //Step2 删除目录项
-    int dirblkno = p_dirInode->Bmap(0); //Bmap查物理块号
-    Buf *pBuf;
-    pBuf = Kernel::instance().getBufferManager().Bread(dirblkno);
-    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
+    int dirblkno = p_dir_inode->Bmap(0); //Bmap查物理块号
+    Buf *p_buf;
+    p_buf = Kernel::instance().getBufferManager().Bread(dirblkno);
+    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
 
     int de_i;
     for (de_i = 0; de_i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); de_i++)
@@ -485,7 +384,7 @@ InodeId Kernel::deleteObject(const char *fileName){
     {
         return ERROR_DELETE_FAIL;
     }
-    Kernel::instance().getBufferManager().Bdwrite(pBuf);
+    Kernel::instance().getBufferManager().Bdwrite(p_buf);
     //Step3 释放inode
     p_delete_inode->i_flag = 0; //这里是为了不再把删除的inode刷回，只用在superblock中标记inode删除即可
     superBlock.ifree(deleteFileInode);
@@ -532,17 +431,17 @@ InodeId Kernel::deleteObject(const InodeId &cur_Inode, const InodeId &par_Inode)
     }
 
     Inode *p_delete_inode = inodeCache.getInodeByID(cur_Inode);
-    Inode *p_dirInode = inodeCache.getInodeByID(par_Inode);
+    Inode *p_dir_inode = inodeCache.getInodeByID(par_Inode);
 
     BlkId phyno;
     //Step1 释放盘块
     relseBlock(p_delete_inode);
 
     //Step2 删除目录项
-    int dirblkno = p_dirInode->Bmap(0); //Bmap查物理块号
-    Buf *pBuf;
-    pBuf = Kernel::instance().getBufferManager().Bread(dirblkno);
-    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
+    int dirblkno = p_dir_inode->Bmap(0); //Bmap查物理块号
+    Buf *p_buf;
+    p_buf = Kernel::instance().getBufferManager().Bread(dirblkno);
+    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
 
     int de_i;
     int delete_inode_id = cur_Inode; // 防止指针引用导致的修改
@@ -558,7 +457,7 @@ InodeId Kernel::deleteObject(const InodeId &cur_Inode, const InodeId &par_Inode)
     {
         return ERROR_DELETE_FAIL;
     }
-    Kernel::instance().getBufferManager().Bdwrite(pBuf);
+    Kernel::instance().getBufferManager().Bdwrite(p_buf);
     //Step3 释放inode
     p_delete_inode->i_flag = 0; //这里是为了不再把删除的inode刷回，只用在superblock中标记inode删除即可
     superBlock.ifree(delete_inode_id);
@@ -578,7 +477,7 @@ int Kernel::cd(const char *dirName)
     
 
     //printf("dirName %s Path %s\n", dirName, path.toString().c_str());
-    InodeId targetInodeId = ext2.locateInode(inst_path);
+    InodeId targetInodeId = fileSystem.locateInode(inst_path);
     if (targetInodeId <= 0)
     {
         std::cout <<("[ERROR]目录查找失败") << std::endl;
@@ -641,9 +540,9 @@ void Kernel::ls(InodeId dirInodeID)
     
     //Step2：读这个目录文件到缓存块中（可能已经存在于缓存块中,规定目录文件不能超过4096B）
     int blk_num = inode.Bmap(0); //Bmap查物理块号
-    Buf *pBuf;
-    pBuf = Kernel::instance().getBufferManager().Bread(blk_num);
-    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)pBuf->b_addr;
+    Buf *p_buf;
+    p_buf = Kernel::instance().getBufferManager().Bread(blk_num);
+    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
     //Step3：访问这个目录文件中的entry，打印出来（同时缓存到dentryCache中）
 
     for (int i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++){
@@ -663,40 +562,32 @@ void Kernel::ls(InodeId dirInodeID)
         p_directoryEntry++;
     }
 
-    Kernel::instance().getBufferManager().Brelse(pBuf);
+    Kernel::instance().getBufferManager().Brelse(p_buf);
 
 }
 
-void Kernel::ls(const char *dirName)
-{
-    //首先要根据目录名，确定inode号
-    //step1 在DirectoryEntry中查找有没有现成的
-    InodeId dirInodeId;
+void Kernel::ls(const char *dirName){
 
-    myPath path(dirName); //解析dirName转化为Path对象
-    //先查一下directoryCache中有没有存dirName的目录项
-    //TODO 先暂时不做VFS层的dentry缓存
+    InodeId par_inode_id;
 
-    //没有，则向Ext模块要
-    dirInodeId = ext2.locateInode(path);
+    myPath path(dirName);
 
-    if ((inodeCache.getInodeByID(dirInodeId)->i_mode & Inode::IFMT) == Inode::IFDIR){
-        ls(dirInodeId);
+    par_inode_id = fileSystem.locateInode(path);
+
+    if ((inodeCache.getInodeByID(par_inode_id)->i_mode & Inode::IFMT) == Inode::IFDIR){
+        ls(par_inode_id);
     }
     else
     {
-        std::cout <<("[ERROR]操作对象不可为文件");
+        std::cout <<("[ERROR]操作对象不可为文件") << std::endl;
     }
 }
 
-/**
- * 打开一个普通文件,返回文件的句柄
- */
-FileFd Kernel::open(const myPath& path, int mode)
-{
+
+FileFd Kernel::open(const myPath& path, int mode){
     FileFd fd;
    /*先找inode*/
-    InodeId openFileInodeId = ext2.locateInode(path);
+    InodeId openFileInodeId = fileSystem.locateInode(path);
 
     // 返回-1 说明打开失败
     if(openFileInodeId < 0){
@@ -755,8 +646,7 @@ int Kernel::close(FileFd fd)
  * 从文件fd中读出length字节放到content缓冲区中。
  * 返回读出的字节数，如果fd剩下的字节小于length，则只把剩下的读出
  */
-int Kernel::read(int fd, uint8_t *content, int length)
-{
+int Kernel::read(int fd, uint8_t *content, int length){
     //分析：length可能大于、小于、等于盘块的整数倍
     int readByteCount = 0;
 
@@ -764,7 +654,7 @@ int Kernel::read(int fd, uint8_t *content, int length)
     File *p_file = u.u_ofiles.GetF(fd);
     Inode *p_inode = inodeCache.getInodeByID(p_file->f_inode_id);
     p_inode->i_flag |= Inode::IUPD;
-    Buf *pBuf;
+    Buf *p_buf;
 
     if (length > p_inode->i_size - p_file->f_offset + 1)
     {
@@ -776,8 +666,8 @@ int Kernel::read(int fd, uint8_t *content, int length)
         BlkId logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
         BlkId phy_blk_id = p_inode->Bmap(logicBlkno);            //物理盘块号
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
-        pBuf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
-        uint8_t *p_buf_byte = (uint8_t *)pBuf->b_addr;
+        p_buf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
+        uint8_t *p_buf_byte = (uint8_t *)p_buf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - readByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
@@ -796,7 +686,7 @@ int Kernel::read(int fd, uint8_t *content, int length)
             content += DISK_BLOCK_SIZE - offsetInBlock + 1;
             //修改offset
         }
-        Kernel::instance().getBufferManager().Brelse(pBuf);
+        Kernel::instance().getBufferManager().Brelse(p_buf);
     }
 
     return readByteCount;
@@ -813,7 +703,7 @@ int Kernel::write(int fd, uint8_t *content, int length)
     Inode *p_inode = inodeCache.getInodeByID(p_file->f_inode_id);
     p_inode->i_flag |= Inode::IUPD;
 
-    Buf *pBuf;
+    Buf *p_buf;
     while (writeByteCount < length) //NOTE 这里是<还是<=再考虑一下
     {
         
@@ -835,18 +725,18 @@ int Kernel::write(int fd, uint8_t *content, int length)
         {
             //这种情况不需要先读后写
 
-            pBuf = Kernel::instance().getBufferManager().GetBlk(phy_blk_id);
+            p_buf = Kernel::instance().getBufferManager().GetBlk(phy_blk_id);
 
         }
         else
         {
             //先读后写
-            pBuf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
+            p_buf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
         }
 
 
 
-        uint8_t *p_buf_byte = (uint8_t *)pBuf->b_addr;
+        uint8_t *p_buf_byte = (uint8_t *)p_buf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - writeByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
@@ -865,7 +755,7 @@ int Kernel::write(int fd, uint8_t *content, int length)
         }
 
 
-        Kernel::instance().getBufferManager().Bdwrite(pBuf);
+        Kernel::instance().getBufferManager().Bdwrite(p_buf);
     }
 
     return writeByteCount;

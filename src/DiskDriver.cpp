@@ -85,43 +85,27 @@ void DiskDriver::unmount(){
 DiskBlock *DiskDriver::getBlk(int block_num){
    return disk_mem_addr + block_num;
 }
-void DiskDriver::readBlk(int block_num, DiskBlock *dst)
-{
+
+void DiskDriver::readBlk(int block_num, DiskBlock *dst){
    memcpy(dst, disk_mem_addr + block_num, DISK_BLOCK_SIZE);
 }
-void DiskDriver::writeBlk(int block_num, const DiskBlock &blk)
-{
+
+void DiskDriver::writeBlk(int block_num, const DiskBlock &blk){
    
    memcpy(disk_mem_addr + block_num, &blk, DISK_BLOCK_SIZE);
 }
 
 
-DiskBlock *DiskDriver::getDiskMemAddr()
-{
+DiskBlock *DiskDriver::getDiskMemAddr(){
    return disk_mem_addr;
 }
 
 
-DirectoryCache::DirectoryCache() : directoryEntryCacheBitmap(DIRECTORY_ENTRY_CACHE_SIZE)
-{
-}
-
-/**
- * 根据filepath来查找，如果有的话，返回该目录的inode号(若没有返回-1)
- */
-InodeId DirectoryCache::findInodeIdByPath(myPath path)
-{
-    return -1;
-}
-/* Constructors */
-DirectoryEntry::DirectoryEntry()
-{
+DirectoryEntry::DirectoryEntry(){
 	m_ino = 0;
 }
 
-/* Destructors */
-DirectoryEntry::~DirectoryEntry()
-{
+DirectoryEntry::~DirectoryEntry(){
 }
 
 
@@ -136,15 +120,16 @@ File::~File(){
 	//nothing to do here
 }
 
-OpenFiles::OpenFiles()
-{
+OpenFiles::OpenFiles(){
 }
 
-OpenFiles::~OpenFiles()
-{
+OpenFiles::~OpenFiles(){
 }
 
 int OpenFiles::AllocFreeSlot(){
+   /** 
+	 * @brief 进程请求打开文件时，在打开文件描述符表中分配一个空闲表项
+	 */
 	int i;
 	const User &u = Kernel::instance().getUser();
 
@@ -160,12 +145,14 @@ int OpenFiles::AllocFreeSlot(){
 }
 
 File *OpenFiles::GetF(int fd){
+	/**
+	 * @brief 根据用户系统调用提供的文件描述符参数fd，找到对应的打开文件控制块File结构
+	 */
 	File *pFile;
 	const User &u = Kernel::instance().getUser();
 
 	/* 如果打开文件描述符的值超出了范围 */
 	if (fd < 0 || fd >= OpenFiles::NOFILES){
-
 		return NULL;
 	}
 
@@ -178,6 +165,9 @@ File *OpenFiles::GetF(int fd){
 }
 
 void OpenFiles::SetF(int fd, File *pFile){
+   /** 
+	 * @brief 为已分配到的空闲描述符fd和已分配的打开文件表中,空闲File对象建立勾连关系
+	 */
 	if (fd < 0 || fd >= OpenFiles::NOFILES){
 		return;
 	}
@@ -198,9 +188,6 @@ IOParameter::~IOParameter(){
 
 
 Inode::Inode(){
-    // dirty = false;
-    // inode_id = 0;
-    // memset(i_addr, 0, 10 * sizeof(int));
 }
 
 
@@ -219,7 +206,6 @@ Inode::Inode(DiskInode d_inode){
     this->i_flag = 0;
     this->i_count = 0;
     this->i_dev = 0;
-    //this->i_number = ? ;s  注意！DISKINODE是没有INODE号这个属性的，一个DISKINODE的号是固定的，可以根据其位置算出来
     this->i_lastr = -1;
 }
 Inode::Inode(DiskInode d_inode, int i_number){
@@ -236,7 +222,7 @@ Inode::Inode(DiskInode d_inode, int i_number){
     this->i_flag = 0;
     this->i_count = 0;
     this->i_dev = 0;
-    this->i_number = i_number; //注意！DISKINODE是没有INODE号这个属性的，一个DISKINODE的号是固定的，可以根据其位置算出来
+    this->i_number = i_number; 
     this->i_lastr = -1;
 }
 
@@ -254,7 +240,7 @@ int Inode::Bmap(int lbn){
   /**
    * @param lbn 给定的盘块号
    * @brief 根据混合索引表，用逻辑块号，查出物理盘块号
-   *        或着查不到，就自己申请新的物理盘块
+   *        或查不到，就自己申请新的物理盘块
    */
     /* 转换后的物理盘块号 */
     int phy_blk_id; 
@@ -280,23 +266,13 @@ int Inode::Bmap(int lbn){
             if (phy_blk_id == -1){
                 //分配失败。可能没有空闲空间了
             }
-            else
-            {
-            /* 当写入位置超出文件大小，即对当前文件进行扩充写入，就需要分配额外的磁盘块，
-             * 并为之建立逻辑块号与物理盘块号之间的映射*/
+            else{
+            /* 当写入位置超出文件大小，进行额外申请，设置延迟写标志就可以初始化该数据块*/
                 Kernel::instance().getBufferManager().Bdwrite(first_index_buf);
                 this->i_addr[lbn] = phy_blk_id;
                 this->i_flag |= Inode::IUPD;
             }
-            /*
-             * 因为后面很可能马上还要用到此处新分配的数据块，所以不急于立刻输出到
-             * 磁盘上；而是将缓存标记为延迟写方式，这样可以减少系统的I/O操作。
-             */
-
-            
-
         }
-
         return phy_blk_id;
     }
     else {
@@ -326,13 +302,10 @@ int Inode::Bmap(int lbn){
             this->i_addr[index] = new_free_blk_id;
             first_index_buf=Kernel::instance().getBufferManager().GetBlk(new_free_blk_id);
             Kernel::instance().getBufferManager().Bclear(first_index_buf);
-            
-
         }
         else{
             /* 读出存储间接索引表的字符块 */
             first_index_buf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
-
         }
         /* 获取缓冲区首址 */
         inode_link_table = (int *)first_index_buf->b_addr;
@@ -399,11 +372,11 @@ int Inode::Bmap(int lbn){
         }
         return phy_blk_id;
     }
-} //根据逻辑块号查混合索引表，得到物理块号。
+}
 
 void InodeCache::init(){
   /**
-   * @brief 很简单，不需要把InodeCache区覆盖什么的，只需要清空bitmap
+   * @brief 清空bitmap
    */
   inodeCacheBitmap.clear();
 }
@@ -411,7 +384,7 @@ void InodeCache::init(){
 Inode *InodeCache::getInodeByID(int inode_id){
   /**
    * @brief 遍历查找InodeCache区域看有没有inodeID吻合的inode，若有则取出;
-   *        若没有，先向磁盘取这个inode，放入inodeCacheArea，（可能会出现替换）
+   *        若没有，向磁盘申请新的inode，并放入内存
    */
   for (int i = 0; i < INODE_CACHE_SIZE; i++){
     if (inodeCacheBitmap.isAvai(i) && inode_cache_area[i].i_number == inode_id){
@@ -420,11 +393,10 @@ Inode *InodeCache::getInodeByID(int inode_id){
     }
   }
 
-  //没有在inodeCache中找到，需要从ext要，写入inodeCache
-  return &inode_cache_area[addInodeCache((Kernel::instance().getFileSystem().getDiskInodeByNum(inode_id)), inode_id)];
+  //没有在inodeCache中找到，新申请一个
+  return &inode_cache_area[addInodeCache((Kernel::instance().getFileSystem().getDiskInodeById(inode_id)), inode_id)];
 
 } 
-//返回inodeCache块的缓存
 
 int InodeCache::addInodeCache(DiskInode inode, InodeId inode_id){
   /**
@@ -457,9 +429,6 @@ int InodeCache::addInodeCache(DiskInode inode, InodeId inode_id){
 }
 
 
-
-
-
 int InodeCache::writeBackInode(){
   /*
    * @brief 写回所有的Inode缓存回磁盘
@@ -468,7 +437,6 @@ int InodeCache::writeBackInode(){
   for (int i = 0; i < inodeCacheBitmap.getMapSize(); i++){
     if (inodeCacheBitmap.isAvai(i)){ //该inode缓存有意义
       if (inode_cache_area[i].i_flag & (Inode::IUPD | Inode::IACC)){ // 确实被分配了内容
-
          Kernel::instance().getFileSystem().writeBackDiskInode(inode_cache_area[i].i_number, inode_cache_area[i]);
       }
     }
@@ -487,12 +455,12 @@ OpenFileTable::~OpenFileTable(){
 
 
 File *OpenFileTable::FAlloc(){
-  /* @brief 进程打开文件描述符表中找的空闲项*/
+  /** 
+   * @brief 进程打开文件描述符表中找的空闲项
+   */
     for (int i = 0; i < OpenFileTable::NFILE; i++){
         /* f_count==0表示该项空闲 */
         if (this->m_File[i].f_count == 0){
-            /* 建立描述符和File结构的勾连关系 */
-            //u.u_ofiles.SetF(fd, &this->m_File[i]);
             /* 增加对file结构的引用计数 */
             this->m_File[i].f_count++;
             /* 清空文件读、写位置 */
@@ -507,11 +475,12 @@ File *OpenFileTable::FAlloc(){
 }
 
 void OpenFileTable::CloseF(File *pFile){
+   /** 
+	 * @brief 对打开文件控制块File结构的引用计数f_count减1，若引用计数f_count为0，则释放File结构。
+	 */
     Inode *pNode;
     if (pFile->f_count <= 1){
         /* 如果当前进程是最后一个引用该文件的进程，对特殊块设备、字符设备文件调用相应的关闭函数 */
-        // pFile->f_inode->CloseI(pFile->f_flag & File::FWRITE);
-        // g_InodeTable.IPut(pFile->f_inode);
         pFile->f_inode_id = 0;
         pFile->f_offset = 0;
     }

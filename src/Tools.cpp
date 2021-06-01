@@ -33,7 +33,6 @@ bool genTestsFile(std::string res_dir, const int test_str_len){
       return -1;
    }
    std::string test_str = gengerString(test_str_len);
-   //printf("%s\n", test_str.c_str());
 
    fwrite(test_str.data(), 1, test_str_len, fd_des);
    fclose(fd_des);

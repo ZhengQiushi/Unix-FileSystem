@@ -77,8 +77,7 @@ public:
   //void writeBlk(int blk_num, const DiskBlock &contentToWrite); //将内存的一块区域，写入缓冲区（如果不在缓冲区的话，需要先读）
   Buf *GetBlk(int blk_num); /* 申请一块缓存，用于读写设备dev上的字符块blkno。*/
   void Brelse(Buf *bp);   /* 释放缓存控制块buf */
-  Buf &GetBFreeList();    //获取自由缓存队列控制块Buf对象引用
-  void NotAvail(Buf *bp);
+  void getFetched(Buf *bp);
   /* 清空缓冲区内容 */
   void Bclear(Buf *bp);
 };

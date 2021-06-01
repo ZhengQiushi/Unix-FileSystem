@@ -57,6 +57,9 @@
         "cfenv": "cpp",
         "typeinfo": "cpp",
         "mixinvector": "cpp",
-        "fast_back_stack": "cpp"
+        "fast_back_stack": "cpp",
+        "object": "cpp",
+        "shape": "cpp",
+        "stateattribute": "cpp"
     }
 }

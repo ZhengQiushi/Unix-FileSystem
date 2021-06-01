@@ -222,7 +222,7 @@ private:
 public:
   Shell();
   ~Shell();
-  int readUserInput();
+  int run();
   void executeCmd();
   INSTRUCT getInstType();
   char *getInstStr();
@@ -247,7 +247,7 @@ public:
   void ls();
   void cd();
   void store();
-  void withdraw();
+  void load();
   void clear();
 };
 ```
@@ -275,7 +275,7 @@ public:
   InodeId deleteFile(const char *fileName); //删除文件
   InodeId deleteDir(const char *dirName);
   InodeId deleteDirect(const char *fileName);
-  int mkDir(const char *dirName); //返回分配的Inode编号
+  int mkdir(const char *dirName); //返回分配的Inode编号
   int cd(const char *dirName);    //返回进入的dir的Inode
   void ls(const char *dirName);
   void ls(InodeId dirInodeID);
@@ -284,7 +284,7 @@ public:
   int read(int fd, u_int8_t *content, int length);  //用户层面，文件必须先打开才可读
   int write(int fd, u_int8_t *content, int length); //用户层面，文件必须先打开才可写
   bool eof(FileFd fd);
-  void registerExt2(VFS *ext2); //注册文件系统，载入SuperBlock
+  void registerExt2(VFS *fileSystem); //注册文件系统，载入SuperBlock
   void unregisterExt2();         //注销加载的文件系统，要刷回脏inode和superblock
   void bindSuperBlockCache(SuperBlockCache *superBlockCache);
   void bindInodeCache(InodeCache *inodeCache);
@@ -312,12 +312,12 @@ public:
   VFS_Status getExt2Status();
   int setBufferCache(BufferCache *p_bufferCache);
   int allocNewInode(); //分配一个新的inode
-  DiskInode getDiskInodeByNum(int inode_id);
+  DiskInode getDiskInodeById(int inode_id);
   void writeBackDiskInode(int inode_id, DiskInode disk_inode);
 
   InodeId locateInode(Path &path);
   InodeId locateParDir(Path &path);
-  InodeId getInodeIdInDir(InodeId dirInodeId, FileName fileName);
+  InodeId getInodeIdInDir(InodeId par_inode_id, FileName fileName);
 
   int bmap(int inodeNum, int logicBlockNum); //文件中的地址映射。查混合索引表，确定物理块号。
   //逻辑块号bn=u_offset/512
@@ -378,7 +378,7 @@ public:
   Buf *GetBlk(int blk_num); /* 申请一块缓存，用于读写设备dev上的字符块blkno。*/
   void Brelse(Buf *bp);   /* 释放缓存控制块buf */
   Buf &GetBFreeList();    //获取自由缓存队列控制块Buf对象引用
-  void NotAvail(Buf *bp);
+  void getFetched(Buf *bp);
 };
 ```
 
@@ -511,7 +511,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
     Inode *p_inode = inodeCache->getInodeByID(p_file->f_inode_id);
     p_inode->i_flag |= Inode::IUPD;
 
-    Buf *pBuf;
+    Buf *p_buf;
     while (writeByteCount < length) 
     {
         BlkId logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
@@ -527,15 +527,15 @@ int VFS::write(int fd, u_int8_t *content, int length)
         {
 
             //这种情况不需要先读后写
-            pBuf = Kernel::instance()->getBufferManager().GetBlk(phy_blk_id);
+            p_buf = Kernel::instance()->getBufferManager().GetBlk(phy_blk_id);
         }
         else
         {
             //先读后写
-            pBuf = Kernel::instance()->getBufferManager().Bread(phy_blk_id);
+            p_buf = Kernel::instance()->getBufferManager().Bread(phy_blk_id);
         }
 
-        u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
+        u_int8_t *p_buf_byte = (u_int8_t *)p_buf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - writeByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
@@ -553,7 +553,7 @@ int VFS::write(int fd, u_int8_t *content, int length)
 
             //修改offset
         }
-        Kernel::instance()->getBufferManager().Bdwrite(pBuf);
+        Kernel::instance()->getBufferManager().Bdwrite(p_buf);
     }
 
     return writeByteCount;
@@ -576,7 +576,7 @@ int VFS::read(int fd, u_int8_t *content, int length)
     File *p_file = u.u_ofiles.GetF(fd);
     Inode *p_inode = inodeCache->getInodeByID(p_file->f_inode_id);
     p_inode->i_flag |= Inode::IUPD;
-    Buf *pBuf;
+    Buf *p_buf;
 
     if (length > p_inode->i_size - p_file->f_offset + 1)
     {
@@ -588,8 +588,8 @@ int VFS::read(int fd, u_int8_t *content, int length)
         BlkId logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
         BlkId phy_blk_id = p_inode->Bmap(logicBlkno);            //物理盘块号
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
-        pBuf = Kernel::instance()->getBufferManager().Bread(phy_blk_id);
-        u_int8_t *p_buf_byte = (u_int8_t *)pBuf->b_addr;
+        p_buf = Kernel::instance()->getBufferManager().Bread(phy_blk_id);
+        u_int8_t *p_buf_byte = (u_int8_t *)p_buf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - readByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
         { //要读大小<=当前盘块剩下的,读需要的大小
@@ -608,7 +608,7 @@ int VFS::read(int fd, u_int8_t *content, int length)
             content += DISK_BLOCK_SIZE - offsetInBlock + 1;
             //修改offset
         }
-        Kernel::instance()->getBufferManager().Brelse(pBuf);
+        Kernel::instance()->getBufferManager().Brelse(p_buf);
     }
 
     return readByteCount;
@@ -660,7 +660,7 @@ void BufferCache::Bflush()
         if ((bp->b_flags & Buf::B_DELWRI))
         {
             //bwrite方法会清除B_DELWRI标志的
-            this->NotAvail(bp);
+            this->getFetched(bp);
             this->Bwrite(bp);
             this->Brelse(bp);
             std::cout<<bp->b_blkno<<std::endl;
@@ -672,7 +672,7 @@ void BufferCache::Bflush()
 
 ```
 
-for中的`bp = bp->av_forw`是有问题的，因为当前`this->NotAvail(bp);`、`this->Bwrite(bp);`、` this->Brelse(bp);`已将把bp对应的盘块在自由缓存队列中的位置变了。
+for中的`bp = bp->av_forw`是有问题的，因为当前`this->getFetched(bp);`、`this->Bwrite(bp);`、` this->Brelse(bp);`已将把bp对应的盘块在自由缓存队列中的位置变了。
 
 正确的改成下面：
 
@@ -687,7 +687,7 @@ void BufferCache::Bflush()
         if ((bp->b_flags & Buf::B_DELWRI))
         {
             //bwrite方法会清除B_DELWRI标志的
-            //this->NotAvail(bp);
+            //this->getFetched(bp);
             this->Bwrite(bp);
             //this->Brelse(bp);
             std::cout << bp->b_blkno << std::endl;
@@ -822,7 +822,7 @@ store black_hole.jpg inner_black_hole.jpg
 为了验证写入写出是不是完好的，我们用withdraw命令，将虚拟磁盘中的文件再写出。
 
 ```shell
-withdraw inner_black_hole.jpg black_hole_withdraw.jpg
+load inner_black_hole.jpg black_hole_withdraw.jpg
 
 ```
 
