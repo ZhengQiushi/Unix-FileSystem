@@ -76,9 +76,12 @@ void Kernel::initKernel(){
 
 void Kernel::relsKernel(){
     /* 刷回InodeCache,SuperBlock */
-    inodeCache.writeBackInode();
     superBlock.writeBackSuper();
-    bufferCache.unmount();
+
+    inodeCache.writeBackInode();
+    bufferCache.Bflush();
+
+
     diskDriver.unmount();
 }
 
@@ -151,6 +154,7 @@ InodeId Kernel::kernelTouch(const char *fileName){
         return ERROR_FILENAME_EXSIST;
     }
     new_file_node = createFile(file_inode, file_folder_inode, new_file_dir.getInodeName());
+
     return new_file_node;
 }
 
@@ -162,7 +166,6 @@ InodeId Kernel::createFile(const InodeId &cur_Inode, const InodeId &par_inode, c
     InodeId new_file_node = -1;
     /* 为新文件分配新inode */
     new_file_node = superBlock.ialloc(); //得到inode号
-
     if (new_file_node <= 0){
         return -1;
     }
@@ -207,6 +210,7 @@ int Kernel::mkdir(const char *dirName){
         return newDirInodeId;
     }
 
+    
     /* 然后把它改为文件夹 */
     Inode *p_inode = inodeCache.getInodeByID(newDirInodeId);
     p_inode->i_mode = Inode::IFDIR;
@@ -214,11 +218,15 @@ int Kernel::mkdir(const char *dirName){
     
     BlkId blk_num = p_inode->Bmap(0);
 
-    std::cout << "[mkdir]blk_num: " << blk_num << "\n";
+    
+
+
+    #ifdef IS_DEBUG
+        std::cout << "[mkdir]blk_num: " << blk_num << "\n";
+    #endif
 
     Buf *p_buf = bufferCache.Bread(blk_num);
     DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
-
     /* 同时添加. 和 .. */
     DirectoryEntry tempDirectoryEntry;
     strcpy(tempDirectoryEntry.m_name, ".");
@@ -230,6 +238,12 @@ int Kernel::mkdir(const char *dirName){
     strcpy(tempDirectoryEntry.m_name, "..");
     tempDirectoryEntry.m_ino = file_folder_inode; 
     *p_directoryEntry = tempDirectoryEntry;
+   
+    #ifdef IS_DEBUG
+        std::cout << "[mkdir] newDirInodeId: " << newDirInodeId << "\n";
+        std::cout << "[mkdir] file_folder_inode: " << file_folder_inode << "\n";
+    #endif
+
 
     Kernel::instance().getBufferManager().Bdwrite(p_buf);
 
@@ -400,30 +414,47 @@ void Kernel::relseBlock(Inode *delete_inode){
     for (int i = 9; i >= 0; --i) {
 		if (delete_inode->i_addr[i]) {
 			if (i >= 6) {
+                #ifdef IS_DEBUG
+                    std::cout << i << std::endl;
+                #endif
 				Buf* pFirstBuffer = getBufferManager().Bread(delete_inode->i_addr[i]);
 				int *pFirst = (int*)pFirstBuffer->b_addr;
 				for (int j = DISK_BLOCK_SIZE / sizeof(int) - 1; j >= 0; --j) {
 					if (pFirst[j]) {
 						if (i >= 8) {
-							Buf* pSecondBuffer = getBufferManager().Bread(pFirst[j]);
+                            #ifdef IS_DEBUG
+                                std::cout << i << std::endl;
+							#endif
+                            Buf* pSecondBuffer = getBufferManager().Bread(pFirst[j]);
+                            
+
 							int* pSecond = (int*)pSecondBuffer->b_addr;
 							for (int k = DISK_BLOCK_SIZE / sizeof(int) - 1; k >= 0; --k) {
 								if (pSecond[k]) {
                                     superBlock.bfree(pSecond[k]);
-
 								}
 							}
+                            #ifdef IS_DEBUG
+                                std::cout << "笨蛋您又来了" << std::endl;
+                            #endif
 							getBufferManager().Brelse(pSecondBuffer);
 						}
+                        #ifdef IS_DEBUG
+                            std::cout << "free_block: " << superBlock.free_block_bum  \
+                                    << "free_inode: " << superBlock.free_inode_num <<"\n";
+                        #endif
+
                         superBlock.bfree(pFirst[j]);
 					}
 				}
+                
 				getBufferManager().Brelse(pFirstBuffer);
 			}
             superBlock.bfree(delete_inode->i_addr[i]);
 			delete_inode->i_addr[i] = 0;
 		}
 	}
+
 }
 
 InodeId Kernel::deleteObject(const InodeId &cur_Inode, const InodeId &par_Inode){
@@ -587,9 +618,9 @@ void Kernel::ls(const char *dirName){
     myPath path(dirName);
 
     par_inode_id = fileSystem.locateInode(path);
-
-    std::cout << par_inode_id << std::endl;
-
+    #ifdef IS_DEBUG
+        std::cout << par_inode_id << std::endl;
+    #endif
     if ((inodeCache.getInodeByID(par_inode_id)->i_mode & Inode::IFMT) == Inode::IFDIR){
         ls(par_inode_id);
     }
@@ -681,9 +712,10 @@ int Kernel::read(int fd, uint8_t *content, int length){
     {
         BlkId logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
 
-        std::cout << "==============================================" << std::endl;
-
-        std::cout << "[read] logicBlkno: " << logicBlkno << "\n";
+        #ifdef IS_DEBUG
+            std::cout << "==============================================" << std::endl;
+            std::cout << "[read] logicBlkno: " << logicBlkno << "\n";
+        #endif
 
         BlkId phy_blk_id = p_inode->Bmap(logicBlkno);            //物理盘块号
 
@@ -692,7 +724,9 @@ int Kernel::read(int fd, uint8_t *content, int length){
 
         p_buf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
 
-        std::cout << "[read] phy_blk_id: " << phy_blk_id << "\n";
+        #ifdef IS_DEBUG
+            std::cout << "[read] phy_blk_id: " << phy_blk_id << "\n";
+        #endif
 
         uint8_t *p_buf_byte = (uint8_t *)p_buf->b_addr;
         p_buf_byte += offsetInBlock;
@@ -736,10 +770,10 @@ int Kernel::write(int fd, uint8_t *content, int length)
         
 
         BlkId logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
-        if (logicBlkno == 1030)
-        {
-            printf("暂时停下");
-        }
+        // if (logicBlkno == 1030)
+        // {
+        //     printf("暂时停下");
+        // }
         // 逻辑盘块 -> 转成相应的物理盘块
         BlkId phy_blk_id = p_inode->Bmap(logicBlkno);            //物理盘块号
 

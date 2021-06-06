@@ -6,13 +6,16 @@
 #include "Kernel.h"
 
 /* 是否需要产生测试字符串 */
-// #define GEN_TEST_FILE 
+//#define GEN_TEST_FILE 
 
 int main(){
    Shell shell(Kernel::instance());
 
+#ifdef IS_DEBUG
    std::cout << sizeof(SuperBlock) << std::endl;
    std::cout << sizeof(DiskInode) << std::endl;
+#endif
+
 #ifdef GEN_TEST_FILE
    if(0 > genTestsFile("../assets/tests"))
       return -1;

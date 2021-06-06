@@ -69,17 +69,24 @@ void BufferCache::Bwrite(Buf *bp){
      */
     unsigned int flags;
 
+
+
+
+
     flags = bp->b_flags;
     bp->b_flags &= ~(Buf::B_READ | Buf::B_DONE | Buf::B_ERROR | Buf::B_DELWRI);
     bp->b_wcount = DISK_BLOCK_SIZE;
 
-    if ((flags & Buf::B_DELWRI) == 0){
+    if (0){
+        //(flags & Buf::B_DELWRI) == 0
         std::cout << "[ERROR]bwrite出错" << std::endl;
     }
     else{
         diskDriver->writeBlk(bp->b_blkno, *bp->b_addr);
         bp->b_flags |= Buf::B_DONE;
     }
+
+    Brelse(bp);
 
     return;
 }
@@ -149,8 +156,9 @@ Buf *BufferCache::GetBlk(int blk_num){
     bp->b_flags = Buf::B_BUSY; //若有延迟写bit，也一并消除了
     bp->b_blkno = blk_num;
 
-    std::cout << "   GetBlk " << blk_num <<" "<< bp->b_addr  << sizeof(bp->b_addr) << std::endl;
-
+    #ifdef IS_DEBUG
+        std::cout << "   GetBlk " << blk_num <<" "<< bp->b_addr  << sizeof(bp->b_addr) << std::endl;
+    #endif
     memset(bp->b_addr, 0, DISK_BLOCK_SIZE);
 
     if (bp->b_dev != devno){

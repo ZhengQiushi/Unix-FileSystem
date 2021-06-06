@@ -12,7 +12,11 @@ std::string gengerString(int n){
 	std::string str = "";
 	for(int i=1;i <= n;i++){
 		int flag;                        
-		flag = rand()%2;                     
+		flag = rand()%2;
+        if(i % 10 == 0){
+            str += "\n";
+            continue;
+        }                     
       //随机使flag为1或0，为1就是大写，为0就是小写 
 		if(flag == 1)                        
       //如果flag=1 

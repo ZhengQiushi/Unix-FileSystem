@@ -52,13 +52,19 @@ void SuperBlock::writeBackSuper(){
      * @brief 回写superblock
      */
     BufferCache* my_buffer_cache = &Kernel::instance().getBufferManager();
-
-    for (int j = 0; j < 2; j++) { // superBlock大小为2！
-        Buf *p_buf = Kernel::instance().getBufferManager().GetBlk(j);
-        SuperBlock *p_superBlock = (SuperBlock *)p_buf->b_addr;
-        *p_superBlock = *this;
-        Kernel::instance().getBufferManager().Bdwrite(p_buf);
+	for (int j = 0; j < 2; j++) {
+		int* p = (int *)this + j * 128;
+		Buf *p_buf = my_buffer_cache->GetBlk(SUPERBLOCK_START_SECTOR + j);
+		memcpy(p_buf->b_addr, p, DISK_BLOCK_SIZE);
+		Kernel::instance().getBufferManager().Bwrite(p_buf);
 	}
+    
+    // for (int j = 0; j < 2; j++) { // superBlock大小为2！
+    //     Buf *p_buf = Kernel::instance().getBufferManager().GetBlk(j);
+    //     SuperBlock *p_superBlock = (SuperBlock *)p_buf->b_addr;
+    //     *p_superBlock = *this;
+    //     Kernel::instance().getBufferManager().Bdwrite(p_buf);
+	// }
 
 
 
@@ -80,8 +86,10 @@ BlkId SuperBlock::balloc() {
 	blkno = s_free[--free_block_bum];
 
     
+    #ifdef IS_DEBUG
+        std::cout <<"blkno : " <<  blkno << " free_block_bum: " <<free_block_bum << std::endl;
+    #endif
 
-    std::cout <<"blkno : " <<  blkno << " free_block_bum: " <<free_block_bum << std::endl;
     /* 若获取磁盘块编号为零，则表示已分配尽所有的空闲磁盘块。*/
 	if (blkno < 0) {
 		free_block_bum = 0;
@@ -94,15 +102,18 @@ BlkId SuperBlock::balloc() {
 	* 将下一组空闲磁盘块的编号读入SuperBlock的空闲磁盘块索引表s_free[100]中。
 	*/
     if (free_block_bum <= 0) {
-        std::cout << "***我在这里***" << std::endl;
-
+        #ifdef IS_DEBUG
+            std::cout << "***我在这里***" << std::endl;
+        #endif
 		pBuffer = my_buffer_cache->Bread(blkno);
 		int* p = (int *)pBuffer->b_addr;
-        std::cout << "我在这里" << std::endl;
 
 		free_block_bum = *p; // 成组连接法
         p ++ ;
-        std::cout << "成组连接法: " << free_block_bum << std::endl;
+
+        #ifdef IS_DEBUG
+            std::cout << "成组连接法: " << free_block_bum << std::endl;
+        #endif
 
 		memcpy(s_free, p, sizeof(s_free));
 		my_buffer_cache->Brelse(pBuffer);
@@ -133,6 +144,8 @@ void SuperBlock::bfree(BlkId blknum) {
         
 		free_block_bum = 0;
 		my_buffer_cache->Bwrite(pBuffer);
+        
+
 	}
 
 	s_free[free_block_bum++] = blknum;
@@ -346,8 +359,9 @@ void VFS::format(){
     p_superBlock++;
     diskMemAddr = (DiskBlock *)p_superBlock;
 
-    std::cout << "super: " << (char*)diskMemAddr - (char*)head << std::endl;
-
+    #ifdef IS_DEBUG
+        std::cout << "super: " << (char*)diskMemAddr - (char*)head << std::endl;
+    #endif
 
     DiskInode emptyDINode;
 
@@ -386,8 +400,9 @@ void VFS::format(){
         }
         if(i == root_id){
             *p_DiskInode = rootDINode;
-                std::cout << "root: " << (char*)p_DiskInode - (char*)p_superBlock << std::endl;
-
+                #ifdef IS_DEBUG
+                    std::cout << "root: " << (char*)p_DiskInode - (char*)p_superBlock << std::endl;
+                #endif
         }
         else{
             *p_DiskInode = emptyDINode;
@@ -396,8 +411,9 @@ void VFS::format(){
         
         p_DiskInode++;
     }
-
-    std::cout << "all_indoe: " << INODE_NUMBERS << " " << ((char*)p_DiskInode - (char*)head) / 512 << std::endl;
+    #ifdef IS_DEBUG
+        std::cout << "all_indoe: " << INODE_NUMBERS << " " << ((char*)p_DiskInode - (char*)head) / 512 << std::endl;
+    #endif
 
     //空闲盘块初始化
     
@@ -444,7 +460,9 @@ void VFS::format(){
         }
         else {
             if(i == 0){
-                std::cout << "Head: " << ((char*)p_DiskBlock - (char*)head) / 512 << std::endl;
+                #ifdef IS_DEBUG
+                    std::cout << "Head: " << ((char*)p_DiskBlock - (char*)head) / 512 << std::endl;
+                #endif
                 *p_DiskBlock = rootBlock;
             }
             else{
@@ -455,10 +473,10 @@ void VFS::format(){
         }
         superBlock.s_free[superBlock.free_block_bum++] = i + DATA_ZONE_START_SECTOR;
     }
-
-    std::cout << "DiskBlock: " << 1024 << "~" << 1024 +((char*)p_DiskBlock - (char*)p_DiskInode) / 512 << std::endl;
-    std::cout << "superBlock.free_block_bum: " << 1024 << "~" << 1024 + superBlock.free_block_bum << "\n";
-
+    #ifdef IS_DEBUG
+        std::cout << "DiskBlock: " << 1024 << "~" << 1024 +((char*)p_DiskBlock - (char*)p_DiskInode) / 512 << std::endl;
+        std::cout << "superBlock.free_block_bum: " << 1024 << "~" << 1024 + superBlock.free_block_bum << "\n";
+    #endif
 
 
     /* 0  superblock  */
@@ -510,20 +528,20 @@ void VFS::writeBackDiskInode(int inode_id, Inode cur_inode){
      * @notice 要先读后写!
      */
     // 定位到第二个inode pool
-
-    std::cout << "[writeBack]: " << inode_id << std::endl;
-
+    #ifdef IS_DEBUG
+        std::cout << "[writeBack]: " << inode_id << std::endl;
+    #endif
     if (1) { // this->i_flag&(INode::IUPD | INode::IACC)
         Buf *p_buf = p_bufferCache->Bread(INODE_ZONE_START_SECTOR + cur_inode.i_number / INODE_NUMBER_PER_SECTOR);
 		DiskInode dINode(cur_inode);
 
 		unsigned char* p = (unsigned char*) p_buf->b_addr + (cur_inode.i_number % INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode);
 		DiskInode* pNode = &dINode;
+        
 		memcpy(p, pNode, sizeof(DiskInode));
         
 		p_bufferCache->Bdwrite(p_buf); 
 	}
-
     // int blk_num = 2 + inode_id / (DISK_BLOCK_SIZE / DISKINODE_SIZE);
 
     // std::cout << "!!writeBack!!: " << blk_num << std::endl;
@@ -545,8 +563,9 @@ DiskInode VFS::getDiskInodeById(int inode_id){
 
     int blk_num = 2 + inode_id / (DISK_BLOCK_SIZE / DISKINODE_SIZE);
 
-    std::cout << "getDiskInode : " << blk_num << std::endl;
-    
+    #ifdef IS_DEBUG
+        std::cout << "getDiskInode : " << blk_num << std::endl;
+    #endif
     Buf *p_buf = p_bufferCache->Bread(blk_num);
     DiskInode *cur_diskInode = (DiskInode *)p_buf->b_addr;
     DiskInode tempDiskInode = *(cur_diskInode + inode_id % (DISK_BLOCK_SIZE / DISKINODE_SIZE));
@@ -606,6 +625,9 @@ InodeId VFS::locateParDir(const myPath& path){
 
     for (int i = 0; i < path.getLevel(); i++){
         //遍历全部路径，如果有一个没有找到就报错
+        #ifdef IS_DEBUG
+            std::cout << "  i :" << i << std::endl;
+        #endif
         dirInode = getInodeIdInDir(dirInode, path.path[i].c_str());
         if (dirInode < 0){
             return ERROR_PATH_NFOUND; //没有找到
@@ -621,13 +643,13 @@ InodeId VFS::getInodeIdInDir(InodeId par_inode_id, FileName fileName){
      */
 
     //先根据目录inode号dirInodeId获得目录inode对象
-    std::cout << "fuck" << std::endl;
-
+    int ret = -1;
 
     Inode *p_dir_inode = Kernel::instance().getInodeCache().getInodeByID(par_inode_id);
 
-    std::cout << p_dir_inode->i_number << std::endl;
-
+    #ifdef IS_DEBUG
+        std::cout << p_dir_inode->i_number << std::endl;
+    #endif
 
     //读取该inode指示的数据块
     int blk_num = p_dir_inode->Bmap(0); //Bmap查物理块号
@@ -638,14 +660,15 @@ InodeId VFS::getInodeIdInDir(InodeId par_inode_id, FileName fileName){
     //访问这个目录文件中的entry
     for (int i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++){
         if ((p_directoryEntry->m_ino != 0) && (!strcmp(p_directoryEntry->m_name, fileName))){
-            Kernel::instance().getBufferManager().Brelse(p_buf);
-            return p_directoryEntry->m_ino;
+            //Kernel::instance().getBufferManager().Brelse(p_buf);
+            ret = p_directoryEntry->m_ino;
+            break;
         } //ino==0表示该文件被删除
         p_directoryEntry++;
     }
 
-    Kernel::instance().getBufferManager().Brelse(p_buf);
-    return -1;
+    //Kernel::instance().getBufferManager().Brelse(p_buf);
+    return ret;
 }
 
 

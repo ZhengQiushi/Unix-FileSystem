@@ -103,6 +103,8 @@ DiskBlock *DiskDriver::getDiskMemAddr(){
 
 DirectoryEntry::DirectoryEntry(){
 	m_ino = 0;
+  memset(m_name, 0, DIRSIZ);
+  
 }
 
 DirectoryEntry::~DirectoryEntry(){
@@ -267,8 +269,9 @@ int Inode::Bmap(int lbn){
     if (lbn < 6){ 
         /* 如果是小型文件，从基本索引表i_addr[0-5]中获得物理盘块号即可 */
         phy_blk_id = this->i_addr[lbn];
-
-        std::cout << "Bmap: " << phy_blk_id << "  this->" <<  this->i_number << "\n";
+        #ifdef IS_DEBUG
+          std::cout << "Bmap: " << phy_blk_id << "  this->" <<  this->i_number << "\n";
+        #endif
         /*如果该逻辑块号还没有相应的物理盘块号与之对应，则分配一个物理块*/
         if (phy_blk_id == 0){
           
@@ -498,8 +501,9 @@ int InodeCache::addInodeCache(DiskInode inode, InodeId inode_id){
    */
   int cur_free_map_pos = getFreeINode();
 
-
-  std::cout << "cur_free_map_pos: " << cur_free_map_pos <<std::endl;
+  #ifdef IS_DEBUG
+    std::cout << "cur_free_map_pos: " << cur_free_map_pos <<std::endl;
+  #endif
 
   //注意DiskInode和内存Inode数据结构的区别
   if (cur_free_map_pos < 0){
@@ -525,7 +529,9 @@ int InodeCache::addInodeCache(DiskInode inode, InodeId inode_id){
   inode_cache_area[cur_free_map_pos].i_count = 1;
   inode_cache_area[cur_free_map_pos].i_flag = (Inode::IUPD | Inode::IACC);
 
-  std::cout << "cur_free_map_pos: " << cur_free_map_pos <<std::endl;
+  #ifdef IS_DEBUG
+    std::cout << "cur_free_map_pos: " << cur_free_map_pos <<std::endl;
+  #endif
 
   return cur_free_map_pos;
 }
