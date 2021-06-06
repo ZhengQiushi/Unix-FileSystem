@@ -3,15 +3,20 @@
 #include "define.h"
 #include "Tools.h"
 
+
 const int devno = 12;
 #define DEF_MODE S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
 
 class Inode;
+class Buf;
 
 class DiskBlock{
   private:
     //数据存放区域，大小为DISK_BLOCK_SIZE个字节
   public:
+    DiskBlock(){
+      memset(content, 0, DISK_BLOCK_SIZE);
+    }
     uint8_t content[DISK_BLOCK_SIZE];
 };
 
@@ -98,6 +103,8 @@ public:
   Inode();                                //构造函数
   Inode(DiskInode d_inode);               //转换构造函数
   Inode(DiskInode d_inode, int i_number); // 
+  void copyInode(Buf* pb, int inode_id);
+
   void newInode(int flag, int inode_num);
   int Bmap(int lbn);                      //根据逻辑块号查混合索引表，得到物理块号。
 };
@@ -116,18 +123,22 @@ public:
  */
 class InodeCache
 {
-
+  static const int NINODE = 100;
   //TODO
 private:
-  Inode inode_cache_area[INODE_CACHE_SIZE];
-  Bitmap inodeCacheBitmap;
+  Inode inode_cache_area[NINODE];
+  //Bitmap inodeCacheBitmap;
 
 public:
-  InodeCache() : inodeCacheBitmap(INODE_CACHE_SIZE) {}
+  //InodeCache() : inodeCacheBitmap(INODE_CACHE_SIZE) {}
   void init();
   Inode *getInodeByID(int inode_id); //返回inodeCache块的缓存
   int addInodeCache(DiskInode inode, InodeId inode_id);
   int writeBackInode();
+
+  int IsLoaded(InodeId inode_id);
+  /* 在内存INode表中寻找一个空闲的内存INode */
+  int getFreeINode();
 };
 
 /**
@@ -135,45 +146,57 @@ public:
  * 大小是一定的，Inode号是有限的。
  * 
  */
-class InodeBlock{
-  //TODO
-  private:
-    Bitmap inode_bitmap;
-    //NOTE 这个是手工计算的，为的是让InodePool占满3个盘块
-    char padding[2040];  
-    //INODE数组存放区域  Inode的大小为64字节
-    DiskInode inode_block[MAX_INODE_NUM]; 
+// class InodeBlock{
+//   //TODO
+//   private:
+//     //Bitmap inode_bitmap;
+//     //NOTE 这个是手工计算的，为的是让InodePool占满3个盘块
+//     //char padding[2040];  
+//     //INODE数组存放区域  Inode的大小为64字节
+//     DiskInode inode_block[MAX_INODE_NUM]; 
     
-  public:
-    InodeBlock();
-    int ialloc();
-    void ifree(InodeId inode_id);
-    void iupdate(InodeId inode_id,DiskInode disk_inode);  
-    DiskInode* getInode(InodeId inode_id);
-};
+//   public:
+//     InodeBlock();
+//     int ialloc();
+//     void ifree(InodeId inode_id);
+//     void iupdate(InodeId inode_id,DiskInode disk_inode);  
+//     DiskInode* getInode(InodeId inode_id);
+// };
 
 
 
 class SuperBlock{
 public:
   SuperBlock();
-  //SuperBlock(const SuperBlock& superBlock);
-  size_t superBlock_block_num = 1; //暂时考虑superblock占1个磁盘block
-  int free_inode_num;            //空闲inode
-  int free_block_bum;            //空闲盘块数
-  int total_block_num;           //总盘块数
-  int total_inode_num;           //总inode数
-  InodeId s_inode[MAX_INODE_NUM-1];   //空闲inode栈，用于管理inode的分配和回收
-  Bitmap disk_block_bitmap;      //用bitmap管理空闲盘块
-  char padding[1504];            //NOTE:这个1504是手工计算的结果。只针对ubuntu系统，也许别的机器就不对了。
-                                 //确保一个SuperBlock填满一个block
+
+  int total_block_num;            //总盘块数
+  int total_inode_num;            //总inode数
+
+  int free_inode_num;             //空闲inode
+  InodeId s_inode[MAX_INODE_NUM]; //空闲inode栈，用于管理inode的分配和回收
+
+
+  int free_block_bum;             //空闲盘块数
+  InodeId s_free[MAX_INODE_NUM];  //空闲磁盘栈，用于管理磁盘块的分配和回收
+
+
+  
+  
+  int	s_flock;		        // 封锁空闲盘块索引表标志
+  int	s_ilock;		        // 封锁空闲INode表标志
+
+  int	s_fmod;			        // 内存中super block副本被修改标志，意味着需要更新外存对应的Super Block
+  int	s_ronly;		        // 本文件系统只能读出
+  int	s_time;			        // 最近一次更新时间
+  int	padding[47];	        // 填充使SuperBlock块大小等于1024字节，占据2个扇区
 
   BlkId balloc();
   void bfree(BlkId blk_num);
   void ballocCeratin(BlkId blk_num);
+
   InodeId ialloc();
   void ifree(InodeId inode_id);
-
+  void init();
   void writeBackSuper();
 };
 

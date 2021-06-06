@@ -235,6 +235,16 @@ void Inode::newInode(int flag, int new_file_node){
     this->i_gid = 1;
     this->i_number = new_file_node;
 }
+/* 将包含外存Inode字符块中信息拷贝到内存Inode中 */
+void Inode::copyInode(Buf* pb, int inode_id){
+    DiskInode& d_inode = *(DiskInode*)(pb->b_addr + (inode_id % INODE_NUMBER_PER_SECTOR )*sizeof(DiskInode));
+    this->i_mode = d_inode.d_mode;
+    this->i_nlink = d_inode.d_nlink;
+    this->i_uid = d_inode.d_uid;
+    this->i_gid = d_inode.d_gid;
+    this->i_size = d_inode.d_size;
+    memcpy(this->i_addr, d_inode.d_addr, sizeof(d_inode.d_addr));
+}
 
 int Inode::Bmap(int lbn){
   /**
@@ -257,6 +267,8 @@ int Inode::Bmap(int lbn){
     if (lbn < 6){ 
         /* 如果是小型文件，从基本索引表i_addr[0-5]中获得物理盘块号即可 */
         phy_blk_id = this->i_addr[lbn];
+
+        std::cout << "Bmap: " << phy_blk_id << "  this->" <<  this->i_number << "\n";
         /*如果该逻辑块号还没有相应的物理盘块号与之对应，则分配一个物理块*/
         if (phy_blk_id == 0){
           
@@ -289,6 +301,10 @@ int Inode::Bmap(int lbn){
         }
 
         phy_blk_id = this->i_addr[index];
+
+        #ifdef IS_DEBUG
+          std::cout << "Bmap-L2: " << phy_blk_id << "\n";
+        #endif
         /* 若该项为零，则表示不存在相应的间接索引表块 */
         if (0 == phy_blk_id){
             this->i_flag |= Inode::IUPD;
@@ -351,11 +367,17 @@ int Inode::Bmap(int lbn){
         else{
             index = (lbn - Inode::LARGE_FILE_BLOCK) % Inode::ADDRESS_PER_INDEX_BLOCK;
         }
+         //std::cout << "   hhhh: " << index << "\n";
 
 
-        int new_blk_large = Kernel::instance().getSuperBlock().balloc();
+        int new_blk_large ;
+
+        // std::cout << "   index: " << index << "\n";
         phy_blk_id = inode_link_table[index];
-        if (phy_blk_id  == 0 && new_blk_large >= 0){
+
+        //std::cout << "Bmap-L2-item: " << phy_blk_id << "\n";
+
+        if (phy_blk_id  == 0 && (new_blk_large = Kernel::instance().getSuperBlock().balloc()) >= 0){
             /* 第一块没有写满，所以分配到的文件数据盘块号登记在一次间接索引表中 */
             phy_blk_id = new_blk_large;
             inode_link_table[index] = phy_blk_id;
@@ -374,11 +396,40 @@ int Inode::Bmap(int lbn){
     }
 }
 
+
+/*
+ * 检查编号为inumber的外存INode是否有内存拷贝，
+ * 如果有则返回该内存INode在内存INode表中的索引
+ */
+int InodeCache::IsLoaded(int inumber) {
+    
+    for (int i = 0; i < NINODE; ++i) {
+      //std::cout << "inode_cache_area[i].i_number = " << inode_cache_area[i].i_number << "  " << inumber << std::endl;
+
+        if (inode_cache_area[i].i_number == inumber) { // &&inode_cache_area[i].i_count
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* 在内存INode表中寻找一个空闲的内存INode */
+int InodeCache::getFreeINode() {
+    for (int i = 0; i < InodeCache::NINODE; i++) {
+        if (this->inode_cache_area[i].i_count == 0) {
+            return  i;
+        }
+    }
+    return -1;
+}
+
 void InodeCache::init(){
   /**
    * @brief 清空bitmap
    */
-  inodeCacheBitmap.clear();
+  memset(inode_cache_area, 0, sizeof(inode_cache_area));
+  
+  //inodeCacheBitmap.clear();
 }
 
 Inode *InodeCache::getInodeByID(int inode_id){
@@ -386,12 +437,53 @@ Inode *InodeCache::getInodeByID(int inode_id){
    * @brief 遍历查找InodeCache区域看有没有inodeID吻合的inode，若有则取出;
    *        若没有，向磁盘申请新的inode，并放入内存
    */
-  for (int i = 0; i < INODE_CACHE_SIZE; i++){
-    if (inodeCacheBitmap.isAvai(i) && inode_cache_area[i].i_number == inode_id){
-      //首先需要这个inodeCache是有效的
-      return &inode_cache_area[i];
+  // for (int i = 0; i < INODE_CACHE_SIZE; i++){
+  //   if (IsLoaded(i) > 0){
+  //     //首先需要这个inodeCache是有效的
+  //     return &inode_cache_area[i];
+  //   }
+  // }
+
+    Inode* pInode;
+    int index = IsLoaded(inode_id);
+
+    //std::cout << "IsLoaded: "<< index << "  inodeID :" << inode_id << std::endl;
+
+    if (index >= 0) {
+        pInode = inode_cache_area + index;
+        ++pInode->i_count;
+        return pInode;
     }
-  }
+
+
+
+    // index = getFreeINode();
+
+    // if (-1 == index) {
+    //     std::cout << "[ERROR] inodeTable 满了！" << std::endl;
+    //     return NULL;
+    // }
+
+    
+    // pInode = inode_cache_area + index;
+    // pInode->i_number = inode_id;
+    // pInode->i_count++;
+
+    
+
+    // BufferCache* cur_buffer_cache = &Kernel::instance().getBufferManager();
+    // Buf* pBuffer = cur_buffer_cache->Bread(INODE_ZONE_START_SECTOR + inode_id / INODE_NUMBER_PER_SECTOR);
+    
+    // std::cout << "index : " << pInode->i_number << std::endl;
+
+    // pInode = 
+    // pInode->copyInode(pBuffer, inode_id);
+    // cur_buffer_cache->Brelse(pBuffer);
+
+
+    // std::cout << "index : " << pInode->i_number << std::endl;
+
+    // return pInode;
 
   //没有在inodeCache中找到，新申请一个
   return &inode_cache_area[addInodeCache((Kernel::instance().getFileSystem().getDiskInodeById(inode_id)), inode_id)];
@@ -404,7 +496,11 @@ int InodeCache::addInodeCache(DiskInode inode, InodeId inode_id){
    *        若InodeCache未满，则直接放入;否则,发生替换.
    * @return 放入位置的下标 
    */
-  int cur_free_map_pos = inodeCacheBitmap.getFreeBitId();
+  int cur_free_map_pos = getFreeINode();
+
+
+  std::cout << "cur_free_map_pos: " << cur_free_map_pos <<std::endl;
+
   //注意DiskInode和内存Inode数据结构的区别
   if (cur_free_map_pos < 0){
     //空间不够，需要替换某个inode,随机替换
@@ -417,14 +513,20 @@ int InodeCache::addInodeCache(DiskInode inode, InodeId inode_id){
     }
     
     inode_cache_area[cur_free_map_pos] = Inode(inode, inode_id);
-    inodeCacheBitmap.setBit(cur_free_map_pos);
+    //inodeCacheBitmap.setBit(cur_free_map_pos);
     //用新的inode覆盖掉
     cur_free_map_pos = replace_index;
   }
   else{
     inode_cache_area[cur_free_map_pos] = Inode(inode, inode_id);
-    inodeCacheBitmap.setBit(cur_free_map_pos);
+    //inodeCacheBitmap.setBit(cur_free_map_pos);
   }
+
+  inode_cache_area[cur_free_map_pos].i_count = 1;
+  inode_cache_area[cur_free_map_pos].i_flag = (Inode::IUPD | Inode::IACC);
+
+  std::cout << "cur_free_map_pos: " << cur_free_map_pos <<std::endl;
+
   return cur_free_map_pos;
 }
 
@@ -434,10 +536,12 @@ int InodeCache::writeBackInode(){
    * @brief 写回所有的Inode缓存回磁盘
    */
   //遍历inodeCache，查找存在的并且是脏的inode
-  for (int i = 0; i < inodeCacheBitmap.getMapSize(); i++){
-    if (inodeCacheBitmap.isAvai(i)){ //该inode缓存有意义
+  for (int i = 0; i < InodeCache::NINODE; i++){
+    if (inode_cache_area[i].i_count != 0){ //该inode缓存有意义
+          //std::cout << "fuck" << std::endl;
+
       if (inode_cache_area[i].i_flag & (Inode::IUPD | Inode::IACC)){ // 确实被分配了内容
-         Kernel::instance().getFileSystem().writeBackDiskInode(inode_cache_area[i].i_number, inode_cache_area[i]);
+          Kernel::instance().getFileSystem().writeBackDiskInode(inode_cache_area[i].i_number, inode_cache_area[i]);
       }
     }
   }

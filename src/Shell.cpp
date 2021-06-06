@@ -85,9 +85,13 @@ int Shell::run(){
         "mkdir etc",
         "mkdir bin",
         "cd home",
-        "store ../assets/img.png photos",
+        //"store ../assets/img.png photos",
         "store ../assets/readme.txt reports",
         "store ../assets/report.txt texts" ,
+        //"store ../assets/report.txt t" ,
+        //"fopen t -wr",
+        // "fread 0 -o t 5000",
+        //"load t t",
         "cd /"
     };
 
@@ -100,7 +104,7 @@ int Shell::run(){
         putchar(' ');
 
         //是否执行初始化语句
-        if(need_format == 1){
+        if(need_format == 1){ // 
             if(format_inst_num ++ < 9){
                 strcpy(tty_buffer, format_inst[format_inst_num]);
                 std::cout << tty_buffer << std::endl;
@@ -402,6 +406,7 @@ void Shell::ls()
 {
     if(getParamAmount() == 1){
         //不带参数的ls，以curDir为默认参数
+        
         my_kernel.ls(Kernel::instance().getUser().curDirInodeId);
     }
     else if(getParamAmount() == 2){
@@ -570,9 +575,7 @@ void Shell::creat()
     }
 }
 
-/**
- * 临时的，不应该是一个用户接口
- */
+
 void Shell::open()
 {
     /*

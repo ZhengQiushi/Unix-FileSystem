@@ -54,7 +54,7 @@ public:
 
   int setBufferCache(BufferCache *p_bufferCache);
   DiskInode getDiskInodeById(int inode_id);
-  void writeBackDiskInode(int inode_id, DiskInode disk_inode);
+  void writeBackDiskInode(int inode_id, Inode inode);
 
   InodeId locateInode(const myPath& path);
   InodeId locateParDir(const myPath& path);

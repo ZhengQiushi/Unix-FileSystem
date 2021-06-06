@@ -37,7 +37,10 @@ Buf *BufferCache::Bread(int blk_num){
      */
     Buf *bp;
     /* 根据块号申请缓存 */
+    //std::cout << " Bread 你好啊笨蛋 " << blk_num << " \n";  
+
     bp = this->GetBlk(blk_num);
+    //std::cout << " Bread -----------------\n";  
 
     /* 如果在设备队列中找到所需缓存，即B_DONE已设置，就不需进行I/O操作 */
     if (bp->b_flags & Buf::B_DONE){
@@ -50,7 +53,7 @@ Buf *BufferCache::Bread(int blk_num){
     bp->b_wcount = DISK_BLOCK_SIZE;
 
     diskDriver->readBlk(blk_num, bp->b_addr);
-    
+
     bp->b_flags |= Buf::B_DONE;
 
     return bp;
@@ -131,7 +134,8 @@ Buf *BufferCache::GetBlk(int blk_num){
     /* 取自由队列第一个空闲块 */
     bp = this->bFreeList.av_forw;
     if(bp == &this->bFreeList){
-        
+        std::cout << "无Buffer可供使用" << std::endl;
+		return NULL;
     }
     this->getFetched(bp);
 
@@ -144,8 +148,11 @@ Buf *BufferCache::GetBlk(int blk_num){
     /* 注意: 这里清除了所有其他位，只设了B_BUSY */
     bp->b_flags = Buf::B_BUSY; //若有延迟写bit，也一并消除了
     bp->b_blkno = blk_num;
+
+    std::cout << "   GetBlk " << blk_num <<" "<< bp->b_addr  << sizeof(bp->b_addr) << std::endl;
+
     memset(bp->b_addr, 0, DISK_BLOCK_SIZE);
-    
+
     if (bp->b_dev != devno){
         //加入设备缓存队列
         bp->b_back = &(this->bFreeList);
@@ -154,7 +161,6 @@ Buf *BufferCache::GetBlk(int blk_num){
         this->bFreeList.b_forw = bp;
         bp->b_dev = devno;
     }
-    
     return bp;
 }
 
@@ -174,10 +180,15 @@ void BufferCache::getFetched(Buf *bp){
 
 
 void BufferCache::Brelse(Buf *bp){
-    bp->b_flags &= ~(Buf::B_WANTED | Buf::B_BUSY | Buf::B_ASYNC); //消除这些位的符号（这里其实没用到）
+    //消除这些位的符号（这里其实没用到）
+    bp->b_flags &= ~(Buf::B_WANTED | Buf::B_BUSY | Buf::B_ASYNC); 
+    // 移动到队尾
     (this->bFreeList.av_back)->av_forw = bp;
+    // 其后指针指向原来的队尾
     bp->av_back = this->bFreeList.av_back;
+    // 其前指针指向原来的队尾的前一个
     bp->av_forw = &(this->bFreeList);
+    // 重新置队尾
     this->bFreeList.av_back = bp;
     return;
 }

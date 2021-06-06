@@ -213,6 +213,9 @@ int Kernel::mkdir(const char *dirName){
 
     
     BlkId blk_num = p_inode->Bmap(0);
+
+    std::cout << "[mkdir]blk_num: " << blk_num << "\n";
+
     Buf *p_buf = bufferCache.Bread(blk_num);
     DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
 
@@ -529,7 +532,7 @@ void Kernel::ls(InodeId dirInodeID)
 {
     //首先要获得这个inode->访问这个目录文件
     //step1: 检查inodeCache中有没有，有则直接用，没有则向Ext2模块要
-    
+
     Inode &inode = *inodeCache.getInodeByID(dirInodeID);
     if (inode.i_mode & Inode::IFMT != Inode::IFDIR){
         std::cout << ("[ERROR]非法的参数") << std::endl;;
@@ -537,9 +540,18 @@ void Kernel::ls(InodeId dirInodeID)
     }
 
     inode.i_flag |= Inode::IACC;
-    
+
+    #ifdef IS_DEBUG
+        std::cout << "[ls] inodeID   " << inode.i_number << std::endl;
+    #endif
+
     //Step2：读这个目录文件到缓存块中（可能已经存在于缓存块中,规定目录文件不能超过4096B）
     int blk_num = inode.Bmap(0); //Bmap查物理块号
+    
+    #ifdef IS_DEBUG
+        std::cout << "[ls] blk_num: "<< blk_num << std::endl;
+    #endif
+
     Buf *p_buf;
     p_buf = Kernel::instance().getBufferManager().Bread(blk_num);
     DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
@@ -547,7 +559,9 @@ void Kernel::ls(InodeId dirInodeID)
 
     for (int i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++){
         if ((p_directoryEntry->m_ino != 0)){
-
+            #ifdef IS_DEBUG
+                std::cout << "[ls] entry: " << i << std::endl;
+            #endif
             Inode &per_inode = *inodeCache.getInodeByID(p_directoryEntry->m_ino);
             std::string p_mode = "";
             if((per_inode.i_mode & Inode::IFMT) == Inode::IFDIR){
@@ -573,6 +587,8 @@ void Kernel::ls(const char *dirName){
     myPath path(dirName);
 
     par_inode_id = fileSystem.locateInode(path);
+
+    std::cout << par_inode_id << std::endl;
 
     if ((inodeCache.getInodeByID(par_inode_id)->i_mode & Inode::IFMT) == Inode::IFDIR){
         ls(par_inode_id);
@@ -664,9 +680,20 @@ int Kernel::read(int fd, uint8_t *content, int length){
     while (readByteCount < length && p_file->f_offset <= p_inode->i_size) //NOTE 这里是<还是<=再考虑一下
     {
         BlkId logicBlkno = p_file->f_offset / DISK_BLOCK_SIZE; //逻辑盘块号
+
+        std::cout << "==============================================" << std::endl;
+
+        std::cout << "[read] logicBlkno: " << logicBlkno << "\n";
+
         BlkId phy_blk_id = p_inode->Bmap(logicBlkno);            //物理盘块号
+
+
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
+
         p_buf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
+
+        std::cout << "[read] phy_blk_id: " << phy_blk_id << "\n";
+
         uint8_t *p_buf_byte = (uint8_t *)p_buf->b_addr;
         p_buf_byte += offsetInBlock;
         if (length - readByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
@@ -754,6 +781,7 @@ int Kernel::write(int fd, uint8_t *content, int length)
             //修改offset
         }
 
+        Kernel::instance().getBufferManager().Brelse(p_buf);
 
         Kernel::instance().getBufferManager().Bdwrite(p_buf);
     }

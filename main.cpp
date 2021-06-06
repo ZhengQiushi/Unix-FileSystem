@@ -11,6 +11,8 @@
 int main(){
    Shell shell(Kernel::instance());
 
+   std::cout << sizeof(SuperBlock) << std::endl;
+   std::cout << sizeof(DiskInode) << std::endl;
 #ifdef GEN_TEST_FILE
    if(0 > genTestsFile("../assets/tests"))
       return -1;
