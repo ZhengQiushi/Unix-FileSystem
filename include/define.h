@@ -13,7 +13,7 @@
 #include <stdint.h>  
 #include <fcntl.h>    
 #include <unistd.h>   
-//#define WINDOWS
+#define WINDOWS
 
 #if defined(WINDOWS) 
 #include "/mingw/include/sys/mman.h"
