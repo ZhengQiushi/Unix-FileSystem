@@ -1,12 +1,13 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/my_VFS.dir/main.cpp.o"
-  "CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o"
-  "CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.o"
-  "CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o"
-  "CMakeFiles/my_VFS.dir/src/Kernel.cpp.o"
-  "CMakeFiles/my_VFS.dir/src/Shell.cpp.o"
-  "CMakeFiles/my_VFS.dir/src/Tools.cpp.o"
-  "my_VFS"
+  "CMakeFiles/my_VFS.dir/main.cpp.obj"
+  "CMakeFiles/my_VFS.dir/src/BufferCache.cpp.obj"
+  "CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.obj"
+  "CMakeFiles/my_VFS.dir/src/FileSystem.cpp.obj"
+  "CMakeFiles/my_VFS.dir/src/Kernel.cpp.obj"
+  "CMakeFiles/my_VFS.dir/src/Shell.cpp.obj"
+  "CMakeFiles/my_VFS.dir/src/Tools.cpp.obj"
+  "libmy_VFS.dll.a"
+  "my_VFS.exe"
   "my_VFS.pdb"
 )
 

@@ -85,16 +85,16 @@ int Shell::run(){
         "mkdir etc",
         "mkdir bin",
         "cd home",
-        "store ../assets/img.png photos",
+        //"store ../assets/img.png photos",
         "store ../assets/readme.txt reports",
-        //"fopen reports -wr",
-        //"fread 0 -o re -f",
-        "store ../assets/report.txt texts" ,
+        "fopen reports -wr",
+        "fread 0 -o re -f",
+        //"store ../assets/report.txt texts" ,
         // "mkdir /home/h",
         //"fopen t -wr",
         // "fread 0 -o t 5000",
         //"load t t",
-        "cd /"
+        //"cd /"
     };
 
     int need_format = 0;
@@ -708,8 +708,13 @@ void Shell::read(){
                     int writesize = my_kernel.read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
                     
                     //? 为什么最后一个是 \00
-                    // if(writesize < DISK_BLOCK_SIZE)
-                    //     writesize -= 1;
+                    if(writesize < DISK_BLOCK_SIZE){
+                        std::cout << "!!!!!!" << tempBuf.content[writesize] << std::endl;
+                        writesize -= 1;
+
+                    }
+
+
                     cur_read_num += writesize;
                     fwrite(&tempBuf, 1, writesize, fd_des);
                 }
@@ -766,7 +771,9 @@ void Shell::read(){
                 int real_read_num = my_kernel.read(fd_src, (uint8_t *)&tempBuf, readable_size);
 
                 // tempBuf.content[real_read_num] = (uint8_t)'\0';
-                
+                if(real_read_num < DISK_BLOCK_SIZE)
+                    real_read_num -= 1;
+
                 char tmp[DISK_BLOCK_SIZE + 100];
                 memset(tmp, 0 , DISK_BLOCK_SIZE + 100);
 

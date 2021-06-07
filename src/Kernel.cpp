@@ -730,7 +730,10 @@ int Kernel::read(int fd, uint8_t *content, int length){
 
         uint8_t *p_buf_byte = (uint8_t *)p_buf->b_addr;
         p_buf_byte += offsetInBlock;
-        if (length - readByteCount <= DISK_BLOCK_SIZE - offsetInBlock + 1)
+
+        int cur_left =  DISK_BLOCK_SIZE - offsetInBlock;// + 1;
+
+        if (length - readByteCount <= cur_left)
         { //要读大小<=当前盘块剩下的,读需要的大小
 
             memcpy(content, p_buf_byte, length - readByteCount);
@@ -741,10 +744,10 @@ int Kernel::read(int fd, uint8_t *content, int length){
         }
         else
         { //把剩下的全部读出来
-            memcpy(content, p_buf_byte, DISK_BLOCK_SIZE - offsetInBlock + 1);
-            p_file->f_offset += DISK_BLOCK_SIZE - offsetInBlock + 1;
-            readByteCount += DISK_BLOCK_SIZE - offsetInBlock + 1;
-            content += DISK_BLOCK_SIZE - offsetInBlock + 1;
+            memcpy(content, p_buf_byte, cur_left);
+            p_file->f_offset += cur_left;
+            readByteCount += cur_left;
+            content += cur_left;
             //修改offset
         }
         Kernel::instance().getBufferManager().Brelse(p_buf);
