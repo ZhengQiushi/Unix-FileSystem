@@ -87,6 +87,8 @@ int Shell::run(){
         "cd home",
         "store ../assets/img.png photos",
         "store ../assets/readme.txt reports",
+        //"fopen reports -wr",
+        //"fread 0 -o re -f",
         "store ../assets/report.txt texts" ,
         // "mkdir /home/h",
         //"fopen t -wr",
@@ -706,8 +708,8 @@ void Shell::read(){
                     int writesize = my_kernel.read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
                     
                     //? 为什么最后一个是 \00
-                    if(writesize < DISK_BLOCK_SIZE)
-                        writesize -= 1;
+                    // if(writesize < DISK_BLOCK_SIZE)
+                    //     writesize -= 1;
                     cur_read_num += writesize;
                     fwrite(&tempBuf, 1, writesize, fd_des);
                 }
@@ -756,19 +758,29 @@ void Shell::read(){
                 
                 int readable_size = std::min(std::min(file_size - file_offset, read_limit - cur_read_num), DISK_BLOCK_SIZE);//
                 // 读不到了
+                //std::cout << "读不到了: " << readable_size << std::endl;
                 if(readable_size <= 0){
                     break;
                 }
 
                 int real_read_num = my_kernel.read(fd_src, (uint8_t *)&tempBuf, readable_size);
 
-                tempBuf.content[real_read_num] = (uint8_t)'\0';
+                // tempBuf.content[real_read_num] = (uint8_t)'\0';
+                
+                char tmp[DISK_BLOCK_SIZE + 100];
+                memset(tmp, 0 , DISK_BLOCK_SIZE + 100);
 
-                res_read += std::string((char *)&tempBuf);
+                memcpy(tmp, (char *)&tempBuf, real_read_num);
+
+                res_read += std::string(tmp); // (char *)&tempBuf
+
+                // std::cout << tmp << std::endl;
+                // std::cout << "-------------" << std::endl;
+
                 cur_read_num += readable_size;
             }
             char s[1];
-            std::cout << "[INFO] 成功读出" << cur_read_num << " bytes,内容为: \n" << res_read.data() << std::endl; // s);//
+            std::cout << "[INFO] 成功读出" << cur_read_num << " bytes,内容为: \n" << res_read << "\n"; // s);//
         }
         //WITHDRAW的步骤
         else{
