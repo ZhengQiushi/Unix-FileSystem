@@ -85,16 +85,17 @@ int Shell::run(){
         "mkdir etc",
         "mkdir bin",
         "cd home",
-        //"store ../assets/img.png photos",
+        "store ../assets/img.png photos",
         "store ../assets/readme.txt reports",
-        "fopen reports -wr",
-        "fread 0 -o re -f",
+        // "store ../assets/readme.txt reports1",
+        //"fopen reports -wr",
+        //"fread 0 -o re -f",
         //"store ../assets/report.txt texts" ,
         // "mkdir /home/h",
         //"fopen t -wr",
         // "fread 0 -o t 5000",
         //"load t t",
-        //"cd /"
+        "cd /"
     };
 
     int need_format = 0;
@@ -433,6 +434,10 @@ void Shell::store()
         //STORE的步骤
         //Step1：创建文件（如果有同名的返回失败）
         desInodeId = my_kernel.kernelTouch(getParam(2));
+        #ifdef IS_DEBUG
+            std::cout << "[store] kernelTouch!" << std::endl;
+        #endif
+
         if (desInodeId < 0)
         {
             std::cout <<("ERROR!目标文件名已存在！") << std::endl;
@@ -443,6 +448,9 @@ void Shell::store()
 
         FileFd fd_des = my_kernel.open(desPath, File::FWRITE);
 
+        #ifdef IS_DEBUG
+            std::cout << "[store] open!" << std::endl;
+        #endif
         //Step3：写入文件
         FILE *fd_src = fopen(getParam(1), "rb");
         if (fd_src == NULL)
@@ -460,7 +468,13 @@ void Shell::store()
             //int blkCount = 0;
             int readsize = fread(&tempBuf, 1, DISK_BLOCK_SIZE, fd_src);
             file_size += readsize;
+
+            #ifdef IS_DEBUG
+                std::cout << "[store] file_size!"<< file_size << std::endl;
+            #endif
+
             my_kernel.write(fd_des, (uint8_t *)&tempBuf, readsize);
+
         }
         Inode *p_desInode = Kernel::instance().getInodeCache().getInodeByID(desInodeId);
         p_desInode->i_size = file_size; //TODO这一块不太好，封装性差了点
@@ -709,7 +723,9 @@ void Shell::read(){
                     
                     //? 为什么最后一个是 \00
                     if(writesize < DISK_BLOCK_SIZE){
-                        std::cout << "!!!!!!" << tempBuf.content[writesize] << std::endl;
+                        #ifdef IS_DEBUG
+                            std::cout << "!!!!!!" << tempBuf.content[writesize] << std::endl;
+                        #endif
                         writesize -= 1;
 
                     }

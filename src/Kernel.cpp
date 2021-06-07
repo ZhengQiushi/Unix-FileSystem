@@ -203,6 +203,7 @@ int Kernel::mkdir(const char *dirName){
     /* 记录到该文件目录 */
     myPath new_file_dir(dirName);
 
+
     // 相当于先建立文件...
     int newDirInodeId = kernelTouch(dirName);
 
@@ -215,26 +216,23 @@ int Kernel::mkdir(const char *dirName){
     Inode *p_inode = inodeCache.getInodeByID(newDirInodeId);
     p_inode->i_mode = Inode::IFDIR;
 
-    
     BlkId blk_num = p_inode->Bmap(0);
-
-    
-
+    InodeId file_folder_inode = fileSystem.locateParDir(new_file_dir);
 
     #ifdef IS_DEBUG
         std::cout << "[mkdir]blk_num: " << blk_num << "\n";
     #endif
 
     Buf *p_buf = bufferCache.Bread(blk_num);
-    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
+    Buf real_buf = *p_buf;
+
+    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)real_buf.b_addr;
     /* 同时添加. 和 .. */
     DirectoryEntry tempDirectoryEntry;
     strcpy(tempDirectoryEntry.m_name, ".");
     tempDirectoryEntry.m_ino = newDirInodeId;
     *p_directoryEntry = tempDirectoryEntry;
     p_directoryEntry++;
-
-    InodeId file_folder_inode = fileSystem.locateParDir(new_file_dir);
     strcpy(tempDirectoryEntry.m_name, "..");
     tempDirectoryEntry.m_ino = file_folder_inode; 
     *p_directoryEntry = tempDirectoryEntry;
@@ -286,6 +284,7 @@ InodeId Kernel::deleteFolder(const char *dirName){
         DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
         
         for (int i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++){
+
             /* 遍历目录项，进行逐个删除*/
             const InodeId entry_inode_Id = p_directoryEntry->m_ino;
             if ((entry_inode_Id != 0)){
@@ -373,9 +372,10 @@ InodeId Kernel::deleteObject(const char *fileName){
     {
         return ERROR_DELETE_FAIL;
     }
+    InodeId par_inodeID = fileSystem.locateParDir(path);
 
     Inode *p_delete_inode = inodeCache.getInodeByID(deleteFileInode);
-    Inode *p_dir_inode = inodeCache.getInodeByID(fileSystem.locateParDir(path));
+    Inode *p_dir_inode = inodeCache.getInodeByID(par_inodeID);
 
     BlkId phyno;
     //Step1 释放盘块
@@ -418,7 +418,10 @@ void Kernel::relseBlock(Inode *delete_inode){
                     std::cout << i << std::endl;
                 #endif
 				Buf* pFirstBuffer = getBufferManager().Bread(delete_inode->i_addr[i]);
-				int *pFirst = (int*)pFirstBuffer->b_addr;
+                DiskBlock temp = *(pFirstBuffer->b_addr);
+                getBufferManager().Brelse(pFirstBuffer);
+
+				int *pFirst = (int*)&temp;
 				for (int j = DISK_BLOCK_SIZE / sizeof(int) - 1; j >= 0; --j) {
 					if (pFirst[j]) {
 						if (i >= 8) {
@@ -426,9 +429,10 @@ void Kernel::relseBlock(Inode *delete_inode){
                                 std::cout << i << std::endl;
 							#endif
                             Buf* pSecondBuffer = getBufferManager().Bread(pFirst[j]);
-                            
+                            DiskBlock tempSec = *(pSecondBuffer->b_addr);
+                            getBufferManager().Brelse(pSecondBuffer);
 
-							int* pSecond = (int*)pSecondBuffer->b_addr;
+							int* pSecond = (int*)&tempSec;
 							for (int k = DISK_BLOCK_SIZE / sizeof(int) - 1; k >= 0; --k) {
 								if (pSecond[k]) {
                                     superBlock.bfree(pSecond[k]);
@@ -437,7 +441,7 @@ void Kernel::relseBlock(Inode *delete_inode){
                             #ifdef IS_DEBUG
                                 std::cout << "笨蛋您又来了" << std::endl;
                             #endif
-							getBufferManager().Brelse(pSecondBuffer);
+							//getBufferManager().Brelse(pSecondBuffer);
 						}
                         #ifdef IS_DEBUG
                             std::cout << "free_block: " << superBlock.free_block_bum  \
@@ -448,7 +452,7 @@ void Kernel::relseBlock(Inode *delete_inode){
 					}
 				}
                 
-				getBufferManager().Brelse(pFirstBuffer);
+				//getBufferManager().Brelse(pFirstBuffer);
 			}
             superBlock.bfree(delete_inode->i_addr[i]);
 			delete_inode->i_addr[i] = 0;
@@ -473,8 +477,8 @@ InodeId Kernel::deleteObject(const InodeId &cur_Inode, const InodeId &par_Inode)
 
     //Step2 删除目录项
     int dirblkno = p_dir_inode->Bmap(0); //Bmap查物理块号
-    Buf *p_buf;
-    p_buf = Kernel::instance().getBufferManager().Bread(dirblkno);
+    
+    Buf *p_buf = Kernel::instance().getBufferManager().Bread(dirblkno);
     DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
 
     int de_i;
@@ -778,7 +782,15 @@ int Kernel::write(int fd, uint8_t *content, int length)
         //     printf("暂时停下");
         // }
         // 逻辑盘块 -> 转成相应的物理盘块
+        #ifdef IS_DEBUG
+            std::cout << "[Write] logicBlkno:" << logicBlkno<< std::endl;
+        #endif
+
         BlkId phy_blk_id = p_inode->Bmap(logicBlkno);            //物理盘块号
+
+        #ifdef IS_DEBUG
+            std::cout << "[Write] phy_blk_id:" << phy_blk_id<< std::endl;
+        #endif
 
         
         int offsetInBlock = p_file->f_offset % DISK_BLOCK_SIZE; //块内偏移
@@ -818,7 +830,7 @@ int Kernel::write(int fd, uint8_t *content, int length)
             //修改offset
         }
 
-        Kernel::instance().getBufferManager().Brelse(p_buf);
+        //Kernel::instance().getBufferManager().Brelse(p_buf);
 
         Kernel::instance().getBufferManager().Bdwrite(p_buf);
     }

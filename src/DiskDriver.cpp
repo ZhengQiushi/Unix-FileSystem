@@ -248,14 +248,28 @@ void Inode::copyInode(Buf* pb, int inode_id){
     memcpy(this->i_addr, d_inode.d_addr, sizeof(d_inode.d_addr));
 }
 
+static int cnt = 0;
+
+void watch_buffer(DiskBlock* data){
+  int* index = (int*) data;
+  for(int i = 0 ; i < 128; i ++ ){
+    std::cout << i << " : " << index[i] <<std::endl;
+  }
+  if(cnt++ > 5){
+  exit(0);
+
+  }
+}
 int Inode::Bmap(int lbn){
   /**
    * @param lbn 给定的盘块号
    * @brief 根据混合索引表，用逻辑块号，查出物理盘块号
    *        或查不到，就自己申请新的物理盘块
+   *        need to config cache
    */
+
     /* 转换后的物理盘块号 */
-    int phy_blk_id; 
+    int phy_blk_id, f_level_index, s_level_index; 
     /* 用于访问索引盘块中一次间接、两次间接索引表 */
     int *inode_link_table;  
     int index;
@@ -276,10 +290,14 @@ int Inode::Bmap(int lbn){
         if (phy_blk_id == 0){
           
             phy_blk_id = Kernel::instance().getSuperBlock().balloc();
+            
             Buf* first_index_buf=Kernel::instance().getBufferManager().GetBlk(phy_blk_id);
+                        std::cout << "phy_blk_idnew_free_blk_id: " << phy_blk_id << std::endl;
+
             Kernel::instance().getBufferManager().Bclear(first_index_buf);
             if (phy_blk_id == -1){
                 //分配失败。可能没有空闲空间了
+                std::cout << "分配失败。可能没有空闲空间了" << std::endl;
             }
             else{
             /* 当写入位置超出文件大小，进行额外申请，设置延迟写标志就可以初始化该数据块*/
@@ -293,23 +311,25 @@ int Inode::Bmap(int lbn){
     else {
         /* lbn >= 6 大型、巨型文件 */
         Buf *first_index_buf,*second_index_buf;
+        DiskBlock f_diskBlock, s_diskBlock;
+
         /* 计算逻辑块号lbn对应i_addr[]中的索引 */
-        if (lbn < Inode::LARGE_FILE_BLOCK){ 
-          // 大型文件
+        if (lbn < Inode::LARGE_FILE_BLOCK){ // 大型文件
             index = (lbn - Inode::SMALL_FILE_BLOCK) / Inode::ADDRESS_PER_INDEX_BLOCK + 6;
         }
-        else{ 
-          /* 巨型文件: 长度介于263 - (128 * 128 * 2 + 128 * 2 + 6)个盘块之间 */
+        else{ /* 巨型文件: 长度介于263 - (128 * 128 * 2 + 128 * 2 + 6)个盘块之间 */
             index = (lbn - Inode::LARGE_FILE_BLOCK) / (Inode::ADDRESS_PER_INDEX_BLOCK * Inode::ADDRESS_PER_INDEX_BLOCK) + 8;
         }
 
         phy_blk_id = this->i_addr[index];
+        f_level_index = phy_blk_id;
 
-        #ifdef IS_DEBUG
-          std::cout << "Bmap-L2: " << phy_blk_id << "\n";
-        #endif
+        //#ifdef IS_DEBUG
+          std::cout << "Bmap-L2: " << f_level_index << "\n";
+        //#endif
+
         /* 若该项为零，则表示不存在相应的间接索引表块 */
-        if (0 == phy_blk_id){
+        if (0 == f_level_index){
             this->i_flag |= Inode::IUPD;
             int new_free_blk_id = Kernel::instance().getSuperBlock().balloc();
             /* 分配一空闲盘块存放间接索引表 */
@@ -317,17 +337,27 @@ int Inode::Bmap(int lbn){
               /* 分配失败 */
               return ERROR_OUTOF_BLOCK; 
             }
+            std::cout << "new_free_blk_id: " << new_free_blk_id << std::endl;
+    
             /* i_addr[index]中记录间接索引表的物理盘块号 */
             this->i_addr[index] = new_free_blk_id;
             first_index_buf=Kernel::instance().getBufferManager().GetBlk(new_free_blk_id);
-            Kernel::instance().getBufferManager().Bclear(first_index_buf);
+            
+            // Kernel::instance().getBufferManager().Bclear(first_index_buf);
+            // Kernel::instance().getBufferManager().Bwrite(first_index_buf);
+            f_level_index = new_free_blk_id;
+            std::cout << "====" << first_index_buf->b_blkno << std::endl;
         }
         else{
             /* 读出存储间接索引表的字符块 */
             first_index_buf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
+            // f_diskBlock = *(first_index_buf->b_addr);
+            // Kernel::instance().getBufferManager().Brelse(first_index_buf);
         }
         /* 获取缓冲区首址 */
-        inode_link_table = (int *)first_index_buf->b_addr;
+        f_diskBlock = *(first_index_buf->b_addr);
+
+        inode_link_table = (int *)&f_diskBlock;// first_index_buf->b_addr; // 
 
         if (index >= 8){ /* ASSERT: 8 <= index <= 9 */
           /*对于巨型文件的情况，经由二次间接索引表找到一次间接索引表*/
@@ -345,6 +375,7 @@ int Inode::Bmap(int lbn){
                 }
                 /* 将新分配的一次间接索引表磁盘块号，记入二次间接索引表相应项 */
                 inode_link_table[index] = new_free_blk_id;
+
                 second_index_buf = Kernel::instance().getBufferManager().GetBlk(new_free_blk_id);
                 Kernel::instance().getBufferManager().Bclear(second_index_buf);
 
@@ -371,31 +402,49 @@ int Inode::Bmap(int lbn){
             index = (lbn - Inode::LARGE_FILE_BLOCK) % Inode::ADDRESS_PER_INDEX_BLOCK;
         }
          //std::cout << "   hhhh: " << index << "\n";
-
+        std::cout << "!!!!" << first_index_buf->b_blkno << std::endl;
+        //
 
         int new_blk_large ;
 
-        // std::cout << "   index: " << index << "\n";
+        std::cout << "   index: " << index << "\n";
+        int f_item_phy_blk_id = inode_link_table[index];
         phy_blk_id = inode_link_table[index];
 
-        //std::cout << "Bmap-L2-item: " << phy_blk_id << "\n";
+        int* tmp = (int*)first_index_buf->b_addr;
 
-        if (phy_blk_id  == 0 && (new_blk_large = Kernel::instance().getSuperBlock().balloc()) >= 0){
+        //#ifdef IS_DEBUG
+          std::cout << "Bmap-L2-item: " << f_item_phy_blk_id << " " << tmp[index]  << "\n";
+        //#endif
+
+        if (f_item_phy_blk_id  == 0 && (new_blk_large = Kernel::instance().getSuperBlock().balloc()) >= 0){
             /* 第一块没有写满，所以分配到的文件数据盘块号登记在一次间接索引表中 */
+            std::cout << "new_blk_large: " << new_blk_large << std::endl;
+            int s_item_phy_blk_id = new_blk_large;
             phy_blk_id = new_blk_large;
-            inode_link_table[index] = phy_blk_id;
+            inode_link_table[index] = s_item_phy_blk_id; // new alloc block reg in first table
+
             /* 将数据盘块、更改后的一次间接索引表用延迟写方式输出到磁盘 */
             second_index_buf = Kernel::instance().getBufferManager().GetBlk(new_blk_large);
             Kernel::instance().getBufferManager().Bclear(second_index_buf);//清空！
 
-            Kernel::instance().getBufferManager().Bdwrite(second_index_buf);
-            Kernel::instance().getBufferManager().Bdwrite(first_index_buf);
+            Kernel::instance().getBufferManager().Bwrite(second_index_buf);
+
+            first_index_buf = Kernel::instance().getBufferManager().Bread(f_level_index);
+            memcpy(first_index_buf->b_addr, inode_link_table, DISK_BLOCK_SIZE);
+
+            Kernel::instance().getBufferManager().Bwrite(first_index_buf);
+            std::cout << "!!!!?????" << first_index_buf->b_blkno << std::endl;
+
         }
         else{
             /* 释放一次间接索引表占用缓存 */
-            Kernel::instance().getBufferManager().Brelse(first_index_buf);
+            
         }
+
+        //std::cout << "Bmap-L2-item: " << phy_blk_id << "\n";
         return phy_blk_id;
+        
     }
 }
 

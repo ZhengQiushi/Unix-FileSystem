@@ -111,9 +111,9 @@ BlkId SuperBlock::balloc() {
 		free_block_bum = *p; // 成组连接法
         p ++ ;
 
-        #ifdef IS_DEBUG
+        //#ifdef IS_DEBUG
             std::cout << "成组连接法: " << free_block_bum << std::endl;
-        #endif
+        //#endif
 
 		memcpy(s_free, p, sizeof(s_free));
 		my_buffer_cache->Brelse(pBuffer);
@@ -122,7 +122,10 @@ BlkId SuperBlock::balloc() {
 	pBuffer = my_buffer_cache->GetBlk(blkno);
 
 	if (pBuffer) {
+        /* need clear immed!*/
 		my_buffer_cache->Bclear(pBuffer);
+        std::cout << "why here?" << std::endl;
+        my_buffer_cache->Bwrite(pBuffer);
 	}
     #ifdef IS_DEBUG
         std::cout << "[superblock] balloc blkno: " << blkno << "  pBuffer: " << pBuffer << "\n";
@@ -144,11 +147,11 @@ void SuperBlock::bfree(BlkId blknum) {
         
 		free_block_bum = 0;
 		my_buffer_cache->Bwrite(pBuffer);
-        
-
 	}
 
+    
 	s_free[free_block_bum++] = blknum;
+    
 }
 
 
@@ -566,10 +569,18 @@ DiskInode VFS::getDiskInodeById(int inode_id){
     #ifdef IS_DEBUG
         std::cout << "getDiskInode : " << blk_num << std::endl;
     #endif
-    Buf *p_buf = p_bufferCache->Bread(blk_num);
-    DiskInode *cur_diskInode = (DiskInode *)p_buf->b_addr;
+
+    
+    // Buf *p_buf = p_bufferCache->Bread(blk_num);
+    // DiskInode *cur_diskInode = (DiskInode *)p_buf->b_addr;
+    // DiskInode tempDiskInode = *(cur_diskInode + inode_id % (DISK_BLOCK_SIZE / DISKINODE_SIZE));
+    // p_bufferCache->Brelse(p_buf);
+
+    DiskBlock cur_diskBlock;
+    Kernel::instance().getDiskDriver().readBlk(blk_num, &cur_diskBlock);
+    const DiskInode *cur_diskInode = (DiskInode *)&cur_diskBlock;
     DiskInode tempDiskInode = *(cur_diskInode + inode_id % (DISK_BLOCK_SIZE / DISKINODE_SIZE));
-    p_bufferCache->Brelse(p_buf);
+    // std::cout << "ok " << std::endl;
 
     // inode_id = inode_id;
 
@@ -648,23 +659,33 @@ InodeId VFS::getInodeIdInDir(InodeId par_inode_id, FileName fileName){
     Inode *p_dir_inode = Kernel::instance().getInodeCache().getInodeByID(par_inode_id);
 
     #ifdef IS_DEBUG
-        std::cout << p_dir_inode->i_number << std::endl;
+        std::cout <<"getInodeIdInDir(inode) : " <<  p_dir_inode->i_number << std::endl;
     #endif
 
     //读取该inode指示的数据块
     int blk_num = p_dir_inode->Bmap(0); //Bmap查物理块号
 
+    #ifdef IS_DEBUG
+        std::cout << "getInodeIdInDir(blk_num) : " << blk_num << std::endl;
+    #endif
+
     Buf *p_buf = Kernel::instance().getBufferManager().Bread(blk_num);
-    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)p_buf->b_addr;
+
+    Buf real_buf = *p_buf;
+
+    DirectoryEntry *p_directoryEntry = (DirectoryEntry *)real_buf.b_addr;
 
     //访问这个目录文件中的entry
     for (int i = 0; i < DISK_BLOCK_SIZE / sizeof(DirectoryEntry); i++){
-        if ((p_directoryEntry->m_ino != 0) && (!strcmp(p_directoryEntry->m_name, fileName))){
+        DirectoryEntry * cur_entry = p_directoryEntry + i;
+        if ((cur_entry->m_ino != 0) && (!strcmp(cur_entry->m_name, fileName))){
+            ret = cur_entry->m_ino;
+            #ifdef IS_DEBUG
+                std::cout << "getInodeIdInDir: " << ret << "  " << cur_entry->m_name << std::endl;
+            #endif
             //Kernel::instance().getBufferManager().Brelse(p_buf);
-            ret = p_directoryEntry->m_ino;
             break;
         } //ino==0表示该文件被删除
-        p_directoryEntry++;
     }
 
     //Kernel::instance().getBufferManager().Brelse(p_buf);

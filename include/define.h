@@ -13,7 +13,7 @@
 #include <stdint.h>  
 #include <fcntl.h>    
 #include <unistd.h>   
-#define WINDOWS
+//#define WINDOWS
 
 #if defined(WINDOWS) 
 #include "/mingw/include/sys/mman.h"
@@ -28,7 +28,7 @@
 
 
 #define DISK_BLOCK_SIZE 512                         
-#define DISK_BLOCK_NUM 16384
+#define DISK_BLOCK_NUM (2*1024*64)
 #define DISK_SIZE (DISK_BLOCK_SIZE*DISK_BLOCK_NUM) 
 
 //(64 * 1024 * 1024)    
@@ -42,7 +42,7 @@
 
 #define DISK_IMG_DIR "./1851447.img"
 #define BITMAP_PERBLOCK_SIZE 8
-#define BUFFER_CACHE_NUM 20
+#define BUFFER_CACHE_NUM 40
 #define DISKINODE_SIZE 64
 #define INODE_SIZE 64
 #define MAX_BITMAP_ELEM_NUM DISK_BLOCK_NUM                   //这个Bitmap静态改造的一部分，原本的bitmap是动态申请的，但是放到磁盘很难办，于是去一个最大值

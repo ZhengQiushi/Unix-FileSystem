@@ -1,1 +1,0 @@
-/usr/bin/c++ -rdynamic CMakeFiles/my_VFS.dir/main.cpp.o CMakeFiles/my_VFS.dir/src/Shell.cpp.o CMakeFiles/my_VFS.dir/src/Kernel.cpp.o CMakeFiles/my_VFS.dir/src/BufferCache.cpp.o CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.o CMakeFiles/my_VFS.dir/src/FileSystem.cpp.o CMakeFiles/my_VFS.dir/src/Tools.cpp.o -o my_VFS 

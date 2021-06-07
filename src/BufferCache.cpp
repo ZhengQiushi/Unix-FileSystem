@@ -140,15 +140,21 @@ Buf *BufferCache::GetBlk(int blk_num){
 
     /* 取自由队列第一个空闲块 */
     bp = this->bFreeList.av_forw;
+    // 
     if(bp == &this->bFreeList){
         std::cout << "无Buffer可供使用" << std::endl;
+        bp = this->bFreeList.av_forw;
+        //getFetchedFromDev(bp);
 		return NULL;
     }
-    this->getFetched(bp);
+    //else{
+        this->getFetched(bp);
+    //}
 
 
     /* 如果该字符块是延迟写，将其异步写到磁盘上 */
     if (bp->b_flags & Buf::B_DELWRI){
+        //std::cout << "[Bdwrite] blkNum"<< bp->b_blkno << std::endl;
         this->Bwrite(bp);
     }
 
@@ -185,6 +191,20 @@ void BufferCache::getFetched(Buf *bp){
     bp->b_flags |= Buf::B_BUSY;
     return;
 }
+
+
+void BufferCache::getFetchedFromDev(Buf *bp){
+    /**
+     * @brief 从队列中取出
+     */
+    /* 从自由队列中取出 */
+    bp->b_back->b_forw = bp->b_forw;
+    bp->b_forw->b_back = bp->b_back;
+    /* 设置B_BUSY标志 */
+    bp->b_flags |= Buf::B_BUSY;
+    return;
+}
+
 
 
 void BufferCache::Brelse(Buf *bp){

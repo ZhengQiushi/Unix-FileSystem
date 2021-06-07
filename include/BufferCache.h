@@ -78,6 +78,7 @@ public:
   Buf *GetBlk(int blk_num); /* 申请一块缓存，用于读写设备dev上的字符块blkno。*/
   void Brelse(Buf *bp);   /* 释放缓存控制块buf */
   void getFetched(Buf *bp);
+  void getFetchedFromDev(Buf *bp);
   /* 清空缓冲区内容 */
   void Bclear(Buf *bp);
 };
