@@ -107,67 +107,60 @@ public:
 	std::string cur_path;
 };
 
-
-
 class Kernel{
 	/**
 	 * @brief 核心成员，是所有部件的中心 
 	 */
 private:
-  Kernel();
-  /* 静态成员 */
-  static Kernel kernelInstance;
+	Kernel();
+	/* 静态成员 */
+	static Kernel kernelInstance;
 
-  /* 六大核心 */
-  InodeCache inodeCache;   
-  SuperBlock superBlock;   
-  BufferCache bufferCache; 
-  DiskDriver diskDriver;   
-  VFS fileSystem;          
-  User my_user;
+	/* 六大核心 */
+	InodeCache inodeCache;   
+	SuperBlock superBlock;   
+	BufferCache bufferCache; 
+	DiskDriver diskDriver;   
+	VFS fileSystem;          
+	User my_user;
 
 public:
-  OpenFileTable m_OpenFileTable;
-  static Kernel& instance();
+	OpenFileTable m_OpenFileTable;
+	static Kernel& instance();
 
-  VFS &getFileSystem();
-  DiskDriver &getDiskDriver();
-  BufferCache &getBufferManager();
-  SuperBlock &getSuperBlock();
-  InodeCache &getInodeCache();
-  User &getUser();
-  
-  void initKernel();
-  void relsKernel();
-
-
-  void relseBlock(Inode *delete_inode);
-
-  int format();
-  InodeId kernelTouch(const char *fileName); //返回分配的Inode编号
-  InodeId createFile(const InodeId &cur_Inode, const InodeId &par_inode, const std::string &node_name);
+	VFS &getFileSystem();
+	DiskDriver &getDiskDriver();
+	BufferCache &getBufferManager();
+	SuperBlock &getSuperBlock();
+	InodeCache &getInodeCache();
+	User &getUser();
+	
+	void initKernel();
+	void relsKernel();
 
 
-  InodeId deleteFile(const char *fileName); //删除文件
-  InodeId deleteFile(const InodeId &cur_Inode, const InodeId &par_Inode);
-  
-  InodeId deleteFolder(const char *dirName);
+	void relseBlock(Inode *delete_inode);
 
-  
-  InodeId deleteObject(const char *fileName);
-  InodeId deleteObject(const InodeId &cur_Inode, const InodeId &par_Inode);
+	int format();
+	InodeId kernelTouch(const char *fileName); //返回分配的Inode编号
+	InodeId createFile(const InodeId &cur_Inode, const InodeId &par_inode, const std::string &node_name);
+
+	InodeId deleteFile(const char *fileName); //删除文件
+	InodeId deleteFile(const InodeId &cur_Inode, const InodeId &par_Inode);
+	InodeId deleteFolder(const char *dirName);
+	InodeId deleteObject(const char *fileName);
+	InodeId deleteObject(const InodeId &cur_Inode, const InodeId &par_Inode);
 
 	void my_man(std::string cur_inst);
-
-  int mkdir(const char *dirName); //返回分配的Inode编号
-  int cd(const char *dirName);    //返回进入的dir的Inode
-  void ls(const char *dirName);
-  void ls(InodeId dirInodeID);
-  int open(const myPath& path, int mode);
-  int close(int fd);
-  int read(int fd, uint8_t *content, int length);  //用户层面，文件必须先打开才可读
-  int write(int fd, uint8_t *content, int length); //用户层面，文件必须先打开才可写
-  bool eof(FileFd fd);
+	int mkdir(const char *dirName); //返回分配的Inode编号
+	int cd(const char *dirName);    //返回进入的dir的Inode
+	void ls(const char *dirName);
+	void ls(InodeId dirInodeID);
+	int open(const myPath& path, int mode);
+	int close(int fd);
+	int read(int fd, uint8_t *content, int length);  //用户层面，文件必须先打开才可读
+	int write(int fd, uint8_t *content, int length); //用户层面，文件必须先打开才可写
+	bool eof(FileFd fd);
 };
 
 #endif

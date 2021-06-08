@@ -3,7 +3,7 @@
 #include "Tools.h"
 #include "DiskDriver.h"
 
-SuperBlock::SuperBlock(){ //:  disk_block_bitmap(DISK_SIZE / DISK_BLOCK_SIZE)
+SuperBlock::SuperBlock(){ 
     this->total_inode_num = INODE_ZONE_SIZE;
     this->total_block_num = DISK_SIZE / sizeof(DiskBlock);
     
@@ -16,35 +16,6 @@ SuperBlock::SuperBlock(){ //:  disk_block_bitmap(DISK_SIZE / DISK_BLOCK_SIZE)
     this->s_ilock = 0;
     this->s_fmod = 0;
     this->s_ronly = 0;
-
-
-
-    //总inode数  -1是因为0#inode不可用
-    // total_inode_num = MAX_INODE_NUM - 1; 
-    // //空闲inode
-    // free_inode_num = total_inode_num;    
-    // //初始化空闲inode栈
-    // for (int i = 0; i < total_inode_num; i++){
-    //     s_inode[i] = total_inode_num - i;
-    // }
-
-        //空闲盘块初始化
-    // char freeBlock[DISK_BLOCK_SIZE], freeBlock1[DISK_BLOCK_SIZE];
-    // memset(freeBlock, 0, DISK_BLOCK_SIZE);
-    // memset(freeBlock1, 0, DISK_BLOCK_SIZE);
-
-    // for (int i = 0; i < DATA_ZONE_SIZE; ++i) {
-    //     // 超过最大值，把整块信息连同
-    //     if (free_inode_num >= MAX_INODE_NUM) {
-    //         memcpy(freeBlock1, &s_nfree, sizeof(int) + sizeof(s_free));
-    //         deviceDriver->write(&freeBlock1, BLOCK_SIZE);
-    //         superBlock->s_nfree = 0;
-    //     }
-    //     else {
-    //         deviceDriver->write(freeBlock, BLOCK_SIZE);
-    //     }
-    //     s_free[free_inode_num++] = i + DATA_ZONE_START_SECTOR;
-    // }
 }
 
 void SuperBlock::writeBackSuper(){
@@ -52,22 +23,14 @@ void SuperBlock::writeBackSuper(){
      * @brief 回写superblock
      */
     BufferCache* my_buffer_cache = &Kernel::instance().getBufferManager();
-	for (int j = 0; j < 2; j++) {
+	for (int j = 0; j < 2; j++) { 
+        // 就前两个盘块
 		int* p = (int *)this + j * 128;
+        // （int） 4 * 128 ！
 		Buf *p_buf = my_buffer_cache->GetBlk(SUPERBLOCK_START_SECTOR + j);
 		memcpy(p_buf->b_addr, p, DISK_BLOCK_SIZE);
 		Kernel::instance().getBufferManager().Bwrite(p_buf);
 	}
-    
-    // for (int j = 0; j < 2; j++) { // superBlock大小为2！
-    //     Buf *p_buf = Kernel::instance().getBufferManager().GetBlk(j);
-    //     SuperBlock *p_superBlock = (SuperBlock *)p_buf->b_addr;
-    //     *p_superBlock = *this;
-    //     Kernel::instance().getBufferManager().Bdwrite(p_buf);
-	// }
-
-
-
 }
 
 void SuperBlock::init(){
@@ -76,7 +39,7 @@ void SuperBlock::init(){
 
 BlkId SuperBlock::balloc() {
     /** 
-     * @brief 在存储设备上分配空闲磁盘块！ 
+     * @brief 分配空闲磁盘块！ 
      * */
 	int blkno;
 	Buf* pBuffer;
@@ -85,7 +48,6 @@ BlkId SuperBlock::balloc() {
     /* 从索引表“栈顶”获取空闲磁盘块编号 */
 	blkno = s_free[--free_block_bum];
 
-    
     #ifdef IS_DEBUG
         std::cout <<"blkno : " <<  blkno << " free_block_bum: " <<free_block_bum << std::endl;
     #endif
@@ -98,8 +60,7 @@ BlkId SuperBlock::balloc() {
 	}
 
 	/*
-	* 栈已空，新分配到空闲磁盘块中记录了下一组空闲磁盘块的编号
-	* 将下一组空闲磁盘块的编号读入SuperBlock的空闲磁盘块索引表s_free[100]中。
+	* 栈已空，新分配到空闲磁盘块中记录了下一组空闲磁盘块的编号，将下一组空闲磁盘块的编号读入SuperBlock的空闲磁盘块索引表s_free[100]中。
 	*/
     if (free_block_bum <= 0) {
         #ifdef IS_DEBUG
@@ -107,14 +68,14 @@ BlkId SuperBlock::balloc() {
         #endif
 		pBuffer = my_buffer_cache->Bread(blkno);
 		int* p = (int *)pBuffer->b_addr;
-
-		free_block_bum = *p; // 成组连接法
+        // 成组连接法， 重置空闲数
+		free_block_bum = *p; 
         p ++ ;
 
-        //#ifdef IS_DEBUG
+        #ifdef IS_DEBUG
             std::cout << "成组连接法: " << free_block_bum << std::endl;
-        //#endif
-
+        #endif
+        /* 重置空闲项 */
 		memcpy(s_free, p, sizeof(s_free));
 		my_buffer_cache->Brelse(pBuffer);
 	}
@@ -122,9 +83,11 @@ BlkId SuperBlock::balloc() {
 	pBuffer = my_buffer_cache->GetBlk(blkno);
 
 	if (pBuffer) {
-        /* need clear immed!*/
+        /* 如果申请到了，马上清空内容！ */
 		my_buffer_cache->Bclear(pBuffer);
-        std::cout << "why here?" << std::endl;
+        #ifdef IS_DEBUG
+            std::cout << "why here?" << std::endl;
+        #endif
         my_buffer_cache->Bwrite(pBuffer);
 	}
     #ifdef IS_DEBUG
@@ -133,87 +96,48 @@ BlkId SuperBlock::balloc() {
     return blkno;
 }
 
-/* 释放存储设备dev上编号为blkno的磁盘块 */
+
 void SuperBlock::bfree(BlkId blknum) {
+    /** 
+     * @brief 释放为blkno的磁盘块
+     * 
+     *  */
 	Buf* pBuffer;
     BufferCache* my_buffer_cache = &Kernel::instance().getBufferManager();
 
 	if (free_block_bum >= MAX_INODE_NUM ) {
+        /* 超出栈的上限啦 */
 		pBuffer = my_buffer_cache->GetBlk(blknum);
 		int *p = (int*)pBuffer->b_addr;
-		*p++ = free_block_bum;
-
+		/* 重新压回去啦， 先压数，再压内容*/
+        *p++ = free_block_bum;
 		memcpy(p, s_free, sizeof(int)*MAX_INODE_NUM);
         
 		free_block_bum = 0;
 		my_buffer_cache->Bwrite(pBuffer);
 	}
-
-    
 	s_free[free_block_bum++] = blknum;
-    
 }
-
-
-
-// BlkId SuperBlock::balloc(){
-//     /**
-//      * @brief 分配一个空闲盘块号
-//      */
-//     int ret = disk_block_bitmap.getFreeBitId();
-//     disk_block_bitmap.setBit(ret);
-//     free_block_bum--;
-//     return ret;
-// }
-
-
-// void SuperBlock::bfree(BlkId blknum){
-//     /**
-//      * @brief 回收一个盘块
-//      */
-//     free_block_bum++;
-//     disk_block_bitmap.unsetBit(blknum);
-// }
-
-// void SuperBlock::ballocCeratin(BlkId blk_num){
-//     /**
-//      * @brief 分配指定的盘块
-//      */
-//     if (disk_block_bitmap.isAvai(blk_num)){
-
-//     }
-//     else{
-//         disk_block_bitmap.setBit(blk_num);
-//         free_block_bum--;
-//     }
-// }
-
 
 InodeId SuperBlock::ialloc(){
     /**
      * @brief 分配空闲inode
      */
-    // if (free_inode_num != 0){
-        
-    //     return s_inode[--free_inode_num];
-    // }
-    // else{
-    //     return ERROR_OUTOF_INODE;
-    // }
     Inode* pInode;
 
     int ino;
-    /* SuperBlock直接管理的空闲Inode索引表已空，必须到磁盘上搜索空闲Inode。*/
-
     BufferCache* my_buffer_cache = &Kernel::instance().getBufferManager();
     InodeCache* my_inode_cache = &Kernel::instance().getInodeCache();
 
     if (free_inode_num <= 0) {
+        /* SuperBlock直接管理的空闲Inode索引表已空，必须到磁盘上搜索空闲Inode。*/
         ino = -1;
         for (int i = 0; i < total_inode_num; ++i) {
+            /* 遍历就完事了！*/
             Buf* pBuffer = my_buffer_cache->Bread(INODE_ZONE_START_SECTOR + i);
             int* p = (int*)pBuffer->b_addr;
             for (int j = 0; j < sizeof(DiskBlock) / sizeof(DiskInode); ++j) {
+                /* 暴力遍历每一个block的每一个inode项 */
                 ++ino;
                 int mode = *(p + j * sizeof(DiskInode) / sizeof(int));
                 if (mode) {
@@ -221,18 +145,18 @@ InodeId SuperBlock::ialloc(){
                 }
 
                 /*
-                * 如果外存inode的i_mode==0，此时并不能确定该inode是空闲的，
-                * 因为有可能是内存inode没有写到磁盘上,所以要继续搜索内存inode中是否有相应的项
+                * i_mode==0，且不在内存内，说明是空闲的！
                 */
-                if (Kernel::instance().getInodeCache().IsLoaded(ino) == -1) {
+                if (Kernel::instance().getInodeCache().isLoaded(ino) == -1) {
                     s_inode[free_inode_num++] = ino;
                     if (free_inode_num >= MAX_INODE_NUM) {
                         break;
                     }
                 }
             }
-
+            /* 这个盘块搞完了 */
             my_buffer_cache->Brelse(pBuffer);
+            /* 搞完检查满没满，满了就直接结束 */
             if (free_inode_num >= MAX_INODE_NUM) {
                 break;
             }
@@ -242,7 +166,7 @@ InodeId SuperBlock::ialloc(){
         }
 
     }
-
+    /* 拿出来！*/
     ino = s_inode[--free_inode_num];
     pInode = my_inode_cache->getInodeByID(ino);
     if (NULL == pInode) {
@@ -263,55 +187,18 @@ void SuperBlock::ifree(InodeId inode_id){
 	
 }
 
-
-// InodeBlock::InodeBlock() : inode_bitmap(MAX_INODE_NUM){
-// }
-
-
-// int InodeBlock::ialloc(){
-//     /**
-//     * @brief 分配一个空闲inode号
-//     */
-//     int ret = inode_bitmap.getFreeBitId();
-//     inode_bitmap.setBit(ret);
-//     return ret;
-// }
-
-
-// void InodeBlock::ifree(InodeId InodeID){
-//     /**
-//     * @brief 回收一个inode
-//     */
-//     inode_bitmap.unsetBit(InodeID);
-// }
-
-
-// DiskInode *InodeBlock::getInode(InodeId InodeID){
-//     /**
-//     * @brief 根据InodeID获取一个Inode结构
-//     */
-//     return &inode_block[InodeID];
-// }
-
-
-// void InodeBlock::iupdate(InodeId inode_id,DiskInode disk_inode){
-//     /**
-//      * @brief 将某个制定inode号的inode更新为diskInode的内容
-//      */
-//     inode_bitmap.setBit(inode_id);   
-//     // 置位inode_id为disk_inode
-//     inode_block[inode_id]=disk_inode;
-// }
-
 DiskInode::DiskInode(){
+    /**
+     * @brief 初始化
+     */
 	this->d_mode = 0;
 	this->d_nlink = 0;
 	this->d_size = 0;
-	for (int i = 0; i < 10; i++)
-	{
+	for (int i = 0; i < 10; i++){
 		this->d_addr[i] = 0;
 	}
 }
+
 DiskInode::DiskInode(unsigned int d_mode, int d_nlink, short d_uid, short d_gid, int d_size, int d_addr[10]){
 	this->d_mode = d_mode;
 	this->d_nlink = d_nlink;
@@ -324,7 +211,7 @@ DiskInode::DiskInode(unsigned int d_mode, int d_nlink, short d_uid, short d_gid,
 
 DiskInode::DiskInode(Inode inode){
     /**
-     * 
+     * @brief inode拷贝成diskinode
      */
 	d_mode = inode.i_mode;
 	d_nlink = inode.i_nlink;
@@ -332,7 +219,6 @@ DiskInode::DiskInode(Inode inode){
 	d_gid = inode.i_gid;
 	d_size = inode.i_size;
 	memcpy(d_addr, inode.i_addr, MIXED_ADDR_TABLE_SIZE);
-
 } 
 
 void VFS::format(){
@@ -349,10 +235,9 @@ void VFS::format(){
      * 1025~DISK_BLOCK_NUM-1# 放数据
      */
 
-    /* 清空block */
     DiskBlock * head = Kernel::instance().getDiskDriver().getDiskMemAddr();
-
     DiskBlock *diskMemAddr = Kernel::instance().getDiskDriver().getDiskMemAddr();
+    /* 清空block */
     memset(diskMemAddr, 0, DISK_SIZE);
 
     /* 初始化superblock  */
@@ -361,8 +246,9 @@ void VFS::format(){
     SuperBlock *p_superBlock = (SuperBlock *)diskMemAddr;
     *p_superBlock = superBlock; 
     p_superBlock++;
-    diskMemAddr = (DiskBlock *)p_superBlock;
 
+    // 更新指针
+    diskMemAddr = (DiskBlock *)p_superBlock;
     #ifdef IS_DEBUG
         std::cout << "super: " << (char*)diskMemAddr - (char*)head << std::endl;
     #endif
@@ -373,33 +259,15 @@ void VFS::format(){
     int tempAddr[10] = {1024, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // 指向他的数据块
     DiskInode rootDINode = DiskInode(Inode::IFDIR, 1, 1, 1, 0, tempAddr);// 6 * sizeof(DirectoryEntry)
     rootDINode.d_nlink = 1;
-    InodeId root_id = 1;
+    InodeId root_id = 1; // 默认是1 
     
-    //Kernel::instance().getInodeCache().addInodeCache(rootDINode, root_id);
 
-    /* 写入根目录DiskNode */
     DiskInode *p_DiskInode = (DiskInode *)diskMemAddr;
-    // *p_DiskInode = rootDINode;
-    // p_DiskInode++;
-
-
-    // deviceDriver->write(&rootDINode, sizeof(rootDINode));
-    // /* 初始化inodeCache */
-    // InodeBlock tempInodePool;
-    // int tempAddr[10] = {4, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    // DiskInode tempDiskInode = DiskInode(Inode::IFDIR, 1, 1, 1, 0, tempAddr);// 6 * sizeof(DirectoryEntry)
-    // tempInodePool.iupdate(1, tempDiskInode);
-    
-
-    // diskMemAddr = (DiskBlock *)p_InodePool;
-    // printf("sizeof(rootDINode)%d\n", sizeof(rootDINode));
-    // printf("sizeof(int)%d\n", sizeof(int));
 
     //从第1个DiskINode初始化，第0个固定用于根目录"/"，不可改变
-    
     for (int i = 0; i < INODE_NUMBERS; ++i) {
-        //std::cout << i << std::endl;
         if (superBlock.total_inode_num < MAX_INODE_NUM) {
+            /* 初始化inode的同时也进行inode的压入，压入一百个就行了 */
             superBlock.s_inode[superBlock.total_inode_num++] = i;
         }
         if(i == root_id){
@@ -411,22 +279,14 @@ void VFS::format(){
         else{
             *p_DiskInode = emptyDINode;
         }
-        /* 写入DiskNode */
-        
+        /* 写入DiskNode，并后移 */
         p_DiskInode++;
     }
     #ifdef IS_DEBUG
         std::cout << "all_indoe: " << INODE_NUMBERS << " " << ((char*)p_DiskInode - (char*)head) / 512 << std::endl;
     #endif
 
-    //空闲盘块初始化
-    
-    DiskBlock freeBlock, freeBlock1;
-    // memset(freeBlock, 0, DISK_BLOCK_SIZE);
-    // memset(freeBlock1, 0, DISK_BLOCK_SIZE);
-
-
-    
+    //根目录的块
     DiskBlock rootBlock;
     /* 写入到rootInode的下 */
     DirectoryEntry *p_directoryEntry = (DirectoryEntry *)rootBlock.content;
@@ -440,18 +300,20 @@ void VFS::format(){
     *p_directoryEntry = tempDirctoryEntry;
     p_directoryEntry++;
 
-
+    /* 两个空块 */
+    DiskBlock freeBlock, freeBlock1;
     DiskBlock *p_DiskBlock = (DiskBlock *)p_DiskInode;
 
     for (int i = 0; i < DATA_ZONE_SIZE; ++i) {
         // 超过最大值，把整块信息连同
-        //std::cout <<DATA_ZONE_SIZE<<" " <<  i << std::endl;
         if (superBlock.free_block_bum >= MAX_INODE_NUM) {
+            /* 成组连接法 */
             memcpy(freeBlock1.content, &superBlock.free_block_bum, sizeof(int) + sizeof(superBlock.s_free));
             #ifdef IS_DEBUG
                 std::cout << (int)*freeBlock1.content << std::endl;
             #endif
             if(i == 0){
+                // 指定块（根目录）进行初始化！
                 *p_DiskBlock = rootBlock;
             }
             else{
@@ -473,8 +335,8 @@ void VFS::format(){
                 *p_DiskBlock = freeBlock;
             }
             p_DiskBlock++;
-
         }
+        /** 成组链接法写入啦 */
         superBlock.s_free[superBlock.free_block_bum++] = i + DATA_ZONE_START_SECTOR;
     }
     #ifdef IS_DEBUG
@@ -482,22 +344,10 @@ void VFS::format(){
         std::cout << "superBlock.free_block_bum: " << 1024 << "~" << 1024 + superBlock.free_block_bum << "\n";
     #endif
 
-
-    /* 0  superblock  */
-    // tempSuperBlock.ballocCeratin(0); 
-    // tempSuperBlock.ballocCeratin(1);
-    // tempSuperBlock.ballocCeratin(2);
-    // tempSuperBlock.ballocCeratin(3); 
-
-    // /* 4 数据 */ 
-    // tempSuperBlock.ballocCeratin(4); 
-    // tempSuperBlock.free_inode_num -= 1;
-
+    /* 再重新初始化 superblock */
     diskMemAddr = Kernel::instance().getDiskDriver().getDiskMemAddr();
     p_superBlock = (SuperBlock *)diskMemAddr;
     *p_superBlock = superBlock; 
-
-    //Kernel::instance().getInodeCache().writeBackInode();
 
     Kernel::instance().getSuperBlock() = superBlock;
     /* 初始化当前路径 */
@@ -510,14 +360,8 @@ void VFS::loadSuperBlock(SuperBlock &superBlock){
     /**
      * @brief 重新读出superBlock
      */
-
     DiskBlock *diskMemAddr = Kernel::instance().getDiskDriver().getDiskMemAddr();
-
-
-    // Buf *p_buf;
-    // p_buf = p_bufferCache->Bread(0);
     memcpy(&superBlock, diskMemAddr, DISK_BLOCK_SIZE * 2);
-    //p_bufferCache->Brelse(p_buf);
 }
 
 int VFS::setBufferCache(BufferCache *bufferCache){
@@ -529,71 +373,37 @@ int VFS::setBufferCache(BufferCache *bufferCache){
 void VFS::writeBackDiskInode(int inode_id, Inode cur_inode){ 
     /**
      * @brief 将diskInode重新写回磁盘中
-     * @notice 要先读后写!
+     * @note  要先读后写!
      */
-    // 定位到第二个inode pool
     #ifdef IS_DEBUG
         std::cout << "[writeBack]: " << inode_id << std::endl;
     #endif
-    if (1) { // this->i_flag&(INode::IUPD | INode::IACC)
-        Buf *p_buf = p_bufferCache->Bread(INODE_ZONE_START_SECTOR + cur_inode.i_number / INODE_NUMBER_PER_SECTOR);
-		DiskInode dINode(cur_inode);
 
-		unsigned char* p = (unsigned char*) p_buf->b_addr + (cur_inode.i_number % INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode);
-		DiskInode* pNode = &dINode;
-        
-		memcpy(p, pNode, sizeof(DiskInode));
-        
-		p_bufferCache->Bdwrite(p_buf); 
-	}
-    // int blk_num = 2 + inode_id / (DISK_BLOCK_SIZE / DISKINODE_SIZE);
-
-    // std::cout << "!!writeBack!!: " << blk_num << std::endl;
-
-    
-    // DiskInode *cur_diskInode = (DiskInode *)p_buf->b_addr;
-    // cur_diskInode = cur_diskInode + inode_id % (DISK_BLOCK_SIZE / DISKINODE_SIZE);
-    // //定位到需要写diskInode的位置
-    // *cur_diskInode = disk_inode;     
-    //p_bufferCache->Bdwrite(p_buf); 
-
-
-
-
+    Buf *p_buf = p_bufferCache->Bread(INODE_ZONE_START_SECTOR + cur_inode.i_number / INODE_NUMBER_PER_SECTOR);
+	DiskInode dINode(cur_inode);
+    /* 定位diskblock上的inode位置 */
+	unsigned char* p = (unsigned char*) p_buf->b_addr + (cur_inode.i_number % INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode);
+	DiskInode* pNode = &dINode;
+    /* 拷贝啦 */
+	memcpy(p, pNode, sizeof(DiskInode));
+	p_bufferCache->Bdwrite(p_buf); 
 }
 
 DiskInode VFS::getDiskInodeById(int inode_id){
-    //inode分布在两个盘块上，首先根据inodeID计算在哪个盘块上
-
+    /** 
+     * @brief 根据inode_id 找diskInode
+     */
+    /* 跳过一开始的两个superblock啦 */
     int blk_num = 2 + inode_id / (DISK_BLOCK_SIZE / DISKINODE_SIZE);
 
     #ifdef IS_DEBUG
         std::cout << "getDiskInode : " << blk_num << std::endl;
     #endif
 
-    
-    // Buf *p_buf = p_bufferCache->Bread(blk_num);
-    // DiskInode *cur_diskInode = (DiskInode *)p_buf->b_addr;
-    // DiskInode tempDiskInode = *(cur_diskInode + inode_id % (DISK_BLOCK_SIZE / DISKINODE_SIZE));
-    // p_bufferCache->Brelse(p_buf);
-
     DiskBlock cur_diskBlock;
     Kernel::instance().getDiskDriver().readBlk(blk_num, &cur_diskBlock);
     const DiskInode *cur_diskInode = (DiskInode *)&cur_diskBlock;
     DiskInode tempDiskInode = *(cur_diskInode + inode_id % (DISK_BLOCK_SIZE / DISKINODE_SIZE));
-    // std::cout << "ok " << std::endl;
-
-    // inode_id = inode_id;
-
-    // Buf *p_buf = p_bufferCache->Bread(INODE_ZONE_START_SECTOR + inode_id / INODE_NUMBER_PER_SECTOR);
-	
-	// unsigned char* p = (unsigned char*) p_buf->b_addr + (inode_id % INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode);
-	// DiskInode dInode;
-    // memcpy(p, &dInode, sizeof(DiskInode));
-
-    // std::cout << "GetDiskInode: " << INODE_ZONE_START_SECTOR + inode_id / INODE_NUMBER_PER_SECTOR << \
-    //              " " <<(inode_id % INODE_NUMBER_PER_SECTOR) * sizeof(DiskInode) << "\n";
-	// p_bufferCache->Brelse(p_buf); 
 
     return tempDiskInode;
 }
@@ -684,12 +494,9 @@ InodeId VFS::getInodeIdInDir(InodeId par_inode_id, FileName fileName){
             #ifdef IS_DEBUG
                 std::cout << "getInodeIdInDir: " << ret << "  " << cur_entry->m_name << std::endl;
             #endif
-            //Kernel::instance().getBufferManager().Brelse(p_buf);
             break;
         } //ino==0表示该文件被删除
     }
-
-    //Kernel::instance().getBufferManager().Brelse(p_buf);
     return ret;
 }
 

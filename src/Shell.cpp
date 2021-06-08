@@ -2,10 +2,6 @@
 #include "Kernel.h"
 
 
-
-
-
-
 int Shell::run(){
     /**
      * @brief 解析输入，调用功能。
@@ -86,16 +82,16 @@ int Shell::run(){
         "mkdir bin",
         "cd home",
         "store ../assets/img.png photos",
-        "store ../assets/readme.txt reports",
+        "store ../assets/readme.md texts",
         //"store ../assets/readme.txt reports1",
         //"fopen reports -wr",
         //"fread 0 -o re -f",
-        "store ../assets/report.txt texts" ,
+        "store ../assets/report.pdf reports" ,
         // "mkdir /home/h",
         //"fopen t -wr",
         // "fread 0 -o t 5000",
         //"load t t",
-        //"cd /"
+        "cd /"
     };
 
     int need_format = 0;
@@ -140,12 +136,15 @@ int Shell::run(){
 }
 
 void Shell::parseCmd(){
+    /** 
+     * @brief 将操作语句分割成操作数
+     */
     //先将tab转换为space
     for (char *checker = strrchr(tty_buffer, '\t'); checker != NULL; checker = strrchr(checker, '\t')){
         *checker = ' ';
     }
 
-    //Step3:以空格、tab为界，分解命令参数，存到Shell::split_cmd中
+    //以空格、tab为界，分解命令参数，存到Shell::split_cmd中
     char *dupl_tty_buffer = strdup(tty_buffer);
     //splitCmd先清空一下
     memset(split_cmd, 0x0, sizeof(split_cmd));
@@ -163,37 +162,37 @@ void Shell::executeCmd(){
     #endif
     switch (getInstType()){
         case FORMAT:
-            format(); //OK
+            format(); 
             break;
         case CD:
-            cd(); //OK
+            cd(); 
             break;
         case LS:
-            ls(); //OK
+            ls(); 
             break;
         case RM:
-            rm(); //OK
+            rm(); 
             break;
         case RMDIR:
-            rmdir(); //OK
+            rmdir(); 
             break;
         case MKDIR:
-            mkdir(); //OK
+            mkdir(); 
             break;
         case TOUCH:
-            touch(); //OK
+            touch(); 
             break;
         case CLEAR:
-            clear(); //OK
+            clear(); 
             break;
         case EXIT:
-            mexit(); //OK
+            mexit(); 
             break;
         case STORE:
-            store(); //OK
+            store(); 
             break;
         case LOAD:
-            load(); //OKKK
+            load(); 
             break;
         case FOPEN: 
             open();
@@ -263,10 +262,9 @@ int Shell::getFileMode(std::string mode) {
 
 char *Shell::getInstStr(){
     /**
-     * 
+     * @biref 很简单，数组首个就是命令关键字
      */
     return split_cmd[0];
-    //很简单，数组首个就是命令关键字
 }
 
 
@@ -325,8 +323,7 @@ void Shell::touch(){
         std::cout <<("ERROR!参数个数错误！") << std::endl;
         return;
     }
-    else
-    {
+    else{
         switch (my_kernel.kernelTouch(getParam(1))){
             case ERROR_FILENAME_EXSIST:
                 std::cout <<("[ERROR]创建失败,存在同名文件") << std::endl;
@@ -409,7 +406,6 @@ void Shell::ls()
 {
     if(getParamAmount() == 1){
         //不带参数的ls，以curDir为默认参数
-        
         my_kernel.ls(Kernel::instance().getUser().curDirInodeId);
     }
     else if(getParamAmount() == 2){
@@ -426,13 +422,10 @@ void Shell::ls()
  * 将外部文件考入虚拟磁盘.带两个命令参数
  * Usage: store [src path] [des filename]
  */
-void Shell::store()
-{
-    if (getParamAmount() == 3)
-    {
+void Shell::store(){
+    if (getParamAmount() == 3){
         InodeId desInodeId;
-        //STORE的步骤
-        //Step1：创建文件（如果有同名的返回失败）
+        //创建文件（如果有同名的返回失败）
         desInodeId = my_kernel.kernelTouch(getParam(2));
         #ifdef IS_DEBUG
             std::cout << "[store] kernelTouch!" << std::endl;
@@ -443,7 +436,7 @@ void Shell::store()
             std::cout <<("ERROR!目标文件名已存在！") << std::endl;
             return;
         }
-        //Step2：打开文件
+        //打开文件
         myPath desPath(getParam(2));
 
         FileFd fd_des = my_kernel.open(desPath, File::FWRITE);
@@ -451,21 +444,17 @@ void Shell::store()
         #ifdef IS_DEBUG
             std::cout << "[store] open!" << std::endl;
         #endif
-        //Step3：写入文件
+        //写入文件
         FILE *fd_src = fopen(getParam(1), "rb");
-        if (fd_src == NULL)
-        {
+        if (fd_src == NULL){
             std::cout <<("[ERROR]源文件打开失败！") << std::endl;
             // 删除该文件...
             Kernel::instance().deleteObject(getParam(2));
-
             return;
         }
         DiskBlock tempBuf;
         int file_size = 0;
-        while (!feof(fd_src))
-        {
-            //int blkCount = 0;
+        while (!feof(fd_src)){
             int readsize = fread(&tempBuf, 1, DISK_BLOCK_SIZE, fd_src);
             file_size += readsize;
 
@@ -477,17 +466,13 @@ void Shell::store()
 
         }
         Inode *p_desInode = Kernel::instance().getInodeCache().getInodeByID(desInodeId);
-        p_desInode->i_size = file_size; //TODO这一块不太好，封装性差了点
+        p_desInode->i_size = file_size;
 
-
-        
-
-        //Step4：关闭文件
+        //关闭文件
         fclose(fd_src);
         my_kernel.close(fd_des);
     }
-    else
-    {
+    else{
         std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
 }
@@ -497,11 +482,9 @@ void Shell::store()
  * Usage: load [src filename] [des outer_path]
  */
 void Shell::load(){
-    if (getParamAmount() == 3)
-    {
+    if (getParamAmount() == 3){
         InodeId desInodeId;
-        //WITHDRAW的步骤
-        //Step1：创建文件（如果有同名的返回失败）
+        //创建文件（如果有同名的返回失败）
         FILE *fd_des = fopen(getParam(2), "wb");
         if (fd_des == NULL)
         {
@@ -509,7 +492,7 @@ void Shell::load(){
             return;
         }
 
-        //Step2：打开文件
+        //打开文件
         myPath srcPath(getParam(1));
         FileFd fd_src = my_kernel.open(srcPath, File::FREAD);
         if (fd_src < 0){
@@ -517,11 +500,9 @@ void Shell::load(){
             unlink(getParam(2));
             return;
         }
-        //Step3：写入文件
+        //写入文件
         DiskBlock tempBuf;
-        while (!my_kernel.eof(fd_src))
-        {
-            //int blkCount = 0;
+        while (!my_kernel.eof(fd_src)){
             int writesize = my_kernel.read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
             //? 为什么最后一个是 \00
             if(my_kernel.eof(fd_src))//writesize < DISK_BLOCK_SIZE)
@@ -529,35 +510,28 @@ void Shell::load(){
 
             fwrite(&tempBuf, 1, writesize, fd_des);
         }
-        //Step4：关闭文件
+        //关闭文件
         fclose(fd_des);
         my_kernel.close(fd_src);
     }
-    else
-    {
+    else{
         std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
 }
 
-void Shell::clear()
-{
+void Shell::clear(){
     system("clear");
 }
 
 Shell::Shell(Kernel& kernel):my_kernel(kernel){
-    TAG = strdup("Shell");
-
 }
 
 
-Shell::~Shell()
-{
-    delete TAG;
+Shell::~Shell(){
+
 }
 
-//隐式调用
-void Shell::creat()
-{
+void Shell::creat(){
     /*
      * brief@ fcreat filename -w/r
      */
@@ -593,8 +567,7 @@ void Shell::creat()
 }
 
 
-void Shell::open()
-{
+void Shell::open(){
     /*
      * brief@ fopen filename rights...
      */
@@ -637,11 +610,8 @@ void Shell::open()
     }
 
 }
-/**
- * 临时的，不应该是一个用户接口
- */
-void Shell::close()
-{
+
+void Shell::close(){
     /*
      * brief@ fclose filename rights...
      */
@@ -691,7 +661,7 @@ void Shell::read(){
             return;
         }
 
-        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); //TODO错误处理?
+        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); 
 
         int& file_size = p_inode->i_size;
         int& file_offset = pFile->f_offset;
@@ -707,7 +677,7 @@ void Shell::read(){
                 std::cout <<("[ERROR]第二个参数应该为-o") << std::endl;
                 return;
             }
-            //Step1：创建文件（如果有同名的返回失败）
+            //创建文件（如果有同名的返回失败）
             FILE *fd_des = fopen(getParam(3), "wb");
             if (fd_des == NULL){
                 std::cout <<("[ERROR]目的文件创建失败") << std::endl;
@@ -716,15 +686,13 @@ void Shell::read(){
             }
 
             if(strcmp(getParam(4), "-f") == 0){
-                //Step3：写入文件
+                //写入文件
                 DiskBlock tempBuf;
-                while (!my_kernel.eof(fd_src))
-                {
-                    //int blkCount = 0;
+                while (!my_kernel.eof(fd_src)){
                     int writesize = my_kernel.read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
                     
                     //? 为什么最后一个是 \00
-                    if(my_kernel.eof(fd_src)){//writesize < DISK_BLOCK_SIZE){
+                    if(my_kernel.eof(fd_src)){
                         #ifdef IS_DEBUG
                             std::cout << "!!!!!!" << tempBuf.content[writesize] << std::endl;
                         #endif
@@ -744,19 +712,15 @@ void Shell::read(){
                 read_limit = std::stoi(getParam(4));
 
                 while (!my_kernel.eof(fd_src)){
-
                     int readable_size = std::min(std::min(file_size - file_offset, read_limit - cur_read_num), DISK_BLOCK_SIZE);//
                     // 读不到了
-                    //printf("readable_size %d %d\n",readable_size, file_offset );
                     if(readable_size <= 0){
                         break;
                     }
 
                     int real_read_num = my_kernel.read(fd_src, (uint8_t *)&tempBuf, readable_size);
-                    //tempBuf.content[real_read_num] = (uint8_t)'\0';
-
                     //? 为什么最后一个是 \00
-                    if(my_kernel.eof(fd_src)){//writesize < DISK_BLOCK_SIZE){
+                    if(my_kernel.eof(fd_src)){
                         real_read_num -= 1;
                     }
 
@@ -772,8 +736,8 @@ void Shell::read(){
         }
         
         else if(getParamAmount() == 3){
-
-            //FILE *fd_des = fopen("tttttt.tmp", "wb");
+            /* 创建临时文件进行临时存储*/
+            FILE *fd_des = fopen("tttttt.tmp", "wb");
 
             if(strcmp(getParam(2), "-f") != 0){
                 if(!isdigit(std::string(getParam(2)).front())){
@@ -787,54 +751,34 @@ void Shell::read(){
             while (!my_kernel.eof(fd_src)){
                 
                 int readable_size = std::min(std::min(file_size - file_offset, read_limit - cur_read_num), DISK_BLOCK_SIZE);//
-                // 读不到了
-                //std::cout << "读不到了: " << readable_size << std::endl;
                 if(readable_size <= 0){
                     break;
                 }
 
                 int real_read_num = my_kernel.read(fd_src, (uint8_t *)&tempBuf, readable_size);
-
-                // tempBuf.content[real_read_num] = (uint8_t)'\0';
-                // if(real_read_num < DISK_BLOCK_SIZE)
-                //     real_read_num -= 1;
-
                 char tmp[DISK_BLOCK_SIZE + 100];
                 memset(tmp, 0 , DISK_BLOCK_SIZE + 100);
-
                 memcpy(tmp, (char *)&tempBuf, real_read_num);
-
                 res_read += std::string(tmp); // (char *)&tempBuf
                 
-                //fwrite(&tempBuf, 1, real_read_num, fd_des);
-                // std::cout << tmp << std::endl;
-                // std::cout << "-------------" << std::endl;
+                fwrite(&tempBuf, 1, real_read_num, fd_des);
 
                 cur_read_num += readable_size;
             }
-            //fclose(fd_des);
-            //std::ifstream tmp_open("tttttt.tmp");
+            fclose(fd_des);
+            std::cout << "[INFO] 成功读出" << cur_read_num << "bytes,内容为: \n" ;
+            
+            #ifdef WINDOWS
+                system("type tttttt.tmp"); // 临时读完后的删除
+            #else
+                system("cat tttttt.tmp");
+            #endif
 
-            // if (tmp_open.is_open()){
-            //     std::cout << "[INFO] 成功读出" << cur_read_num << "bytes,内容为: \n" << tmp_open.rdbuf();
-
-            // }
-            // tmp_open.close();
-            // unlink("tttttt.tmp");
+            unlink("tttttt.tmp");
+            std::cout << "\n";
             
             res_read =  res_read;
-
-            // for(int i = 0 ; i < res_read.length(); i ++ ){
-            //     std::cout << (int)res_read[i] << " ";
-            //     if(i + 1 % 10 == 0 ){
-            //         std::cout << "\n";
-            //     }
-            // }
-
-            char s[1];
-            std::cout << "[INFO] 成功读出" << cur_read_num << "bytes,内容为: \n" << res_read << "\n"; // s);//
         }
-        //WITHDRAW的步骤
         else{
             std::cout <<("[ERROR]非法的参数个数") << std::endl;
         }
@@ -843,7 +787,6 @@ void Shell::read(){
     {
         std::cout <<("[ERROR]非法的参数个数") << std::endl;
     }
-
 }
 
 
@@ -869,7 +812,7 @@ void Shell::write(){
         /* 获取打开文件控制块File结构 */
         File* pFile = u.u_ofiles.GetF(fd_des);
 
-        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); //TODO错误处理?
+        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); 
 
         int ori_file_size = p_inode->i_size;
         int file_offset = pFile->f_offset;
@@ -915,8 +858,6 @@ void Shell::write(){
             // 默认是全部写入
             int file_size_limit = INT32_MAX;
 
-            //printf("hhhh %s/n", getParam(3));
-
             if(strcmp(getParam(4),"-f") != 0){
                 //给定长度
                 file_size_limit = std::stoi(getParam(4));
@@ -945,10 +886,9 @@ void Shell::write(){
             return;
         }
         Inode *p_desInode = Kernel::instance().getInodeCache().getInodeByID(desInodeId);
-        p_desInode->i_size = std::max(file_offset + file_size, ori_file_size); //TODO这一块不太好，封装性差了点
+        p_desInode->i_size = std::max(file_offset + file_size, ori_file_size); 
 
         std::cout << "[INFO]成功写入fd = " << fd_des << "  " << file_size << " bytes" << std::endl;
-        //printf("%d %d\n", file_offset + file_size, ori_file_size);
 
     }
     else
@@ -987,7 +927,7 @@ void Shell::lseek(){
             std::cout <<("[ERROR]不存在这个fd") << std::endl;
             return;
         }
-        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); //TODO错误处理?
+        Inode *p_inode = my_kernel.getInodeCache().getInodeByID(pFile->f_inode_id); 
 
 
         int& file_size = p_inode->i_size;

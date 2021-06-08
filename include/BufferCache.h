@@ -57,11 +57,8 @@ class BufferCache
 {
 private:
   Buf bFreeList; //自由缓存队列控制块，将缓存控制块中b_addr指向相应缓冲区首地址。
-  //需要设备缓存队列吗？毕竟只有一个块设备
-  //DevTab devtab;
   Buf m_Buf[BUFFER_CACHE_NUM];        //缓存控制块数组
   DiskBlock Buffer[BUFFER_CACHE_NUM]; //缓存块空间
-  //BufferLruList bufferLruList;
   DiskDriver *diskDriver;
 
 public:

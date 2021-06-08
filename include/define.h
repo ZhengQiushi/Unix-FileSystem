@@ -32,50 +32,30 @@
 #define DISK_BLOCK_NUM (2*1024*64)
 #define DISK_SIZE (DISK_BLOCK_SIZE*DISK_BLOCK_NUM) 
 
-//(64 * 1024 * 1024)    
-
 #define SUPERBLOCK_START_SECTOR  0
-
 #define INODE_ZONE_START_SECTOR  2
-
 #define INODE_ZONE_SIZE  1022
-
 
 #define DISK_IMG_DIR "./1851447.img"
 #define BITMAP_PERBLOCK_SIZE 8
 #define BUFFER_CACHE_NUM 40
 #define DISKINODE_SIZE 64
 #define INODE_SIZE 64
-#define MAX_BITMAP_ELEM_NUM DISK_BLOCK_NUM                   //这个Bitmap静态改造的一部分，原本的bitmap是动态申请的，但是放到磁盘很难办，于是去一个最大值
 #define MAX_INODE_NUM 100
 #define INODE_NUMBER_PER_SECTOR (DISK_BLOCK_SIZE/INODE_SIZE)
 
+#define ROOT_INODE_NO 0                                                      // 文件系统根目录外存INode编号
+#define INODE_NUMBERS (INODE_ZONE_SIZE* INODE_NUMBER_PER_SECTOR) // 外存INode的总个数
+#define DATA_ZONE_START_SECTOR  (INODE_ZONE_START_SECTOR + INODE_ZONE_SIZE)  // 数据区的起始扇区号
+#define DATA_ZONE_END_SECTOR (DISK_BLOCK_NUM - 1) // 数据区的最后扇区号
+#define DATA_ZONE_SIZE (DISK_BLOCK_NUM - DATA_ZONE_START_SECTOR) // 数据区占据的扇区数量
 
-// 文件系统根目录外存INode编号
-#define ROOT_INODE_NO 0
-
-// 外存INode的总个数
-#define INODE_NUMBERS (INODE_ZONE_SIZE* INODE_NUMBER_PER_SECTOR)
-
-
-// 数据区的起始扇区号
-#define DATA_ZONE_START_SECTOR  (INODE_ZONE_START_SECTOR + INODE_ZONE_SIZE)
-
-// 数据区的最后扇区号
-#define DATA_ZONE_END_SECTOR (DISK_BLOCK_NUM - 1)
-
-// 数据区占据的扇区数量
-#define DATA_ZONE_SIZE (DISK_BLOCK_NUM - DATA_ZONE_START_SECTOR)
-
-
-//(2 * DISK_BLOCK_SIZE / DISKINODE_SIZE) //用两块磁盘块存放inode，表示的是inode的最大数量，不是最大序号
 #define MAX_PATH_LEVEL 10                                    //最大目录层次
 #define MAX_FILENAME_LEN 28                                  //最长文件名
 #define INODE_CACHE_SIZE 128                                 //系统可以缓存这么多inode
 #define DIRECTORY_ENTRY_CACHE_SIZE 128                       //系统可以缓存这么多目录项
 #define MIXED_ADDR_TABLE_SIZE (10 * sizeof(int))             //混合索引表数组所占空间的大小
 #define OK 0
-
 
 #define ERROR_OFR -4
 #define ERROR_NOTSPEC -1 

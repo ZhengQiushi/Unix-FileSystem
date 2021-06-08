@@ -55,13 +55,6 @@ public:
 
 
 
-/**
- * 内存Inode结构，一个内存Inode占76B
- * 
- */
-// const unsigned int INODE_LOCKED = 0x00000001;
-// const unsigned int INODE_DIRTY = 0x00000002;
-// const unsigned int INODE_INIT = 0x00000000;
 class Inode
 {
 private:
@@ -89,7 +82,6 @@ public:
   int i_number; //文件的inode号
   int i_lastr;  //存放最近一次读取文件的逻辑块号，用于判断是否需要预读
 
-  //DiskBlock *d_addr[10];  这样有点不地道，因为真实的磁盘必须要根据块号寻址
   static const unsigned int IALLOC = 0x8000; /* 文件被使用 */
   static const int ADDRESS_PER_INDEX_BLOCK = DISK_BLOCK_SIZE / sizeof(int);
   static const int SMALL_FILE_BLOCK = 6;                                                                                      /* 小型文件：直接索引表最多可寻址的逻辑块号 */
@@ -110,60 +102,21 @@ public:
 };
 
 
-/**
- * 内存inode缓存区域.
- * 可选的inode缓存区域的结构：
- * ①链表
- * ②动态数组
- * ③静态数组+bitmap
- * 我选择③；
- * 注意，刷回磁盘的操作没有放在这里，因为需要外层协调。
- * 刷回磁盘需要做的一些工作，可以在这里完成。
- * //TEMP 目前反正inodeCache也不多，卸载刷回的时候，不管脏不脏都刷回
- */
-class InodeCache
-{
+class InodeCache{
   static const int NINODE = 100;
-  //TODO
 private:
   Inode inode_cache_area[NINODE];
-  //Bitmap inodeCacheBitmap;
 
 public:
-  //InodeCache() : inodeCacheBitmap(INODE_CACHE_SIZE) {}
   void init();
   Inode *getInodeByID(int inode_id); //返回inodeCache块的缓存
   int addInodeCache(DiskInode inode, InodeId inode_id);
   int writeBackInode();
 
-  int IsLoaded(InodeId inode_id);
+  int isLoaded(InodeId inode_id);
   /* 在内存INode表中寻找一个空闲的内存INode */
   int getFreeINode();
 };
-
-/**
- * 磁盘Inode区，
- * 大小是一定的，Inode号是有限的。
- * 
- */
-// class InodeBlock{
-//   //TODO
-//   private:
-//     //Bitmap inode_bitmap;
-//     //NOTE 这个是手工计算的，为的是让InodePool占满3个盘块
-//     //char padding[2040];  
-//     //INODE数组存放区域  Inode的大小为64字节
-//     DiskInode inode_block[MAX_INODE_NUM]; 
-    
-//   public:
-//     InodeBlock();
-//     int ialloc();
-//     void ifree(InodeId inode_id);
-//     void iupdate(InodeId inode_id,DiskInode disk_inode);  
-//     DiskInode* getInode(InodeId inode_id);
-// };
-
-
 
 class SuperBlock{
 public:
@@ -179,9 +132,6 @@ public:
   int free_block_bum;             //空闲盘块数
   InodeId s_free[MAX_INODE_NUM];  //空闲磁盘栈，用于管理磁盘块的分配和回收
 
-
-  
-  
   int	s_flock;		        // 封锁空闲盘块索引表标志
   int	s_ilock;		        // 封锁空闲INode表标志
 

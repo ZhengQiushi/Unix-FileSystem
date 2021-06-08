@@ -1,0 +1,3 @@
+/home/truth/Desktop/my_VFS/hai/Unix-FileSystem/build_linux/CMakeFiles/rebuild_cache.dir
+/home/truth/Desktop/my_VFS/hai/Unix-FileSystem/build_linux/CMakeFiles/my_VFS.dir
+/home/truth/Desktop/my_VFS/hai/Unix-FileSystem/build_linux/CMakeFiles/edit_cache.dir
