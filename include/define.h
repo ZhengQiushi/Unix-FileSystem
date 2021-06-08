@@ -3,6 +3,7 @@
 //#define IS_DEBUG //调试状态
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <vector>
 #include <unordered_map>
@@ -13,7 +14,7 @@
 #include <stdint.h>  
 #include <fcntl.h>    
 #include <unistd.h>   
-//#define WINDOWS
+#define WINDOWS
 
 #if defined(WINDOWS) 
 #include "/mingw/include/sys/mman.h"

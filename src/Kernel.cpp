@@ -47,6 +47,10 @@ User::User(){
     cur_path = "/";
 }
 
+void User::init(){
+    curDirInodeId = 1;
+    cur_path = "/";
+}
 void Kernel::initKernel(){
 
     /* 内存inodeCache初始化 */

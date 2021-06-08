@@ -87,15 +87,15 @@ int Shell::run(){
         "cd home",
         "store ../assets/img.png photos",
         "store ../assets/readme.txt reports",
-        // "store ../assets/readme.txt reports1",
+        //"store ../assets/readme.txt reports1",
         //"fopen reports -wr",
         //"fread 0 -o re -f",
-        //"store ../assets/report.txt texts" ,
+        "store ../assets/report.txt texts" ,
         // "mkdir /home/h",
         //"fopen t -wr",
         // "fread 0 -o t 5000",
         //"load t t",
-        "cd /"
+        //"cd /"
     };
 
     int need_format = 0;
@@ -524,8 +524,9 @@ void Shell::load(){
             //int blkCount = 0;
             int writesize = my_kernel.read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
             //? 为什么最后一个是 \00
-            if(writesize < DISK_BLOCK_SIZE)
+            if(my_kernel.eof(fd_src))//writesize < DISK_BLOCK_SIZE)
                 writesize -= 1;
+
             fwrite(&tempBuf, 1, writesize, fd_des);
         }
         //Step4：关闭文件
@@ -710,6 +711,7 @@ void Shell::read(){
             FILE *fd_des = fopen(getParam(3), "wb");
             if (fd_des == NULL){
                 std::cout <<("[ERROR]目的文件创建失败") << std::endl;
+                
                 return;
             }
 
@@ -722,12 +724,11 @@ void Shell::read(){
                     int writesize = my_kernel.read(fd_src, (uint8_t *)&tempBuf, DISK_BLOCK_SIZE);
                     
                     //? 为什么最后一个是 \00
-                    if(writesize < DISK_BLOCK_SIZE){
+                    if(my_kernel.eof(fd_src)){//writesize < DISK_BLOCK_SIZE){
                         #ifdef IS_DEBUG
                             std::cout << "!!!!!!" << tempBuf.content[writesize] << std::endl;
                         #endif
                         writesize -= 1;
-
                     }
 
 
@@ -752,7 +753,12 @@ void Shell::read(){
                     }
 
                     int real_read_num = my_kernel.read(fd_src, (uint8_t *)&tempBuf, readable_size);
-                    tempBuf.content[real_read_num] = (uint8_t)'\0';
+                    //tempBuf.content[real_read_num] = (uint8_t)'\0';
+
+                    //? 为什么最后一个是 \00
+                    if(my_kernel.eof(fd_src)){//writesize < DISK_BLOCK_SIZE){
+                        real_read_num -= 1;
+                    }
 
                     fwrite(&tempBuf, 1, readable_size, fd_des);
                     cur_read_num += readable_size;
@@ -766,6 +772,9 @@ void Shell::read(){
         }
         
         else if(getParamAmount() == 3){
+
+            //FILE *fd_des = fopen("tttttt.tmp", "wb");
+
             if(strcmp(getParam(2), "-f") != 0){
                 if(!isdigit(std::string(getParam(2)).front())){
                     std::cout <<("[ERROR]size为非法输入") << std::endl;
@@ -787,8 +796,8 @@ void Shell::read(){
                 int real_read_num = my_kernel.read(fd_src, (uint8_t *)&tempBuf, readable_size);
 
                 // tempBuf.content[real_read_num] = (uint8_t)'\0';
-                if(real_read_num < DISK_BLOCK_SIZE)
-                    real_read_num -= 1;
+                // if(real_read_num < DISK_BLOCK_SIZE)
+                //     real_read_num -= 1;
 
                 char tmp[DISK_BLOCK_SIZE + 100];
                 memset(tmp, 0 , DISK_BLOCK_SIZE + 100);
@@ -796,14 +805,34 @@ void Shell::read(){
                 memcpy(tmp, (char *)&tempBuf, real_read_num);
 
                 res_read += std::string(tmp); // (char *)&tempBuf
-
+                
+                //fwrite(&tempBuf, 1, real_read_num, fd_des);
                 // std::cout << tmp << std::endl;
                 // std::cout << "-------------" << std::endl;
 
                 cur_read_num += readable_size;
             }
+            //fclose(fd_des);
+            //std::ifstream tmp_open("tttttt.tmp");
+
+            // if (tmp_open.is_open()){
+            //     std::cout << "[INFO] 成功读出" << cur_read_num << "bytes,内容为: \n" << tmp_open.rdbuf();
+
+            // }
+            // tmp_open.close();
+            // unlink("tttttt.tmp");
+            
+            res_read =  res_read;
+
+            // for(int i = 0 ; i < res_read.length(); i ++ ){
+            //     std::cout << (int)res_read[i] << " ";
+            //     if(i + 1 % 10 == 0 ){
+            //         std::cout << "\n";
+            //     }
+            // }
+
             char s[1];
-            std::cout << "[INFO] 成功读出" << cur_read_num << " bytes,内容为: \n" << res_read << "\n"; // s);//
+            std::cout << "[INFO] 成功读出" << cur_read_num << "bytes,内容为: \n" << res_read << "\n"; // s);//
         }
         //WITHDRAW的步骤
         else{

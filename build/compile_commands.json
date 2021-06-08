@@ -1,0 +1,37 @@
+[
+{
+  "directory": "/home/truth/Desktop/hai/Unix-FileSystem/build",
+  "command": "/usr/bin/x86_64-w64-mingw32-g++  @CMakeFiles/my_VFS.dir/includes_CXX.rsp -g -o CMakeFiles/my_VFS.dir/main.cpp.obj -c /home/truth/Desktop/hai/Unix-FileSystem/main.cpp",
+  "file": "/home/truth/Desktop/hai/Unix-FileSystem/main.cpp"
+},
+{
+  "directory": "/home/truth/Desktop/hai/Unix-FileSystem/build",
+  "command": "/usr/bin/x86_64-w64-mingw32-g++  @CMakeFiles/my_VFS.dir/includes_CXX.rsp -g -o CMakeFiles/my_VFS.dir/src/Shell.cpp.obj -c /home/truth/Desktop/hai/Unix-FileSystem/src/Shell.cpp",
+  "file": "/home/truth/Desktop/hai/Unix-FileSystem/src/Shell.cpp"
+},
+{
+  "directory": "/home/truth/Desktop/hai/Unix-FileSystem/build",
+  "command": "/usr/bin/x86_64-w64-mingw32-g++  @CMakeFiles/my_VFS.dir/includes_CXX.rsp -g -o CMakeFiles/my_VFS.dir/src/Kernel.cpp.obj -c /home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.cpp",
+  "file": "/home/truth/Desktop/hai/Unix-FileSystem/src/Kernel.cpp"
+},
+{
+  "directory": "/home/truth/Desktop/hai/Unix-FileSystem/build",
+  "command": "/usr/bin/x86_64-w64-mingw32-g++  @CMakeFiles/my_VFS.dir/includes_CXX.rsp -g -o CMakeFiles/my_VFS.dir/src/BufferCache.cpp.obj -c /home/truth/Desktop/hai/Unix-FileSystem/src/BufferCache.cpp",
+  "file": "/home/truth/Desktop/hai/Unix-FileSystem/src/BufferCache.cpp"
+},
+{
+  "directory": "/home/truth/Desktop/hai/Unix-FileSystem/build",
+  "command": "/usr/bin/x86_64-w64-mingw32-g++  @CMakeFiles/my_VFS.dir/includes_CXX.rsp -g -o CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.obj -c /home/truth/Desktop/hai/Unix-FileSystem/src/DiskDriver.cpp",
+  "file": "/home/truth/Desktop/hai/Unix-FileSystem/src/DiskDriver.cpp"
+},
+{
+  "directory": "/home/truth/Desktop/hai/Unix-FileSystem/build",
+  "command": "/usr/bin/x86_64-w64-mingw32-g++  @CMakeFiles/my_VFS.dir/includes_CXX.rsp -g -o CMakeFiles/my_VFS.dir/src/FileSystem.cpp.obj -c /home/truth/Desktop/hai/Unix-FileSystem/src/FileSystem.cpp",
+  "file": "/home/truth/Desktop/hai/Unix-FileSystem/src/FileSystem.cpp"
+},
+{
+  "directory": "/home/truth/Desktop/hai/Unix-FileSystem/build",
+  "command": "/usr/bin/x86_64-w64-mingw32-g++  @CMakeFiles/my_VFS.dir/includes_CXX.rsp -g -o CMakeFiles/my_VFS.dir/src/Tools.cpp.obj -c /home/truth/Desktop/hai/Unix-FileSystem/src/Tools.cpp",
+  "file": "/home/truth/Desktop/hai/Unix-FileSystem/src/Tools.cpp"
+}
+]

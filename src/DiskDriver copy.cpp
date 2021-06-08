@@ -349,14 +349,11 @@ int Inode::Bmap(int lbn){
         else{
             /* 读出存储间接索引表的字符块 */
             f_level_index = phy_blk_id;
-
             first_index_buf = Kernel::instance().getBufferManager().Bread(phy_blk_id);
-
             // f_diskBlock = *(first_index_buf->b_addr);
             // Kernel::instance().getBufferManager().Brelse(first_index_buf);
         }
-        /* 获取缓冲区首址 */
-        
+        /* 获取缓冲区首址 */     
         f_diskBlock = *(first_index_buf->b_addr);
         inode_link_table = (int *)&f_diskBlock;// first_index_buf->b_addr; // 
         Kernel::instance().getBufferManager().Brelse(first_index_buf);

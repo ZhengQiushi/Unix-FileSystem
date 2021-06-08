@@ -54,6 +54,8 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "cfenv": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "boundingbox": "cpp",
+        "boundingsphere": "cpp"
     }
 }

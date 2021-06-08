@@ -341,7 +341,8 @@ void VFS::format(){
      */
     Kernel::instance().getInodeCache().init();
     Kernel::instance().getBufferManager().init();
-
+    Kernel::instance().getUser().init();
+    
     /* 磁盘分配情况
      * 0-1# superblock
      * 2-1024# InodeBlock

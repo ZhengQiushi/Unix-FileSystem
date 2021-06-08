@@ -195,6 +195,7 @@ my_VFS.exe: CMakeFiles/my_VFS.dir/src/DiskDriver.cpp.obj
 my_VFS.exe: CMakeFiles/my_VFS.dir/src/FileSystem.cpp.obj
 my_VFS.exe: CMakeFiles/my_VFS.dir/src/Tools.cpp.obj
 my_VFS.exe: CMakeFiles/my_VFS.dir/build.make
+my_VFS.exe: /mingw/lib/libmman.a
 my_VFS.exe: CMakeFiles/my_VFS.dir/linklibs.rsp
 my_VFS.exe: CMakeFiles/my_VFS.dir/objects1.rsp
 my_VFS.exe: CMakeFiles/my_VFS.dir/link.txt

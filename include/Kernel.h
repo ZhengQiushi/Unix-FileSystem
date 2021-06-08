@@ -87,6 +87,7 @@ class User{
 	 */
 public:
 	User();
+	void init();
 	Inode *u_cdir; /* 指向当前目录的Inode指针 */
 	Inode *u_pdir; /* 指向父目录的Inode指针 */
 
